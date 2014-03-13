@@ -11,6 +11,10 @@ class App
 			$controller_class = ucfirst($query_array[0]).'Controller';
 			$this->controller(new $controller_class($query_array[1]));
 		}
+		else /*todo: перенести в конфиг*/
+		{
+			$this->controller(new PageController());
+		}
 	}
 
 	static function router($item = null)

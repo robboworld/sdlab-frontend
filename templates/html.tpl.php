@@ -9,7 +9,7 @@
 	<link rel="stylesheet" href="bootstrap/css/bootstrap-theme.min.css">
 	<link rel="stylesheet" href="css/style.css">
 	<script src="bootstrap/js/bootstrap.min.js"></script>
-	<script src="js/main.js"></script>
+	<? print $js ?>
 </head>
 <body>
 	<? print $layout ?>

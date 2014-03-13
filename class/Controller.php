@@ -21,7 +21,7 @@ class Controller
 			$script_list = '';
 			foreach($this->js as $script)
 			{
-				$script_list .= '<script type="text/javascript" src="js/'.$script.'"></script>';
+				$script_list .= '<script type="text/javascript" src="js/'.$script.'.js"></script>';
 			}
 			return $script_list;
 		}
@@ -45,6 +45,7 @@ class Controller
 		}
 
 		$layout = $this->renderTemplate('layout');
+		$js = $this->collectJs();
 		include(DEFAULT_HTML_TEMPLATE);
 	}
 

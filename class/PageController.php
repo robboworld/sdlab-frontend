@@ -14,25 +14,12 @@ class PageController extends Controller
 			$page = 'index';
 		}
 
+		$this->js[] = 'main'; /*todo: rename & move script*/
+
 		$this->content->test = 'test content';
 		$this->content->title = 'JSON-RPC <small>Class: '.__CLASS__.'</small>';
 		$this->content->page = $this->renderTemplate('test');
 
-	}
-
-	function renderView()
-	{
-		if(isset($this->action))
-		{
-			$this->{$this->action}();
-		}
-		else
-		{
-			$this->view();
-		}
-
-		$layout = $this->renderTemplate('layout');
-		include(DEFAULT_HTML_TEMPLATE);
 	}
 
 

@@ -1,0 +1,123 @@
+<?
+
+class App
+{
+	private $controller;
+	function __construct()
+	{
+		$this->config = include('app/config/config.php');
+		$query_array = $this->router();
+
+		if($query_array[0]!= '')
+		{
+			$controller_class = ucfirst($query_array[0]).'Controller';
+			$controller = new $controller_class($query_array[1]);
+		}
+		else
+		{
+			$controller = new PageController();
+		}
+
+
+		if($controller->user_access_level() >= 1)
+		{
+			if(!$_SESSION['sdlab']['session_key'])
+			{
+				$this->controller(new SessionController('create'));
+			}
+			else
+			{
+
+				$session = new Session();
+				if($session->load($_SESSION['sdlab']['session_key']))
+				{
+					$this->session = $session;
+					$this->controller($controller);
+				}
+				else
+				{
+					$this->controller(new SessionController('create'));
+				}
+
+			}
+		}
+		else if($controller->user_access_level() == 0)
+		{
+			if(!empty($_SESSION['sdlab']['session_key']))
+			{
+				$session = new Session();
+				if($session->load($_SESSION['sdlab']['session_key']))
+				{
+					$this->session = $session;
+				}
+			}
+			$this->controller($controller);
+		}
+
+		self::execute();
+	}
+
+	static function router($item = null)
+	{
+
+		if(!empty($_GET['q']))
+		{
+			$query = $_GET['q'];
+			$query_array = explode('/', $query);
+			if($item !== null)
+			{
+				return $query_array[$item];
+			}
+			else
+			{
+				return $query_array;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	public function controller(Controller $controller = null)
+	{
+		if(!is_null($controller))
+		{
+			$this->controller = $controller;
+			$this->controller->app = $this;
+
+		}
+		return $this->controller;
+	}
+
+	protected function execute()
+	{
+		if(is_object($this->controller))
+		{
+			$this->controller()->view->main_menu = Menu::get();
+			$this->controller()->renderView();
+		}
+		else
+		{
+			throw new Exception('controller is not object.');
+		}
+	}
+
+	public function getUserLevel()
+	{
+		if(is_object($this->session))
+		{
+			return $this->session->getUserLevel();
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
+	static function config()
+	{
+		$config = include('app/config/config.php');
+		return $config;
+	}
+}

@@ -1,0 +1,35 @@
+.widget-graph
+{
+
+}
+.widget-pane
+{
+	width: 100%;
+	display: none;
+	height: 200px;
+	margin: 0;
+}
+
+.widget-pane.active
+{
+	display: block;
+}
+
+#sensors-list-bar
+{
+	display: none;
+	position: fixed;
+	width: 320px;
+	top: 0;
+	bottom: 0;
+	margin-left: -15px;
+	background: #fff;
+	box-shadow: 5px 0px 20px gray;
+	z-index: 3;
+
+}
+
+#workspace.with-bar
+{
+	padding-left: 350px;
+}

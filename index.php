@@ -1,11 +1,11 @@
 <?
-
-/* Class Autoload*/
-function __autoload($classname) {
-	$filename = "class/". $classname .".php";
-	include_once($filename);
-}
+include('app/bootstrap.php');
 
 
+/**
+ * Основной вызов приложения.
+ */
 $app = new App();
-$app->execute();
+
+/*todo: реализовать "активность" установки и эксперимента */
+/*todo: очистка старых сессий, экспериментов и установок */

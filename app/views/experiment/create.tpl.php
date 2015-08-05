@@ -1,25 +1,27 @@
-<? if($this->view->form->id == 'create-experiment-form') : ?>
-<div class="col-md-12">
-	<a href="/?q=experiment/view" class="btn btn-sm btn-default">
-		<span class="glyphicon glyphicon-chevron-left"></span> Все эксперименты
-	</a>
-</div>
+<div class="row">
+	<? if($this->view->form->id == 'create-experiment-form') : ?>
+	<div class="col-md-offset-1 col-md-10">
+		<a href="/?q=experiment/view" class="btn btn-sm btn-default">
+			<span class="glyphicon glyphicon-chevron-left"></span> Все эксперименты
+		</a>
+	</div>
 <? else: ?>
-<div class="col-md-12">
-	<a href="/?q=experiment/view/<?print $this->view->form->experiment->id; ?>" class="btn btn-sm btn-default">
-		<span class="glyphicon glyphicon-chevron-left"></span> <?print $this->view->form->experiment->title; ?>
-	</a>
-</div>
+	<div class="col-md-offset-1 col-md-10">
+		<a href="/?q=experiment/view/<?print $this->view->form->experiment->id; ?>" class="btn btn-sm btn-default">
+			<span class="glyphicon glyphicon-chevron-left"></span> <?print $this->view->form->experiment->title; ?>
+		</a>
+	</div>
 <? endif; ?>
+</div>
 
-<div class="col-md-12">
-	<h1><? print $this->view->content->title; ?></h1>
+<div class="row">
+	<h1 class="col-md-offset-1 col-md-10"><? print $this->view->content->title; ?></h1>
 	<form method="post" action="?<? print $_SERVER['QUERY_STRING']?>">
 		<input type="hidden" name="form-id" value="<?print $this->view->form->id;?>">
-		<div class="form-group col-md-6">
-			<input class="form-control" type="text" name="experiment_title" placeholder="Название эксперимента" required="true" value="<?print $this->view->form->experiment->title;?>">
+		<div class="col-md-offset-1 form-group col-md-5">
+			<input class="form-control" maxlength="80" type="text" name="experiment_title" placeholder="Название эксперимента" required="true" value="<?print $this->view->form->experiment->title;?>">
 		</div>
-		<div class="form-group col-md-6">
+		<div class="form-group col-md-5">
 			<select class="form-control" name="setup_id">
 				<option value=""> - Выбрать установку - </option>
 				<? foreach ($this->view->form->setups as $setup): ?>
@@ -39,10 +41,10 @@
 				</div>
 			</div>
 			-->
-		<div class="form-group col-md-12">
-			<textarea class="text-area form-control" name="experiment_comments" placeholder="Комментарий"><?print $this->view->form->experiment->comments;?></textarea>
+		<div class="col-md-offset-1 form-group col-md-10">
+			<textarea class="text-area form-control" maxlength="2000" name="experiment_comments" placeholder="Комментарий"><?print $this->view->form->experiment->comments;?></textarea>
 		</div>
-		<div class="btn-group pull-right">
+		<div class="col-md-offset-8 btn-group col-md-4">
 			<?if($this->view->form->id == 'edit-experiment-form'): ?>
 				<a href="?q=experiment/view/<?print $this->view->form->experiment->id; ?>" class="btn btn-default">Отмена</a>
 			<? endif;?>

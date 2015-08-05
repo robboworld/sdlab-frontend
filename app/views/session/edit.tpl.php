@@ -4,9 +4,10 @@
 		<span class="text-danger"><? print $this->session()->getKey(); ?></span>
 	</h3>
 </div>
-
 <div class="col-md-8">
-	<h3>Редактировать информацию</h3>
+	<h3>Редактирование сессии</h3>
+</div>	
+<div class="col-md-12">
 	<form class="row" action="?<? print $_SERVER['QUERY_STRING'];?>" method="post">
 		<input type="hidden" name="form-id" value="edit-session-form">
 		<div class="form-group col-md-6">
@@ -20,13 +21,13 @@
 		<div class="form-group col-md-3">
 			<label>Срок хранения(дней)</label>
 			<input type="text" class="form-control" name="session_expiry" placeholder="Срок хранения" value="<? print $this->session()->expiry;?>" size="3" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>>
-
 		</div>
+
 		<div class="form-group col-md-12">
 			<label>Комментарий</label>
-			<input type="text" class="form-control" name="session_comments" placeholder="Комментарий" value="<? print $this->session()->comments;?>">
+			<textarea class="text-area form-control" maxlength="2000" name="session_comments" placeholder="Комментарий"><?print $this->session()->comments;?></textarea>
 		</div>
-		<div class="form-group col-md-3">
+		<div class="form-group col-md-offset-9 col-md-3">
 			<input type="submit" class="form-control btn-success" value="Сохранить">
 		</div>
 	</form>

@@ -40,7 +40,7 @@
 			</div>
 			-->
 		<div class="form-group col-md-12">
-			<input type="text" class="form-control" name="experiment_comments" placeholder="Комментарий" value="<?print $this->view->form->experiment->comments;?>">
+			<textarea class="text-area form-control" name="experiment_comments" placeholder="Комментарий"><?print $this->view->form->experiment->comments;?></textarea>
 		</div>
 		<div class="btn-group pull-right">
 			<?if($this->view->form->id == 'edit-experiment-form'): ?>

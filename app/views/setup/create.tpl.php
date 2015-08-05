@@ -1,9 +1,11 @@
-
-<h3><? print $this->view->content->title; ?></h3>
-<div class="col-md-10">
+<div class="row">
+  <h3 class="col-md-offset-2 col-md-8"><? print $this->view->content->title; ?></h3>
+</div>
+<div class="row setup-create">
+<div class="col-md-offset-2 col-md-8">
 	<form action="<?print $_SERVER['REQUEST_URI']; ?>" method="post">
 		<input type="hidden" name="form-id" value="<? print $this->view->form->id; ?>">
-		<div class="form-group">
+		<div class="form-group setup-title">
 			<input class="form-control" name="setup_title" type="text" required="true" placeholder="Название установки" value="<?print $this->view->form->setup->title;?>">
 		</div>
 		<? //flag нужно проверять
@@ -36,30 +38,29 @@
 
 					-->
 				</div>
-				<br>
 				<div class="alert alert-warning" id="setup-type-alert">
 					Нужно выбрать тип измерений
 				</div>
 				<div id="setup-type-length" class="setup-type well">
 					<div class="row form-group">
-						<div class="col-md-4">
+						<div class="col-xs-12 col-md-4 col-sm-5 setup-label-long">
 							Продолжительность измерений
 						</div>
-						<div class="col-md-8 form-inline">
+						<div class="col-xs-12 col-md-8 col-sm-7 form-inline">
 							<? $time_det = Form::formTimeObject($this->view->form->setup->time_det) ;?>
-							<input type="text" name="time_det_day" class="form-control" size="4" placeholder="0" value="<? print $time_det->d; ?>"> дн.
-							<input type="text" name="time_det_hour" class="form-control" size="4" placeholder="0" value="<? print $time_det->h; ?>"> час.
-							<input type="text"  name="time_det_min" class="form-control" size="4" placeholder="1" value="<? print $time_det->m; ?>"> мин.
-							<input type="text"  name="time_det_sec" class="form-control" size="4" placeholder="1" value="<? print $time_det->s; ?>"> сек.
+							<input type="text" name="time_det_day" class="form-control" size="1" placeholder="0" value="<? print $time_det->d; ?>"> дн.
+							<input type="text" name="time_det_hour" class="form-control" size="1" placeholder="0" value="<? print $time_det->h; ?>"> ч.
+							<input type="text" name="time_det_min" class="form-control" size="1" placeholder="1" value="<? print $time_det->m; ?>"> мин.
+							<input type="text" name="time_det_sec" class="form-control" size="1" placeholder="1" value="<? print $time_det->s; ?>"> сек.
 						</div>
 					</div>
 				</div>
 				<div id="setup-type-amount" class="setup-type well">
 					<div class="row form-group">
-						<div class="col-md-4">
+						<div class="col-xs-6 col-md-6 col-sm-6 setup-label">
 							Число измерений
 						</div>
-						<div class="col-md-8 form-inline">
+						<div class="col-xs-6 col-md-6 col-sm-6 form-inline" >
 							<input type="text" name="amount" class="form-control"  size="10" placeholder="1" value="<? print $this->view->form->setup->amount; ?>">
 						</div>
 					</div>
@@ -82,30 +83,30 @@
 				-->
 				<div class="well">
 					<div class="row form-group">
-						<div class="col-md-4">
+						<div class="col-xs-6 col-md-6 col-sm-6 setup-label">
 							Интервал измерений
 						</div>
-						<div class="col-md-8 form-inline">
+						<div class="col-xs-6 col-md-6 col-sm-6 form-inline">
 							<!--
 							<input type="text" class="form-control" size="4" placeholder="0"> дн.
 							<input type="text" class="form-control" size="4" placeholder="0"> час.
 							-->
-							<input type="text" name="interval" class="form-control"  required="true" size="4" placeholder="10" value="<? print $this->view->form->setup->interval; ?>"> сек.
+							<input type="text" name="interval" class="form-control"  required="true" size="10" placeholder="10" value="<? print $this->view->form->setup->interval; ?>"> сек.
 						</div>
 					</div>
 					<div class="row form-group">
-						<div class="col-md-4">
+						<div class="col-xs-6 col-md-6 col-sm-6 setup-label mrg-top-m5px">
 							Число повторных измерений<br>(при обнаружении ошибок)
 						</div>
-						<div class="col-md-8 form-inline">
+						<div class="col-xs-6 col-md-6 col-sm-6 form-inline">
 							<input type="text" name="number_error" class="form-control" size="10" placeholder="0" value="<? print $this->view->form->setup->number_error; ?>">
 						</div>
 					</div>
 					<div class="row form-group">
-						<div class="col-md-4">
+						<div class="col-xs-6 col-md-6 col-sm-6 setup-label">
 							Интервал повторных измерений
 						</div>
-						<div class="col-md-8 form-inline">
+						<div class="col-xs-6 col-md-6 col-sm-6 form-inline">
 							<input type="text" name="period_repeated_det" class="form-control" size="10" placeholder="0" value="<? print $this->view->form->setup->period_repeated_det; ?>"> сек.
 						</div>
 					</div>
@@ -142,25 +143,26 @@
 
 					</tbody>
 				</table>
-				<div class="row">
-					<div class="col-md-6">
+				<div class="row sensor-block">
+					<div class="mrg-bot-5px col-xs-12 col-sm-6 col-md-6">
 						<a class="btn btn-default form-control" id="add-sensors"><span class="glyphicon glyphicon-arrow-up"></span> Добавить выбранные</a>
 					</div>
-					<div class="col-md-6">
+					<div class="mrg-bot-5px col-xs-12 col-sm-6 col-md-6">
 						<a class="btn btn-default form-control" id="sensors-list-update"><span class="glyphicon glyphicon-refresh"></span> Обновить список доступных датчиков</a>
 					</div>
 				</div>
 			</div>
 		</div>
 </div>
-<div class="col-md-2">
-	<input type="submit" class="btn btn-success form-control" value="<? print $this->view->form->submit->value; ?>" disabled>
-	<br><br><a href="/?q=experiment/view" class="btn btn-danger form-control">Отменить</a>
-	<? if($this->view->form->id == 'edit-setup-form') : ?>
-		<br><br><a href="/?q=setup/create" class="btn btn-primary form-control">Новая установка</a>
-	<? endif; ?>
-	<br><br>
-
-	</form>
 </div>
 
+<div class="row mrg-top-20px">
+	<div class="col-sm-offset-6 col-sm-6 col-md-offset-6 col-md-4 btn-group">
+    <? if($this->view->form->id == 'edit-setup-form') : ?>
+		<a href="/?q=setup/create" class="width-auto btn btn-primary form-control">Создать</a>
+    <? endif; ?>
+    <a href="/?q=experiment/view" class="width-auto col-md-6 btn-default btn form-control">Отменить</a>
+    <input type="submit" class="width-auto btn btn-success form-control" value="<? print $this->view->form->submit->value; ?>" disabled>
+	</div>
+	</form>
+</div>

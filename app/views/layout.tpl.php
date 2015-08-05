@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html>
 <head>
 	<meta charset="utf-8">
@@ -33,20 +33,24 @@
 						<a href="?q=session/edit" id="session-name" class="btn btn-sm btn-info navbar-btn" title="Редактировать сессию">
 							<? print $this->session()->name; ?>
 						</a>
-						<a href="?q=session/destroy" class="btn btn-sm btn-default navbar-btn">Выход</a>
-						<a href="?q=session/create" class="btn btn-sm btn-default navbar-btn">Новая сессия</a>
+						<a href="?q=session/destroy" class="btn btn-sm btn-default navbar-btn"><span class="glyphicon glyphicon-log-out"></span><span class="hidden-xs">&nbspВыход</span></a>
+						<?
+						/*
+						<a href="?q=session/create" class="btn btn-sm btn-default navbar-btn"><span class="glyphicon glyphicon-plus"></span><span class="hidden-xs">&nbspНовая сессия</span></a>
+						*/
+						?>
 					</div>
 
 				</div>
 
 			<? else : ?>
-				<div class="col-md-5 pull-right">
-					<form class="navbar-form" action="?q=session/create<? if(isset($_GET['q'])) : ?>&destination=<? print $_GET['q']; endif; ?>" method="post">
+				<div class="col-md-5 col-sm-6 col-xs-6 pull-right pull-right">
+					<form id="nav-buttons" class="navbar-form" action="?q=session/create<? if(isset($_GET['q'])) : ?>&destination=<? print $_GET['q']; endif; ?>" method="post">
 						<div class="input-group input-group-sm">
 							<input type="text" name="session_key" placeholder="Ключ сессии (123456)" title="тестовый ключ - 123456" class="form-control">
 							<span class="input-group-btn">
-								<input type="submit" class="btn btn-success" value="Восстановить">
-								<a href="?q=session/create" class="btn btn-sm btn-success">Новая сессия</a>
+								<a href="#" class="btn btn-sm btn-success" onclick="document.getElementById('nav-buttons').submit(); return false;"><span class="glyphicon glyphicon-log-in"></span><span class="hidden-xs">&nbsp Восстановить</span></a>
+								<a href="?q=session/create" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-plus"></span><span class="hidden-xs">&nbspНовая сессия</span></a>
 							</span>
 						</div>
 					</form>

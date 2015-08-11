@@ -1,5 +1,5 @@
 <div class="row">
-  <h3 class="col-md-offset-2 col-md-8"><? print $this->view->content->title; ?></h3>
+	<h3 class="col-md-offset-2 col-md-8"><? print $this->view->content->title; ?></h3>
 </div>
 <div class="row setup-create">
 <div class="col-md-offset-2 col-md-8">
@@ -158,11 +158,11 @@
 
 <div class="row mrg-top-20px">
 	<div class="col-sm-offset-6 col-sm-6 col-md-offset-6 col-md-4 btn-group">
-    <? if($this->view->form->id == 'edit-setup-form') : ?>
+	<? if($this->view->form->id == 'edit-setup-form') : ?>
 		<a href="/?q=setup/create" class="width-auto btn btn-primary form-control">Создать</a>
-    <? endif; ?>
-    <a href="/?q=experiment/view" class="width-auto col-md-6 btn-default btn form-control">Отменить</a>
-    <input type="submit" class="width-auto btn btn-success form-control" value="<? print $this->view->form->submit->value; ?>" disabled>
+	<? endif; ?>
+		<a href="/?q=experiment/view" class="width-auto col-md-6 btn-default btn form-control">Отменить</a>
+		<input type="submit" class="width-auto btn btn-success form-control" value="<? print $this->view->form->submit->value; ?>" disabled>
 	</div>
 	</form>
 </div>

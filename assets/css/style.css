@@ -84,6 +84,7 @@ h3.exp-title {
 .ses-title { text-align: center; }
 .exp-title a { margin-bottom: 3px; }
 .exp-title span { vertical-align: middle; }
+.exp-title span.glyphicon { vertical-align: text-top; }
 .period-work {
 	display: inline-block;
 	margin-right: 5px;

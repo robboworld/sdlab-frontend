@@ -3,7 +3,8 @@
 	<? if(isset($this->view->content->list )) : ?>
 		<table class="table">
 			<thead>
-				<? if($this->session()->getUserLevel()  == 3) :?>
+			<tr>
+				<? if($this->session()->getUserLevel() == 3) :?>
 				<td>
 					<label>Название сессии</label>
 				</td>
@@ -17,7 +18,9 @@
 				<td>
 					Дата завершения
 				</td>
+			</tr>
 			</thead>
+			<tbody>
 			<? foreach($this->view->content->list as $item) :?>
 				<tr
 					<?
@@ -31,16 +34,16 @@
 						}
 					?>>
 					<?
-						if($this->session()->getUserLevel()  == 3) :
+						if($this->session()->getUserLevel() == 3) :
 							$user = (new Session)->load($item->session_key);
 					?>
 					<td>
-						<? print $user->name;?>
+						<? print htmlspecialchars($user->name, ENT_QUOTES, 'UTF-8');?>
 					</td>
 					<? endif; ?>
 					<td>
 						<a href="/?q=experiment/view/<? print $item->id; ?>">
-							<? print $item->title; ?>
+							<? print htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8'); ?>
 						</a>
 					</td>
 					<td>
@@ -51,6 +54,7 @@
 					</td>
 				</tr>
 			<? endforeach; ?>
+			</tbody>
 		</table>
 	<? endif; ?>
 	<div class="row">

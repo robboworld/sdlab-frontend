@@ -30,7 +30,7 @@ class SetupController extends Controller
 			$this->view->form->submit->value = 'Создать';
 
 
-			if(isset($_POST) && $_POST['form-id'] == 'create-setup-form')
+			if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'create-setup-form')
 			{
 				if($master_exp = (new Experiment())->load($_GET['master']))
 				{
@@ -38,22 +38,27 @@ class SetupController extends Controller
 					{
 						$setup = new Setup();
 
-						$setup->set('title', htmlspecialchars($_POST['setup_title']));
+						$setup->set('title', htmlspecialchars(isset($_POST['setup_title']) ? $_POST['setup_title'] : ''));
 
-						if($_POST['setup-type'] == 'setup-type-amount')
+						$setup_type = isset($_POST['setup-type']) ? $_POST['setup-type'] : '';
+						if($setup_type === 'setup-type-amount')
 						{
-							$setup->set('amount', htmlspecialchars($_POST['amount']));
+							$amount = isset($_POST['amount']) ? (int)$_POST['amount'] : 0;
+							$amount = $amount > 0 ? $amount : null;
+							$setup->set('amount', htmlspecialchars($amount));
 						}
 
-						if($_POST['setup-type'] == 'setup-type-length')
+						if($setup_type === 'setup-type-length')
 						{
-							$setup->set('time_det', Form::DHMStoSec(array($_POST['time_det_day'],$_POST['time_det_hour'],$_POST['time_det_min'], $_POST['time_det_sec'])));
+							$setup->set('time_det', Form::DHMStoSec(array((int)$_POST['time_det_day'],(int)$_POST['time_det_hour'],(int)$_POST['time_det_min'],(int)$_POST['time_det_sec'])));
 						}
 
 						/* Общие поля для всех типов измерений */
-						$setup->set('interval', htmlspecialchars($_POST['interval']));
-						$setup->set('number_error', htmlspecialchars($_POST['number_error']));
-						$setup->set('period_repeated_det', htmlspecialchars($_POST['period_repeated_det']));
+						$interval = isset($_POST['interval']) ? (int)$_POST['interval'] : 0;
+						$interval = $interval > 0 ? $interval : null;
+						$setup->set('interval', htmlspecialchars($interval));
+						$setup->set('number_error', htmlspecialchars(isset($_POST['number_error']) ? (int)$_POST['number_error'] : 0));
+						$setup->set('period_repeated_det', htmlspecialchars(isset($_POST['period_repeated_det']) ? (int)$_POST['period_repeated_det'] : 0));
 						$setup->set('master_exp_id', $master_exp->id);
 
 						if(isset($setup->title) && isset($setup->interval))
@@ -71,7 +76,7 @@ class SetupController extends Controller
 									}
 
 									/* Setup sensors*/
-									if(!empty($_POST['sensors']))
+									if(isset($_POST['sensors']) && !empty($_POST['sensors']) && is_array($_POST['sensors']))
 									{
 										self::resetSensors();
 										self::setSensors($_POST['sensors']);
@@ -94,6 +99,11 @@ class SetupController extends Controller
 				{
 					System::go('experiment/view');
 				}
+			}
+			else 
+			{
+				$setup = new Setup();
+				$this->view->form->setup = $setup;
 			}
 		}
 		else
@@ -124,28 +134,33 @@ class SetupController extends Controller
 				{
 					$this->view->form->setup = $setup;
 
-					if(isset($_POST) && $_POST['form-id'] == 'edit-setup-form')
+					if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'edit-setup-form')
 					{
-						$setup->set('title', htmlspecialchars($_POST['setup_title']));
-						if($_POST['setup-type'] == 'setup-type-amount')
+						$setup->set('title', htmlspecialchars(isset($_POST['setup_title']) ? $_POST['setup_title'] : ''));
+						$setup_type = isset($_POST['setup-type']) ? $_POST['setup-type'] : '';
+						if($setup_type === 'setup-type-amount')
 						{
-							$setup->set('amount', htmlspecialchars($_POST['amount']));
+							$amount = isset($_POST['amount']) ? (int)$_POST['amount'] : 0;
+							$amount = $amount > 0 ? $amount : 1;
+							$setup->set('amount', htmlspecialchars($amount));
 							$setup->set('time_det', null);
 						}
 
-						if($_POST['setup-type'] == 'setup-type-length')
+						if($setup_type === 'setup-type-length')
 						{
-							$setup->set('time_det', Form::DHMStoSec(array($_POST['time_det_day'],$_POST['time_det_hour'],$_POST['time_det_min'], $_POST['time_det_sec'])));
+							$setup->set('time_det', Form::DHMStoSec(array((int)$_POST['time_det_day'],(int)$_POST['time_det_hour'],(int)$_POST['time_det_min'],(int)$_POST['time_det_sec'])));
 							$setup->set('amount', null);
 						}
 
 						/* Общие поля для всех типов измерений */
-						$setup->set('interval', htmlspecialchars($_POST['interval']));
-						$setup->set('number_error', htmlspecialchars($_POST['number_error']));
-						$setup->set('period_repeated_det', htmlspecialchars($_POST['period_repeated_det']));
+						$interval = isset($_POST['interval']) ? (int)$_POST['interval'] : 0;
+						$interval = $interval > 0 ? $interval : 10;
+						$setup->set('interval', htmlspecialchars($interval));
+						$setup->set('number_error', htmlspecialchars(isset($_POST['number_error']) ? (int)$_POST['number_error'] : 0));
+						$setup->set('period_repeated_det', htmlspecialchars(isset($_POST['period_repeated_det']) ? (int)$_POST['period_repeated_det'] : 0));
 
 						/* Setup sensors*/
-						if(!empty($_POST['sensors']))
+						if(isset($_POST['sensors']) && !empty($_POST['sensors']) && is_array($_POST['sensors']))
 						{
 							self::resetSensors();
 							self::setSensors($_POST['sensors']);
@@ -162,9 +177,12 @@ class SetupController extends Controller
 							}
 						}
 					}
+
+					// Rewrite setup for update fields  with request date
 					$this->view->form->setup = $setup;
 
-					$this->view->form->sensors = self::getSensors($this->id);
+					// Get available sensors with sensors info
+					$this->view->form->sensors = self::getSensors($this->id, true);
 				}
 				else
 				{
@@ -203,13 +221,27 @@ class SetupController extends Controller
 	 * @param $id
 	 * @return array|bool
 	 */
-	static function getSensors($id)
+	static function getSensors($id, $getinfo = false)
 	{
 		/*todo: переопрашивать датчики на наличие отключенных */
 		if(is_numeric($id))
 		{
 			$db = new DB();
-			$search = $db->prepare("select sensor_id as id, name as name, setup_id as setup_id from setup_conf where setup_id = :setup_id");
+			if ($getinfo)
+			{
+				$search = $db->prepare(
+						"select a.sensor_id as id, a.name as name, a.setup_id as setup_id, "
+							. "s.value_name as value_name, s.si_notation as si_notation, s.si_name as si_name, s.max_range as max_range, s.min_range as min_range, s.resolution as resolution "
+						. "from setup_conf as a "
+						. "left join sensors as s on a.sensor_id = s.sensor_id "
+						. "where a.setup_id = :setup_id "
+						. "group by a.sensor_id"
+				);
+			}
+			else 
+			{
+				$search = $db->prepare("select sensor_id as id, name as name, setup_id as setup_id from setup_conf where setup_id = :setup_id");
+			}
 			$search->execute(array(
 				':setup_id' => $id
 			));

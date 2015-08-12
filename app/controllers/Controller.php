@@ -11,6 +11,8 @@ class Controller
 	function __construct($action = 'index')
 	{
 		$this->action = $action;
+		$this->view = new stdClass(); 
+		$this->view->content = new stdClass();
 	}
 
 	function index()

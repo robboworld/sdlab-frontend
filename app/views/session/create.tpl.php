@@ -8,7 +8,7 @@
 				Название сессии
 			</label>
 			<div class="col-sm-8 ">
-				<input type="text" name="session_title" class="form-control" value="<? print $_POST['session_title']?>">
+				<input type="text" name="session_title" class="form-control" value="<? print htmlspecialchars($_POST['session_title'], ENT_QUOTES, 'UTF-8');?>">
 			</div>
 		</div>
 		<div class="form-group">
@@ -16,7 +16,7 @@
 				ФИО
 			</label>
 			<div class="col-sm-8 ">
-				<input type="text" name="session_name" class="form-control" value="<? print $_POST['session_name']?>">
+				<input type="text" name="session_name" class="form-control" value="<? print htmlspecialchars($_POST['session_name'], ENT_QUOTES, 'UTF-8');?>">
 			</div>
 		</div>
 		<div class="form-group">

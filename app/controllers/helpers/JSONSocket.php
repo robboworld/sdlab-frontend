@@ -23,7 +23,7 @@ class JSONSocket
 
 	function __destruct()
 	{
-		if(!empty($this->socket)) fclose($this->socket);
+		if(!empty($this->socket) && is_resource($this->socket)) fclose($this->socket);
 	}
 
 	function call($method, $params)
@@ -65,11 +65,24 @@ class JSONSocket
 		{
 
 			$result = fgets($this->socket);
-			fclose($this->socket);
+			if(!empty($this->socket) && is_resource($this->socket)) fclose($this->socket);
 			$object = json_decode($result);
-			if($object->result)
+			if(is_object($object))
 			{
-				return $object->result;
+				if($object->error)
+				{
+					error_log('Error socketReceive():'.var_export($object,true)); //DEBUG
+					return false;
+				}
+				if($object->result)
+				{
+					return $object->result;
+				}
+			}
+			else 
+			{
+				error_log('Error output socketReceive():'.var_export($result,true)); //DEBUG
+				return false;
 			}
 		}
 		else
@@ -77,8 +90,9 @@ class JSONSocket
 			return false;
 		}
 
-
+		return false;
 	}
+
 	function error()
 	{
 		return array(

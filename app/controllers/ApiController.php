@@ -18,7 +18,12 @@ class ApiController extends Controller
 	{
 		if(method_exists($this->controller, $this->method))
 		{
+			// Inject App in called controller
+			// xxx: cannot do that in constructor of new sub controller, because it creates when no binded $this->app in the current api controller!
+			$this->controller->app = $this->app;
 
+
+			// Call method
 			$result = $this->controller->{$this->method}($this->params);
 
 			if($result)

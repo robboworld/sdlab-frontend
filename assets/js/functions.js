@@ -1,7 +1,7 @@
 
 /* Вызов к php-прослойке */
 function coreAPICall(method, params, callback){
-    $.ajax({
+    return rq = $.ajax({
         url: '?q=api',
         method: 'get',
         data: {

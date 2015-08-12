@@ -24,6 +24,7 @@ return array(
 	'Session' => MODELS.'/Session.php',
 	'Experiment' => MODELS.'/Experiment.php',
 	'Setup' => MODELS.'/Setup.php',
+	'Monitor' => MODELS.'/Monitor.php',
 	'Plot' => MODELS.'/Plot.php',
 	'JSONSocket' => CONTROLLERS.'/helpers/JSONSocket.php'
 );

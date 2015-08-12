@@ -31,7 +31,7 @@
 				<div class="pull-right text-right col-md-5">
 					<div class="btn-group ">
 						<a href="?q=session/edit" id="session-name" class="btn btn-sm btn-info navbar-btn" title="Редактировать сессию">
-							<? print $this->session()->name; ?>
+							<? print htmlspecialchars($this->session()->name, ENT_QUOTES, 'UTF-8'); ?>
 						</a>
 						<a href="?q=session/destroy" class="btn btn-sm btn-default navbar-btn">Выход</a>
 						<a href="?q=session/create" class="btn btn-sm btn-default navbar-btn">Новая сессия</a>

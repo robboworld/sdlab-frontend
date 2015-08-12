@@ -1,6 +1,6 @@
 
 <div class="col-md-12">
-	<a href="/?q=experiment/view/<? print $this->view->form->experiment->id; ?>" class="btn btn-sm btn-default">
+	<a href="/?q=experiment/view/<? print (int)$this->view->form->experiment->id; ?>" class="btn btn-sm btn-default">
 		<span class="glyphicon glyphicon-chevron-left"></span> <? print $this->view->form->experiment->title; ?>
 	</a>
 </div>
@@ -8,24 +8,24 @@
 
 </div>
 <div class="col-md-9">
-	<h3><? print $this->view->content->title; ?></h3>
+	<h3><? print htmlspecialchars($this->view->content->title, ENT_QUOTES, 'UTF-8'); ?></h3>
 	<!-- <input type="checkbox"> Включить в отчет -->
 	<table class="table table-striped table-bordered">
 		<thead>
-		<td>№</td>
-		<td>Время</td>
-		<? foreach ($this->view->content->displayed_sensors as $sensor) :?>
-		<td><? print $sensor->name; ?> <small>(id: <? print $sensor->id; ?>)</small></td>
-		<? endforeach; ?>
+			<td>№</td>
+			<td>Время</td>
+			<? foreach ($this->view->content->displayed_sensors as $sensor) :?>
+			<td><? print htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?> <small>(id: <? print htmlspecialchars($sensor->id, ENT_QUOTES, 'UTF-8'); ?>)</small></td>
+			<? endforeach; ?>
 		</thead>
 		<tbody>
-		<? foreach($this->view->content->detections as $time => $row) : ?>
+		<? $i=0; foreach($this->view->content->detections as $time => $row) : ?>
 			<? ++$i; ?>
 			<tr>
-				<td><? print $i;?></td>
-				<td><? print $time; ?></td>
+				<td><? print (int)$i;?></td>
+				<td><? print htmlspecialchars($time, ENT_QUOTES, 'UTF-8'); ?></td>
 				<? foreach ($this->view->content->displayed_sensors as $sensor) :?>
-					<td><? print $row[$sensor->id]->detection; ?></td>
+				<td><? print ($row[$sensor->id]->error !== 'NaN') ? $row[$sensor->id]->detection : ''; ?></td>
 				<? endforeach; ?>
 			</tr>
 		<? endforeach; ?>
@@ -40,7 +40,7 @@
 		<ul class="nav">
 			<? foreach ($this->view->content->available_sensors as $sensor) :?>
 				<li>
-					<label><input type="checkbox" <? if (array_key_exists($sensor->id, $this->view->content->displayed_sensors)) print 'checked';?> name="show-sensor[]" value="<? print $sensor->id; ?>"> <? print $sensor->name; ?></label>
+					<label><input type="checkbox" <? if (array_key_exists($sensor->id, $this->view->content->displayed_sensors)) print 'checked';?> name="show-sensor[]" value="<? print htmlspecialchars($sensor->id, ENT_QUOTES, 'UTF-8'); ?>"> <? print htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?></label>
 				</li>
 			<? endforeach; ?>
 		</ul>

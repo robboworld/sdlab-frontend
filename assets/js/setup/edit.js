@@ -20,11 +20,11 @@ $(document).ready(function(){
 
 
     /* Получаем список доступных датчиков */
-    coreAPICall('Sensors.getSensors', null, updateSensorsList);
+    coreAPICall('Sensors.getSensors', {getinfo: true}, updateSensorsList);
 
     /* Обновляем список доступных датчиков*/
     $(document).on('click', '#sensors-list-update', function(){
-        coreAPICall('Sensors.getSensors', null, updateSensorsList);
+        coreAPICall('Sensors.getSensors', {getinfo: true}, updateSensorsList);
     });
 
     /* Adding sensors to setup-form*/
@@ -38,7 +38,7 @@ $(document).ready(function(){
     });
 
     /* Input triggering when touching row */
-    $(document).on('click', '#sensor-list-table tr', function(e){
+    $(document).on('click', '#sensor-list-table tbody tr', function(e){
         $(this).toggleClass('success');
         if(!$(e.target).is('input')){
             $(this).find('input[type=checkbox]').prop('checked', !$(this).find('input[type=checkbox]').prop('checked'));
@@ -52,38 +52,35 @@ function updateSensorsList(data){
     for (id in data){
         var sensor = data[id];
         sensor.id = id;
+        var info = (typeof sensor.sensor_name !== 'undefined') ? true : false;
         if($('#sensors-in-setup tbody').find('input[value="'+sensor.id+'"]').size() == 0){
             $('#sensor-list-table tbody').append('\
-            <tr sensor-id="'+ sensor.id +'" class="success">\
-                <td><input type="checkbox" checked></td>\
-                    <td>{Имя датчика}</td>\
-                    <td >' + sensor.id + '</td>\
-                    <td>{Название физ. вел.}</td>\
-                    <td>{Обозначение физ. вел.}</td>\
-                    <td>{Название ед. изм.}</td>\
-                    <td>{Нижний предел изм.}</td>\
-                    <td>{Верхний предел изм.}</td>\
-                    <td>{Погрешность}</td>\
+                <tr sensor-id="'+ sensor.id +'" class="success">\
+                    <td><input type="checkbox" checked="checked"/></td>\
+                    <td>' + sensor.id + '</td>\
+                    <td>' + (info ? sensor.Values[0].value_name : '-') + '</td>\
+                    <td>' + (info ? sensor.Values[0].si_notation : '-') + '</td>\
+                    <td>' + (info ? sensor.Values[0].si_name : '-') + '</td>\
+                    <td>' + sensor.Values[0].Range.Min + '</td>\
+                    <td>' + sensor.Values[0].Range.Max + '</td>\
+                    <td>' + ((info && typeof sensor.Values[0].error !== 'undefined') ? sensor.Values[0].error : '-') + '</td>\
                 </tr>'
             );
         }
         else{
             $('#sensor-list-table tbody').append('\
-            <tr sensor-id="'+ sensor.id +'" class="success" style="display: none;">\
-                <td><input type="checkbox"></td>\
-                    <td>{Имя датчика}</td>\
-                    <td >' + sensor.id + '</td>\
-                    <td>{Название физ. вел.}</td>\
-                    <td>{Обозначение физ. вел.}</td>\
-                    <td>{Название ед. изм.}</td>\
-                    <td>{Нижний предел изм.}</td>\
-                    <td>{Верхний предел изм.}</td>\
-                    <td>{Погрешность}</td>\
+                <tr sensor-id="'+ sensor.id +'" class="success" style="display: none;">\
+                    <td><input type="checkbox"/></td>\
+                    <td>' + sensor.id + '</td>\
+                    <td>' + (info ? sensor.Values[0].value_name : '-') + '</td>\
+                    <td>' + (info ? sensor.Values[0].si_notation : '-') + '</td>\
+                    <td>' + (info ? sensor.Values[0].si_name : '-') + '</td>\
+                    <td>' + sensor.Values[0].Range.Min + '</td>\
+                    <td>' + sensor.Values[0].Range.Max + '</td>\
+                    <td>' + ((info && typeof sensor.Values[0].error !== 'undefined') ? sensor.Values[0].error : '-') + '</td>\
                 </tr>'
             );
         }
-
-
     }
 }
 

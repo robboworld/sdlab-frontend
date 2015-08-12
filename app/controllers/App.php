@@ -11,7 +11,14 @@ class App
 		if($query_array[0]!= '')
 		{
 			$controller_class = ucfirst($query_array[0]).'Controller';
-			$controller = new $controller_class($query_array[1]);
+			if (isset($query_array[1]))
+			{
+				$controller = new $controller_class($query_array[1]);
+			}
+			else
+			{
+				$controller = new $controller_class();
+			}
 		}
 		else
 		{
@@ -66,7 +73,7 @@ class App
 			$query_array = explode('/', $query);
 			if($item !== null)
 			{
-				return $query_array[$item];
+				return (isset($query_array[$item]) ? $query_array[$item] : '');
 			}
 			else
 			{
@@ -94,7 +101,11 @@ class App
 	{
 		if(is_object($this->controller))
 		{
-			$this->controller()->view->main_menu = Menu::get();
+			// Menu only for controllers with view support
+			if (isset($this->controller()->view))
+			{
+				$this->controller()->view->main_menu = Menu::get();
+			}
 			$this->controller()->renderView();
 		}
 		else

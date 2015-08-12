@@ -11,6 +11,7 @@ class ExperimentController extends Controller
 
 		/* используем id из строки experiment/edit/%id */
 		$this->id = App::router(2);
+		$this->config = App::config();
 	}
 
 	function index()
@@ -36,13 +37,13 @@ class ExperimentController extends Controller
 
 
 
-		if(isset($_POST) && $_POST['form-id'] == 'create-experiment-form')
+		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] == 'create-experiment-form')
 		{
 			/* fill the Experiment properties */
 			$experiment = new Experiment($this->session()->getKey());
-			$experiment->set('title', htmlspecialchars($_POST['experiment_title']));
-			$experiment->set('setup_id', htmlspecialchars($_POST['setup_id']));
-			$experiment->set('comments', htmlspecialchars($_POST['experiment_comments']));
+			$experiment->set('title', htmlspecialchars(isset($_POST['experiment_title']) ? $_POST['experiment_title'] : ''));
+			$experiment->set('setup_id', htmlspecialchars(isset($_POST['setup_id']) ? $_POST['setup_id'] : ''));
+			$experiment->set('comments', htmlspecialchars(isset($_POST['experiment_comments']) ? $_POST['experiment_comments'] : ''));
 
 			//$experiment->set('DateStart_exp', (new DateTime($_POST['experiment_date_start']))->format(DateTime::ISO8601));
 			//$experiment->set('DateEnd_exp', (new DateTime($_POST['experiment_date_end']))->format(DateTime::ISO8601));
@@ -81,7 +82,55 @@ class ExperimentController extends Controller
 				if($experiment->setup_id)
 				{
 					$this->view->content->setup = (new Setup())->load($experiment->setup_id);
-					$this->view->content->sensors = SetupController::getSensors($experiment->setup_id);
+					$this->view->content->sensors = SetupController::getSensors($experiment->setup_id, true);
+					$monitors = (new Monitor())->loadItems(
+							array(
+									'exp_id' => (int)$experiment->id,
+									'setup_id' => (int)$experiment->setup_id,
+									'deleted' => 0
+							),
+							'id', 'DESC', 1
+					);
+					$this->view->content->monitor = (!empty($monitors)) ? $monitors[0] : null;
+
+					// Get last monitoring info from api
+					if (!empty($this->view->content->monitor))
+					{
+						// Prepare parameters for api method
+						$query_params = array($this->view->content->monitor->uuid);
+
+						// Send request for get monitor info
+						$socket = new JSONSocket($this->config['socket']['path']);
+						$result = $socket->call('Lab.GetMonInfo', $query_params);
+
+						// Get results
+						if($result)
+						{
+							//Prepare results
+							$nd = System::nulldate();
+
+							if(isset($result->Created) && ($result->Created === $nd))
+							{
+								$result->Created = null;
+							}
+
+							if(isset($result->StopAt) && ($result->StopAt === $nd))
+							{
+								$result->StopAt = null;
+							}
+
+							if(isset($result->Last) && ($result->Last === $nd))
+							{
+								$result->Last = null;
+							}
+
+							$this->view->content->monitor->info = $result;
+						}
+						else
+						{
+							// TODO: error get monitor data from backend api, may by need show error
+						}
+					}
 				}
 
 				if($this->session()->getUserLevel() == 3)
@@ -132,11 +181,11 @@ class ExperimentController extends Controller
 				/* Установки как список опций для формы*/
 				$this->view->form->setups = SetupController::loadSetups();
 
-				if(isset($_POST) && $_POST['form-id'] == 'edit-experiment-form')
+				if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] == 'edit-experiment-form')
 				{
-					$experiment->set('title', htmlspecialchars($_POST['experiment_title']));
-					$experiment->set('setup_id', htmlspecialchars($_POST['setup_id']));
-					$experiment->set('comments', htmlspecialchars($_POST['experiment_comments']));
+					$experiment->set('title', htmlspecialchars(isset($_POST['experiment_title']) ? $_POST['experiment_title'] : ''));
+					$experiment->set('setup_id', htmlspecialchars(isset($_POST['setup_id']) ? $_POST['setup_id'] : ''));
+					$experiment->set('comments', htmlspecialchars(isset($_POST['experiment_comments']) ? $_POST['experiment_comments'] : ''));
 					if(!empty($experiment->title))
 					{
 						if($experiment->save() && !is_null($experiment->id))
@@ -191,9 +240,9 @@ class ExperimentController extends Controller
 				$this->view->form->experiment = $experiment;
 
 
-				if(isset($_POST) && $_POST['form-id'] == 'experiment-journal-form')
+				if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] == 'experiment-journal-form')
 				{
-					if(!empty($_POST['show-sensor']))
+					if(isset($_POST['show-sensor']) && !empty($_POST['show-sensor']) && is_array($_POST['show-sensor']))
 					{
 						foreach($_POST['show-sensor'] as $sensor_show_id)
 						{
@@ -206,8 +255,8 @@ class ExperimentController extends Controller
 				$db = new DB();
 
 				/*todo: изменить таблицу. сделать exp_id целочисленым, чтобы использовать = вместо LIKE */
-				$query = 'select * from detections where exp_id LIKE '.$experiment->id;
-				$detections = $db->query($query);
+				$query = 'select * from detections where exp_id = '.(int)$experiment->id . ' order by strftime(\'%s\', time)';
+				$detections = $db->query($query, PDO::FETCH_OBJ);
 
 				/* Формирование вывода на основе датчиков в установке. */
 				$sensors = SetupController::getSensors($experiment->setup_id);
@@ -234,17 +283,16 @@ class ExperimentController extends Controller
 				}
 
 				/* сам массив значений сгруппированых по временной метке. */
+				$journal = array();
 				foreach($detections as $row)
 				{
-					$row = (object) $row;
-
 					/*если есть в списке доступных датчиков до добавим в вывод журнала*/
 					if(array_key_exists($row->id_sensor, $this->view->content->displayed_sensors))
 					{
 						$journal[$row->time][$row->id_sensor] = $row;
 					}
 				}
-				$this->view->content->detections = $journal;
+				$this->view->content->detections = &$journal;
 
 			}
 			else
@@ -283,7 +331,7 @@ class ExperimentController extends Controller
 				/* Просмотр графика*/
 
 				$plot = (new Plot())->load(App::router(3));
-				if(!empty($_POST['form-id']) && $_POST['form-id'] == 'plot-edit-form')
+				if(isset($_POST['form-id']) && $_POST['form-id'] == 'plot-edit-form')
 				{
 
 				}

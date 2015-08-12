@@ -1,1 +1,33 @@
 /app/db
+
+### Eclipse
+/.settings
+/.settings/
+.buildpath
+.project
+/.externalToolBuilders
+/.externalToolBuilders/
+/.metadata
+/.metadata/
+
+### Netbeans (custom)
+/nbproject
+/nbproject/
+.netbeans/*
+
+### OSX
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+ 
+### Windows
+Thumbs.db
+Desktop.ini
+ 
+### PHPStorm
+.idea/
+
+### Sublime Text
+*.sublime*
+sftp-config.json

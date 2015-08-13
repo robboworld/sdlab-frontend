@@ -6,12 +6,12 @@
 			<td>Имя устройства: </td>
 			<td><? print $this->app->config['lab']['name']?></td>
 		</tr>
+		<? if(isset($this->view->ip_address)) : ?>
 		<tr>
 			<td>Сетевые интерфейсы: </td>
-			<td>
-				{eth0 192.168.1.10/24}<br>
-			</td>
+			<td><? echo 'eth0 : ' . (empty($this->view->ip_address) ? 'Адрес неизвестен' : $this->view->ip_address); ?></td>
 		</tr>
+		<? endif; ?>
 	</table>
 </div>
 <!--

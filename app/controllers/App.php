@@ -116,7 +116,7 @@ class App
 
 	public function getUserLevel()
 	{
-		if(is_object($this->session))
+		if(isset($this->session) && is_object($this->session))
 		{
 			return $this->session->getUserLevel();
 		}

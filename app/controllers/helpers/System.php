@@ -118,4 +118,98 @@ class System
 
 		return false;
 	}
+
+
+	static function get_ip_address($ifname = 'eth0')
+	{
+		$ips = static::get_ip_addresses($ifname);
+
+		return (isset($ips[0])) ? $ips[0] : '';
+	}
+
+
+	/**
+	 * Get list of self interfaces
+	 * 
+	 * @return array:
+	 */	static function get_interfaces($pattern = null)
+	{
+
+		$osName = strtoupper(PHP_OS);
+		$output = null;
+
+		switch ($osName)
+		{
+			case 'WINNT':
+				$output = null;
+				break;
+
+			case 'LINUX':
+				$output = shell_exec('/sbin/ifconfig | /usr/bin/cut -d " " -f1 | /usr/bin/awk \'NF==1{print $1}\'');
+				break;
+
+			default : break;
+		}
+
+		$interfaces = explode("\n", $output);
+		if ($output === null || empty($interfaces))
+		{
+			return array();
+		}
+
+		if ($pattern !== null)
+		{
+			$interfaces = preg_grep($pattern, $interfaces);
+		}
+
+		return $interfaces;
+	}
+
+
+	/**
+	 * Get list of self ipv4 addresses
+	 * 
+	 * @return array:
+	 */
+	static function get_ip_addresses($ifname = null)
+	{
+		$osName = strtoupper(PHP_OS);
+		$ipRes = null;
+
+		switch ($osName)
+		{
+			case 'WINNT':
+				$ipRes[] = shell_exec('ipconfig');
+				$ipPattern = '/IP( Address|v)[^:]+: ([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3})/';
+				$match = 2;
+				break;
+
+			case 'LINUX':
+				if (!is_array($ifname))
+				{
+					$ifname = array(($ifname !== null) ? $ifname : '');
+				}
+				foreach ($ifname as $name)
+				{
+					$name = ($name !== null) ? (string) preg_replace('/[^A-Z0-9]/i','', $name) : '';
+					$ipRes[] = shell_exec('/sbin/ip addr list ' . $name . ' |/bin/grep "inet " |/usr/bin/cut -d" " -f6|/usr/bin/cut -d/ -f1');  //xxx: use "inet6 " for ipv6 or "inet" for all
+				}
+				$ipPattern = '/(.*)/';
+				$match = 1;
+				break;
+
+			default : break;
+		}
+
+		$result = array();
+		foreach ((array)$ipRes as $val)
+		{
+			if (preg_match_all($ipPattern, (string)$val, $matches))
+			{
+				$result = array_merge($result, $matches[$match]) ;
+			}
+		}
+
+		return $result;
+	}
 }

@@ -20,6 +20,8 @@ class PageController extends Controller
 		else
 		{
 			$page = 'index';
+
+			$this->view->ip_address = System::get_ip_address('eth0');
 		}
 
 		self::addJs('functions');

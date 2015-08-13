@@ -286,12 +286,16 @@ $canSetupControl = $setup_exists && $ownSetup;
 			Строб
 		</a><br><br>
 
-		<a class="btn btn-default form-control" href="?q=experiment/journal/<? print $this->view->content->experiment->id; ?>">Журнал</a><br><br>
+		<a class="btn btn-default form-control" href="/?q=experiment/journal/<? print $this->view->content->experiment->id; ?>">Журнал</a><br><br>
 		<a class="btn btn-default form-control" href="/?q=experiment/graph/<? print $this->view->content->experiment->id; ?>">Графики</a><br><br>
 	</div>
 </div>
 
-
+<div class="col-md-5 pull-left text-left">
+	<label for="experiment-sensors-refresh" class="checkbox">
+		<input type="checkbox" id="experiment-sensors-refresh" value="1" title="Автообновление показаний датчиков раз в 3 секунды"/> Автообновление показаний
+	</label>
+</div>
 
 <div class="col-md-5 pull-right text-right">
 	<? if(!isset($this->view->content->experiment->DateEnd_exp)) :?>

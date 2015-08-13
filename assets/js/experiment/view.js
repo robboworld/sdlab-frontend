@@ -29,8 +29,7 @@ $(document).ready(function(){
     $(document).on('click', '#experiment-action', function(){
         var id = $(this).attr('experiment-id');
         var state = $(this).data('experiment-state');
-        if((typeof $(this).attr('disabled') !== 'undefined' && ($(this).attr('disabled')=='disabled')) || $(this).hasClass('disabled'))
-        {
+        if((typeof $(this).attr('disabled') !== 'undefined' && ($(this).attr('disabled')=='disabled')) || $(this).hasClass('disabled')){
             return false;
         }
         if (state == 0){
@@ -43,7 +42,26 @@ $(document).ready(function(){
             //error
         }
     })
+
+    $(document).on('change', '#experiment-sensors-refresh', function(){
+        if(SDExperimentSensors.updaterId !== null){
+            clearInterval(SDExperimentSensors.updaterId);
+            SDExperimentSensors.updaterId = null;
+        }
+        if($(this).prop('checked')) {
+            SDExperimentSensors.updaterId = setInterval(function() {
+                $('.sensor-widget').each(function(){
+                    var sensorId = $(this).attr('sensor-id');
+                    updateSensorValue(sensorId);
+                });
+            }, SDExperimentSensors.updaterTime*1000);
+        }
+    })
 })
+var SDExperimentSensors = {
+    updaterId : null,
+    updaterTime : 3
+};
 
 
 function updateSensorValue(id, onalways){
@@ -89,6 +107,7 @@ function experimentAction(act, experiment_id){
             if(data.result == true){
                 // switch btn
                 $('#experiment-action').attr('disabled', false).removeClass('disabled').text($('#experiment-action').data('text-'+(act?'1':'0'))).data('experiment-state',act);
+                location.reload();
             } else {
                 $('#experiment-action').attr('disabled', false).removeClass('disabled').text($('#experiment-action').data('text-'+(act?'0':'1'))).addClass('btn-warning').data('experiment-state',(act ? 0 : 1));
                 alert($('#experiment-action').data('text-'+(act?'0':'1'))+': Не выполнено');

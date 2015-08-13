@@ -150,11 +150,15 @@ class ExperimentController extends Controller
 		}
 		else
 		{
-			/* Все эксперименты*/
+			// All experiments
 			$this->view->content->list = self::experimentsList();
 			self::setViewTemplate('view.all');
 			self::setTitle('Все экспериметы');
-			/*View all available experiments in this session*/
+
+			self::addJs('functions');
+			self::addJs('experiment/view.all');
+
+			//View all available experiments in this session
 		}
 	}
 

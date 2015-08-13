@@ -57,8 +57,15 @@
 			</tbody>
 		</table>
 	<? endif; ?>
+	<div class="sensors-list">
+	</div>
 	<div class="row">
-		<div class="col-md-12 text-right">
+		<? if($this->session()->getUserLevel() == 3) :?>
+		<div class="col-md-2 text-left">
+			<a href="javascript:void(0)" id="sensors-rescan" class="btn btn-primary">Обновить список датчиков</a>
+		</div>
+		<? endif; ?>
+		<div class="col-md-<? echo (($this->session()->getUserLevel() == 3) ? '10' : '12');?> text-right">
 
 			<a href="?q=experiment" class="btn btn-primary">Новый эксперимент</a>
 		</div>

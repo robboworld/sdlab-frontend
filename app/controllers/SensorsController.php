@@ -37,8 +37,19 @@ class SensorsController extends Controller
 	 */
 	function getSensors($params)
 	{
+		// Rescan sensors mode only for admin access
+		$rescan = (isset($params['rescan']) && $params['rescan']) ? true : false;
+		if ($rescan)
+		{
+			if ($this->session()->getUserLevel() != 3)
+			{
+				// Disable rescan for not admin (may corrupt current measurements)
+				$rescan = false;
+			}
+		}
+
 		$socket = new JSONSocket($this->config['socket']['path']);
-		$result = $socket->call('Lab.ListSensors', array(false));
+		$result = $socket->call('Lab.ListSensors', array($rescan));
 		//var_dump($socket->error());
 		//var_dump($result);
 		if ($result)

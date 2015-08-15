@@ -10,8 +10,10 @@
 <div class="col-md-8">
 	<table class="table">
 		<thead>
-			<td><label>#</label></td>
-			<td><label>Название графика</label></td>
+			<tr>
+				<td><label>#</label></td>
+				<td><label>Название графика</label></td>
+			</tr>
 		</thead>
 		<tbody>
 			<?php foreach($this->view->content->list as $plot):?>

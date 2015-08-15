@@ -714,6 +714,9 @@ class SensorsController extends Controller
 								{
 									$sensor_error = 'NaN';
 									$detection = 0;
+
+									// XXX: comment to no skip NaN values
+									continue;
 								}
 								else
 								{

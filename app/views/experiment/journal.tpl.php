@@ -12,11 +12,16 @@
 	<!-- <input type="checkbox"> Включить в отчет -->
 	<table class="table table-striped table-bordered">
 		<thead>
-			<td>№</td>
-			<td>Время</td>
-			<? foreach ($this->view->content->displayed_sensors as $sensor) :?>
-			<td><? print htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?> <small>(id: <? print htmlspecialchars($sensor->id, ENT_QUOTES, 'UTF-8'); ?>)</small></td>
-			<? endforeach; ?>
+			<tr>
+				<td>№</td>
+				<td>Время</td>
+				<? foreach ($this->view->content->displayed_sensors as $sensor) :?>
+				<td><? print htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?><br/>
+					<small><? echo htmlspecialchars($sensor->value_name, ENT_QUOTES, 'UTF-8') . ', ' . htmlspecialchars($sensor->si_notation, ENT_QUOTES, 'UTF-8'); ?></small><br/>
+					<small class="muted">(id: <? print htmlspecialchars($sensor->id, ENT_QUOTES, 'UTF-8'); ?>)</small>
+				</td>
+				<? endforeach; ?>
+			</tr>
 		</thead>
 		<tbody>
 		<? $i=0; foreach($this->view->content->detections as $time => $row) : ?>
@@ -25,7 +30,12 @@
 				<td><? print (int)$i;?></td>
 				<td><? print htmlspecialchars($time, ENT_QUOTES, 'UTF-8'); ?></td>
 				<? foreach ($this->view->content->displayed_sensors as $sensor) :?>
-				<td><? print ($row[$sensor->id]->error !== 'NaN') ? $row[$sensor->id]->detection : ''; ?></td>
+				<td><? 
+					if (isset($row[$sensor->id]))
+					{
+						print ($row[$sensor->id]->error !== 'NaN') ? $row[$sensor->id]->detection : '';
+					}
+				 ?></td>
 				<? endforeach; ?>
 			</tr>
 		<? endforeach; ?>

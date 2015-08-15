@@ -258,12 +258,11 @@ class ExperimentController extends Controller
 				/* Возможно стоит вынести все в отдельный контроллер или модель*/
 				$db = new DB();
 
-				/*todo: изменить таблицу. сделать exp_id целочисленым, чтобы использовать = вместо LIKE */
-				$query = 'select * from detections where exp_id = '.(int)$experiment->id . ' order by strftime(\'%s\', time)';
+				$query = 'select id, exp_id, strftime(\'%Y.%m.%d %H:%M:%f\', time) as time, id_sensor, detection, error from detections where exp_id = '.(int)$experiment->id . ' order by strftime(\'%s\', time)';
 				$detections = $db->query($query, PDO::FETCH_OBJ);
 
 				/* Формирование вывода на основе датчиков в установке. */
-				$sensors = SetupController::getSensors($experiment->setup_id);
+				$sensors = SetupController::getSensors($experiment->setup_id, true);
 				$available_sensors = $displayed_sensors = array();
 
 				/*Формируем список доступных датчиков*/

@@ -33,7 +33,7 @@
 				<td><? 
 					if (isset($row[$sensor->id]))
 					{
-						print ($row[$sensor->id]->error !== 'NaN') ? $row[$sensor->id]->detection : '';
+						print ($row[$sensor->id]->error !== 'NaN') ? (float)$row[$sensor->id]->detection : '';
 					}
 				 ?></td>
 				<? endforeach; ?>

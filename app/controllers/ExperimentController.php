@@ -312,47 +312,129 @@ class ExperimentController extends Controller
 
 	function graph()
 	{
-		if(!empty($this->id))
+		if (empty($this->id))
 		{
-			$this->view->content->experiment = $experiment = (new Experiment())->load($this->id);
+			System::go('experiment/view');
+		}
 
-			$this->view->form = new Form('plot-edit-form');
-			$this->view->form->submit->value = 'Сохранить график';
+		$this->view->content->experiment = $experiment = (new Experiment())->load($this->id);
 
-			if(is_numeric(App::router(3)))
+		if (is_numeric(App::router(3)))
+		{
+			// View/Edit graph
+
+			self::setViewTemplate('graphsingle');
+			self::setTitle('График для '.$experiment->title);
+			self::addJs('lib/jquery.flot');
+			self::addJs('lib/jquery.flot.time.min');
+			self::addJs('lib/jquery.flot.navigate');
+			self::addJs('functions');
+			self::addJs('chart');
+
+
+			$plot_id = (int)App::router(3);
+			if (empty($plot_id))
 			{
-				self::setViewTemplate('graphsingle');
-				self::setTitle('График для '.$experiment->title);
-				self::addJs('lib/jquery.flot');
-				self::addJs('lib/jquery.flot.time.min');
-				self::addJs('lib/jquery.flot.navigate');
-				self::addJs('functions');
-				self::addJs('chart');
+				System::go('experiment/graph');
+				return;
+			}
 
+			// Get graph
+			$plot = (new Plot())->load($plot_id);
+			if (empty($plot))
+			{
+				// Error: graph not found
+				System::go('experiment/graph');
+				return;
+			}
 
-				$plot_id = App::router(3);
-				/* Просмотр графика*/
+			$edit = App::router(4);
+			if ($edit === 'edit')
+			{
+				// Edit graph
 
-				$plot = (new Plot())->load(App::router(3));
+				$this->view->form = new Form('plot-edit-form');
+				$this->view->form->submit->value = 'Сохранить график';
+
 				if(isset($_POST['form-id']) && $_POST['form-id'] == 'plot-edit-form')
 				{
-
+					// Save graph form
+				
+					// ...
 				}
 
-				$this->view->content->plot = $plot;
-			}
-			elseif (App::router(3) == 'add')
-			{
-				self::setViewTemplate('graphsingle');
+
 			}
 			else
 			{
-				$db = new DB();
-				$query = 'select * from plots where exp_id LIKE '.$experiment->id;
-				$plots = $db->query($query, PDO::FETCH_OBJ);
+				// View graph
 
-				$this->view->content->list = $plots;
+				// ...
 			}
+
+			$this->view->content->plot = $plot;
+		}
+		elseif (App::router(3) == 'add')
+		{
+			// Add new graph
+
+			self::setViewTemplate('graphsingle');
+			self::setContentTitle('Добавление графика для "'.$experiment->title.'"');
+			self::setTitle('Добавление графика для '.$experiment->title);
+		}
+		else
+		{
+			// List graphs
+
+			//self::setContentTitle('Графики для "'.$experiment->title.'"');
+			self::setTitle('Графики для '.$experiment->title);
+			self::addJs('lib/jquery.flot');
+			self::addJs('lib/jquery.flot.time.min');
+			self::addJs('lib/jquery.flot.navigate');
+			self::addJs('functions');
+			self::addJs('chart');
+
+			$db = new DB();
+			$query = 'select * from plots where exp_id = '.(int)$experiment->id;
+			$plots = $db->query($query, PDO::FETCH_OBJ);
+
+			$this->view->content->list = $plots;
+
+
+			// Get available in detections sensors list
+
+			// Get unique sensors list from detections data of experiment
+			$query = 'select a.id_sensor as sensor_id, '
+						. 's.value_name, s.si_notation, s.si_name, s.max_range, s.min_range, s.resolution '
+					. 'from detections as a '
+					. 'left join sensors as s on a.id_sensor = s.sensor_id '
+					. 'where a.exp_id = :exp_id '
+					. 'group by a.id_sensor order by a.id_sensor';
+			$load = $db->prepare($query);
+			$load->execute(array(
+					':exp_id' => $experiment->id
+			));
+			$sensors = $load->fetchAll(PDO::FETCH_OBJ);
+			if(empty($sensors))
+			{
+				$sensors = array();
+			}
+
+			$available_sensors = array();
+
+			// Prepare available_sensors list
+			foreach($sensors as $sensor)
+			{
+				if(!array_key_exists($sensor->sensor_id, $available_sensors))
+				{
+					$available_sensors[$sensor->sensor_id] = $sensor;
+				}
+			}
+
+			$this->view->content->available_sensors = &$available_sensors;
+
+			// Add graph of all sensors on ajax script
+			$this->view->content->detections = array();
 		}
 	}
 

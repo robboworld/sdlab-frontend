@@ -90,8 +90,7 @@ function getExperimentStrob(experiment_id){
         //console.log('Sensors.experimentStrob'+experiment_id);console.log(data);
         if(data.result == true){
             $('#experiment-strob').attr('disabled', false).text('Строб');
-        } else
-        {
+        }else{
             $('#experiment-strob').attr('disabled', false).text('Строб: Не выполнено').addClass('btn-warning');
         }
 
@@ -108,12 +107,11 @@ function experimentAction(act, experiment_id){
                 // switch btn
                 $('#experiment-action').attr('disabled', false).removeClass('disabled').text($('#experiment-action').data('text-'+(act?'1':'0'))).data('experiment-state',act);
                 location.reload();
-            } else {
+            }else{
                 $('#experiment-action').attr('disabled', false).removeClass('disabled').text($('#experiment-action').data('text-'+(act?'0':'1'))).addClass('btn-warning').data('experiment-state',(act ? 0 : 1));
                 alert($('#experiment-action').data('text-'+(act?'0':'1'))+': Не выполнено');
             }
-        }
-        else if (typeof data.error !== 'undefined'){
+        } else if (typeof data.error !== 'undefined'){
             //error
             $('#experiment-action').attr('disabled', false).removeClass('disabled').text($('#experiment-action').data('text-'+(act?'0':'1'))).addClass('btn-warning').data('experiment-state',(act ? 0 : 1));
             alert($('#experiment-action').data('text-'+(act?'0':'1'))+': Не выполнено: '+data.error);

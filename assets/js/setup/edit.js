@@ -48,39 +48,44 @@ $(document).ready(function(){
 
 function updateSensorsList(data){
 
-    $('#sensor-list-table tbody').empty();
-    for (id in data){
-        var sensor = data[id];
-        sensor.id = id;
-        var info = (typeof sensor.sensor_name !== 'undefined') ? true : false;
-        if($('#sensors-in-setup tbody').find('input[value="'+sensor.id+'"]').size() == 0){
-            $('#sensor-list-table tbody').append('\
-                <tr sensor-id="'+ sensor.id +'" class="success">\
-                    <td><input type="checkbox" checked="checked"/></td>\
-                    <td>' + sensor.id + '</td>\
-                    <td>' + (info ? sensor.Values[0].value_name : '-') + '</td>\
-                    <td>' + (info ? sensor.Values[0].si_notation : '-') + '</td>\
-                    <td>' + (info ? sensor.Values[0].si_name : '-') + '</td>\
-                    <td>' + sensor.Values[0].Range.Min + '</td>\
-                    <td>' + sensor.Values[0].Range.Max + '</td>\
-                    <td>' + ((info && typeof sensor.Values[0].error !== 'undefined') ? sensor.Values[0].error : '-') + '</td>\
-                </tr>'
-            );
+    if(typeof data.error == 'undefined'){
+        $('#sensor-list-table tbody').empty();
+        for (id in data){
+            var sensor = data[id];
+            sensor.id = id;
+            var info = (typeof sensor.sensor_name !== 'undefined') ? true : false;
+            if($('#sensors-in-setup tbody').find('input[value="'+sensor.id+'"]').size() == 0){
+                $('#sensor-list-table tbody').append('\
+                    <tr sensor-id="'+ sensor.id +'" class="success">\
+                        <td><input type="checkbox" checked="checked"/></td>\
+                        <td>' + sensor.id + '</td>\
+                        <td>' + (info ? sensor.Values[0].value_name : '-') + '</td>\
+                        <td>' + (info ? sensor.Values[0].si_notation : '-') + '</td>\
+                        <td>' + (info ? sensor.Values[0].si_name : '-') + '</td>\
+                        <td>' + sensor.Values[0].Range.Min + '</td>\
+                        <td>' + sensor.Values[0].Range.Max + '</td>\
+                        <td>' + ((info && typeof sensor.Values[0].error !== 'undefined') ? sensor.Values[0].error : '-') + '</td>\
+                    </tr>'
+                );
+            }
+            else{
+                $('#sensor-list-table tbody').append('\
+                    <tr sensor-id="'+ sensor.id +'" class="success" style="display: none;">\
+                        <td><input type="checkbox"/></td>\
+                        <td>' + sensor.id + '</td>\
+                        <td>' + (info ? sensor.Values[0].value_name : '-') + '</td>\
+                        <td>' + (info ? sensor.Values[0].si_notation : '-') + '</td>\
+                        <td>' + (info ? sensor.Values[0].si_name : '-') + '</td>\
+                        <td>' + sensor.Values[0].Range.Min + '</td>\
+                        <td>' + sensor.Values[0].Range.Max + '</td>\
+                        <td>' + ((info && typeof sensor.Values[0].error !== 'undefined') ? sensor.Values[0].error : '-') + '</td>\
+                    </tr>'
+                );
+            }
         }
-        else{
-            $('#sensor-list-table tbody').append('\
-                <tr sensor-id="'+ sensor.id +'" class="success" style="display: none;">\
-                    <td><input type="checkbox"/></td>\
-                    <td>' + sensor.id + '</td>\
-                    <td>' + (info ? sensor.Values[0].value_name : '-') + '</td>\
-                    <td>' + (info ? sensor.Values[0].si_notation : '-') + '</td>\
-                    <td>' + (info ? sensor.Values[0].si_name : '-') + '</td>\
-                    <td>' + sensor.Values[0].Range.Min + '</td>\
-                    <td>' + sensor.Values[0].Range.Max + '</td>\
-                    <td>' + ((info && typeof sensor.Values[0].error !== 'undefined') ? sensor.Values[0].error : '-') + '</td>\
-                </tr>'
-            );
-        }
+    } else {
+        //error
+        alert('Ошибка');
     }
 }
 

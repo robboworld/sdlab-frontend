@@ -258,7 +258,7 @@ class ExperimentController extends Controller
 				/* Возможно стоит вынести все в отдельный контроллер или модель*/
 				$db = new DB();
 
-				$query = 'select id, exp_id, strftime(\'%Y.%m.%d %H:%M:%f\', time) as time, id_sensor, detection, error from detections where exp_id = '.(int)$experiment->id . ' order by strftime(\'%s\', time)';
+				$query = 'select id, exp_id, strftime(\'%Y.%m.%d %H:%M:%f\', time) as time, sensor_id, detection, error from detections where exp_id = '.(int)$experiment->id . ' order by strftime(\'%s\', time)';
 				$detections = $db->query($query, PDO::FETCH_OBJ);
 
 				/* Формирование вывода на основе датчиков в установке. */
@@ -290,9 +290,9 @@ class ExperimentController extends Controller
 				foreach($detections as $row)
 				{
 					/*если есть в списке доступных датчиков до добавим в вывод журнала*/
-					if(array_key_exists($row->id_sensor, $this->view->content->displayed_sensors))
+					if(array_key_exists($row->sensor_id, $this->view->content->displayed_sensors))
 					{
-						$journal[$row->time][$row->id_sensor] = $row;
+						$journal[$row->time][$row->sensor_id] = $row;
 					}
 				}
 				$this->view->content->detections = &$journal;
@@ -404,12 +404,12 @@ class ExperimentController extends Controller
 			// Get available in detections sensors list
 
 			// Get unique sensors list from detections data of experiment
-			$query = 'select a.id_sensor as sensor_id, '
+			$query = 'select a.sensor_id, '
 						. 's.value_name, s.si_notation, s.si_name, s.max_range, s.min_range, s.resolution '
 					. 'from detections as a '
-					. 'left join sensors as s on a.id_sensor = s.sensor_id '
+					. 'left join sensors as s on a.sensor_id = s.sensor_id '
 					. 'where a.exp_id = :exp_id '
-					. 'group by a.id_sensor order by a.id_sensor';
+					. 'group by a.sensor_id order by a.sensor_id';
 			$load = $db->prepare($query);
 			$load->execute(array(
 					':exp_id' => $experiment->id

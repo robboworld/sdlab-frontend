@@ -20,7 +20,7 @@ class DetectionsController extends Controller
 			$experiment = (new Experiment())->load($plot->exp_id);
 			$setup = (new Setup())->load($experiment->setup_id);
 
-			$detections_query = $this->db->prepare('select * from detections where exp_id = :experiment_id and id_sensor = :sensor_id');
+			$detections_query = $this->db->prepare('select * from detections where exp_id = :experiment_id and sensor_id = :sensor_id');
 
 			$ordinate_query = $this->db->query('select ordinate.*, setup_conf.name, setup_conf.sensor_id from ordinate left join setup_conf on setup_conf.setup_id = '.(int)$setup->id.' AND setup_conf.sensor_id = ordinate.id_sensor_y where id_plot = '.(int)$plot->id.' ', PDO::FETCH_OBJ);
 			//System::dump($ordinate_query);
@@ -90,12 +90,12 @@ class DetectionsController extends Controller
 				$db = new DB();
 
 				// Get unique sensors list from detections data of experiment
-				$query = 'select a.id_sensor as sensor_id, '
+				$query = 'select a.sensor_id, '
 							. 's.value_name, s.si_notation, s.si_name, s.max_range, s.min_range, s.resolution '
 						. 'from detections as a '
-						. 'left join sensors as s on a.id_sensor = s.sensor_id '
+						. 'left join sensors as s on a.sensor_id = s.sensor_id '
 						. 'where a.exp_id = :exp_id '
-						. 'group by a.id_sensor order by a.id_sensor';
+						. 'group by a.sensor_id order by a.sensor_id';
 				$load = $db->prepare($query);
 				$load->execute(array(
 						':exp_id' => $experiment->id
@@ -132,7 +132,7 @@ class DetectionsController extends Controller
 				$query = //'select strftime(\'%Y.%m.%d %H:%M:%f\', time) as time, detection '
 						 'select (strftime(\'%s\',time) - strftime(\'%S\',time) + strftime(\'%f\',time))*1000 as time, detection '
 						. 'from detections '
-						. 'where exp_id = :exp_id and id_sensor = :id_sensor and (error is null or error = \'\')'
+						. 'where exp_id = :exp_id and sensor_id = :sensor_id and (error is null or error = \'\')'
 						. 'order by strftime(\'%s\', time)';
 				$load = $db->prepare($query);
 
@@ -147,7 +147,7 @@ class DetectionsController extends Controller
 
 					$res = $load->execute(array(
 							':exp_id'    => $experiment->id,
-							':id_sensor' => $sensor->sensor_id,
+							':sensor_id' => $sensor->sensor_id,
 					));
 					$detections = $load->fetchAll(PDO::FETCH_NUM);
 

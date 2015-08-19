@@ -71,9 +71,10 @@ function updateSensorValue(id, onalways){
     }, function(data){
         if(typeof data.Reading != 'undefined'){
             $('.sensor-widget[sensor-id="'+id+'"]').find('.sensor-value').html(data.Reading);
+            $('.sensor-widget[sensor-id="'+id+'"]').find('.panel-body').removeClass('bg-danger');
         }else{
             $('.sensor-widget[sensor-id="'+id+'"]').find('.sensor-value').html('--');
-            $('.sensor-widget[sensor-id="'+id+'"]').find('.panel-body').addClass('bg-danger')
+            $('.sensor-widget[sensor-id="'+id+'"]').find('.panel-body').addClass('bg-danger');
         }
 
     });

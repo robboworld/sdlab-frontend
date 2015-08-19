@@ -68,7 +68,7 @@
 			if (typeof plot !== 'undefined'){
 				plot.shutdown();
 			}
-			plot = buildGraph(data.result, $('#graph-all'), options)
+			plot = buildGraph(data.result, $('#graph-all'), options);
 		}
 		else
 		{

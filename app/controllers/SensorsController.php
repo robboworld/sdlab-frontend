@@ -73,32 +73,37 @@ class SensorsController extends Controller
 				$items = (array) $query->fetchAll(PDO::FETCH_COLUMN, 0);
 
 				$diff = (array) array_diff($names, $items);
+
+				$insert = $db->prepare('insert into sensors (sensor_id, sensor_name, value_name, si_notation, si_name, max_range, min_range, error, resolution)' .
+						' values (:sensor_id, :sensor_name, :value_name, :si_notation, :si_name, :max_range, :min_range, :error, :resolution)');
+
 				foreach ($diff as $sensor_id)
 				{
+					$sensor_name = (string) preg_replace('/\-.*/i', '', $sensor_id);
+					if (strlen($sensor_name) == 0)
+					{
+						continue;
+					}
+
+					$data = $result->{$sensor_id}->Values[0];
+
 					try
 					{
-						$sensor_name = (string) preg_replace('/\-.*/i', '', $sensor_id);
-						if (strlen($sensor_name) == 0)
-						{
-							continue;
-						}
-
-						$insert = $db->prepare('insert or ignore into sensors (sensor_id, sensor_name, value_name, si_notation, si_name, max_range, min_range, error, resolution)' .
-								' values (:sensor_id, :sensor_name, :value_name, :si_notation, :si_name, :max_range, :min_range, :error, :resolution)');
-
-						$data = $result->{$sensor_id}->Values[0];
-
-						$insert->execute(array(
+						$res = $insert->execute(array(
 								':sensor_id'   => $sensor_id,
 								':sensor_name' => $sensor_name,
 								':value_name'  => System::getValsTranslate($data->Name),
 								':si_notation' => System::getValsTranslate($data->Name, 'si_notation'),
 								':si_name'     => System::getValsTranslate($data->Name, 'si_name'),
-								':max_range'   => $data->Range->Min,
-								':min_range'   => $data->Range->Max,
+								':max_range'   => (isset($data->Range->Max) && !is_null($data->Range->Max)) ? $data->Range->Max : null,
+								':min_range'   => (isset($data->Range->Min) && !is_null($data->Range->Min)) ? $data->Range->Min : null,
 								':error'       => NULL, // todo: use error or resolution for sensors?
 								':resolution'  => $data->Resolution
 						));
+						if (!$res)
+						{
+							error_log('PDOError: '.var_export($insert->errorInfo(),true));  //DEBUG
+						}
 					}
 					catch (PDOException $e)
 					{
@@ -107,6 +112,7 @@ class SensorsController extends Controller
 					}
 				}
 			}
+
 
 			// Get additional sensors data
 			if(isset($params['getinfo']) && $params['getinfo'])
@@ -180,7 +186,7 @@ class SensorsController extends Controller
 				}
 
 				/* получаем датчики для эксперимента */
-				$sensors = SetupController::getSensors($experiment->setup_id);
+				$sensors = SetupController::getSensors($experiment->setup_id, true);
 				if(!empty($sensors))
 				{
 					// Load Setup
@@ -244,20 +250,44 @@ class SensorsController extends Controller
 						unset($socket);
 						$socket = new JSONSocket($this->config['socket']['path']);
 
-						$result = $socket->call('Lab.GetSeries', null);
+						$result = $socket->call('Lab.GetSeries', null);error_log('experimentStrob:$result:'.var_export($result,true));  //DEBUG
 						if(!empty($result))
 						{
 							$db = new DB();
-							$insert = $db->prepare('insert into detections (exp_id, time, id_sensor, detection, error) values (:exp_id, :time, :id_sensor, :detection, :error)');
+							$insert = $db->prepare('insert into detections (exp_id, time, sensor_id, detection, error) values (:exp_id, :time, :sensor_id, :detection, :error)');
 
 							for($i = 0; $i < count($sensors); $i++)
 							{
-								$sensor_error =  $result[0]->Readings[$i] == 'NaN' ? 'NaN' : null;
+								// Check error value
+								$sensor_error = null;
+								if ($result[0]->Readings[$i] === 'NaN')
+								{
+									$sensor_error = 'NaN';
+									$result[0]->Readings[$i] = null;
+								}
+
+								//Check range
+								if (is_null($sensor_error))
+								{
+									if (isset($sensors[$i]->min_range) && ((float)$result[0]->Readings[$i] < (float)$sensors[$i]->min_range))
+									{
+										$sensor_error = 'NaN';
+										$result[0]->Readings[$i] = $sensors[$i]->min_range;
+									}
+								}
+								if (is_null($sensor_error))
+								{
+									if (isset($sensors[$i]->max_range) && ((float)$result[0]->Readings[$i] > (float)$sensors[$i]->max_range))
+									{
+										$sensor_error = 'NaN';
+										$result[0]->Readings[$i] = $sensors[$i]->max_range;
+									}
+								}
 
 								$insert->execute(array(
 									':exp_id' => $experiment->id,
 									':time' => $result[0]->Time,
-									':id_sensor' => $sensors[$i]->id,
+									':sensor_id' => $sensors[$i]->id,
 									':detection' => $result[0]->Readings[$i],
 									':error' => $sensor_error
 								));
@@ -635,7 +665,7 @@ class SensorsController extends Controller
 				}
 
 				// Get sensors info (Setup configuration)
-				$sensors = SetupController::getSensors($setup->id);
+				$sensors = SetupController::getSensors($setup->id, true);
 				$cnt_sensors = count($sensors);
 
 				// Get monitors data and copy to DB
@@ -693,9 +723,9 @@ class SensorsController extends Controller
 					if (!empty($data))
 					{
 						$insert_values = array();
-						$insert_block_size = 10;
+						$insert_block_size = 30;
 
-						$datafields = array('exp_id', 'time', 'id_sensor', 'detection', 'error');
+						$datafields = array('exp_id', 'time', 'sensor_id', 'detection', 'error');
 						$datafields_str = implode(',', $datafields );
 
 						$question_marks = '(' . DB::placeholders('?', count($datafields)) . ')';
@@ -710,18 +740,40 @@ class SensorsController extends Controller
 									continue;
 								}
 
-								if ($d->Readings[$i] == 'NaN')
+								// Check error value
+								$sensor_error = null;
+								if ($d->Readings[$i] === 'NaN')
 								{
 									$sensor_error = 'NaN';
-									$detection = 0;
-
-									// XXX: comment to no skip NaN values
-									continue;
+									$detection = null;
 								}
 								else
 								{
-									$sensor_error = null;
 									$detection = $d->Readings[$i];
+								}
+
+								//Check range
+								if (is_null($sensor_error))
+								{
+									if (isset($sensors[$i]->min_range) && ((float)$d->Readings[$i] < (float)$sensors[$i]->min_range))
+									{
+										$sensor_error = 'NaN';
+										$detection = $sensors[$i]->min_range;
+									}
+								}
+								if (is_null($sensor_error))
+								{
+									if (isset($sensors[$i]->max_range) && ((float)$d->Readings[$i] > (float)$sensors[$i]->max_range))
+									{
+										$sensor_error = 'NaN';
+										$detection = $sensors[$i]->max_range;
+									}
+								}
+
+								// XXX: comment to no skip NaN values
+								if (!is_null($sensor_error))
+								{
+									continue;
 								}
 
 								$data_values = array($experiment->id, $d->Time, $sensors[$i]->id, $detection, $sensor_error);
@@ -742,8 +794,11 @@ class SensorsController extends Controller
 									$stmt = $db->prepare($insert_sql);
 									try
 									{
-										$stmt->execute($insert_values);
-
+										$res = $stmt->execute($insert_values);
+										if (!$res)
+										{
+											error_log('PDOError: '.var_export($stmt->errorInfo(),true));  //DEBUG
+										}
 									}
 									catch (PDOException $e)
 									{

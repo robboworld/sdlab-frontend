@@ -41,7 +41,7 @@
 
 			<? else : ?>
 				<div class="col-md-5 pull-right">
-					<form class="navbar-form" action="?q=session/create<? if(isset($_GET['q'])) : ?>&destination=<? print $_GET['q']; endif; ?>" method="post">
+					<form class="navbar-form" action="?q=session/create<? if(isset($_GET['q'])) : ?>&destination=<? print urlencode($_GET['q']); endif; ?>" method="post">
 						<div class="input-group input-group-sm">
 							<input type="text" name="session_key" placeholder="Ключ сессии (123456)" title="тестовый ключ - 123456" class="form-control">
 							<span class="input-group-btn">

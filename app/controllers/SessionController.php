@@ -12,9 +12,10 @@ class SessionController extends Controller
 			{
 				$this->session($session);
 				$this->session()->setSession();
+
 				if(isset($_GET['destination']) && $_GET['destination'] != $_GET['q'])
 				{
-					System::go($_GET['destination']);
+					System::go(System::clean($_GET['destination'], 'path'));
 				}
 				else
 				{
@@ -35,9 +36,10 @@ class SessionController extends Controller
 					$this->session()->set('name', $_POST['session_name']);
 					$this->session()->save();
 					$this->session()->setSession();
+
 					if(isset($_GET['destination']) && $_GET['destination'] != $_GET['q'])
 					{
-						System::go($_GET['destination']);
+						System::go(System::clean($_GET['destination'], 'path'));
 					}
 					else
 					{

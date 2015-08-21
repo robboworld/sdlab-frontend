@@ -250,7 +250,7 @@ class SensorsController extends Controller
 						unset($socket);
 						$socket = new JSONSocket($this->config['socket']['path']);
 
-						$result = $socket->call('Lab.GetSeries', null);error_log('experimentStrob:$result:'.var_export($result,true));  //DEBUG
+						$result = $socket->call('Lab.GetSeries', null);
 						if(!empty($result))
 						{
 							$db = new DB();
@@ -826,7 +826,11 @@ class SensorsController extends Controller
 							$stmt = $db->prepare($insert_sql);
 							try
 							{
-								$stmt->execute($insert_values);
+								$res = $stmt->execute($insert_values);
+								if (!$res)
+								{
+									error_log('PDOError: '.var_export($stmt->errorInfo(),true));  //DEBUG
+								}
 							}
 							catch (PDOException $e)
 							{

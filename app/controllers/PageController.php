@@ -12,7 +12,7 @@ class PageController extends Controller
 
 	function view()
 	{
-		$query = App::router(2);
+		$query = System::clean(App::router(2), 'cmd');
 		if(!empty($query))
 		{
 			$page = $query;

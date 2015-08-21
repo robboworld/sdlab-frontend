@@ -8,8 +8,8 @@ function coreAPICall(method, params, callback){
             method: method,
             params: params
         },
-        success: function(result){
-            callback(result);
+        success: function(result, status, jqxhr){
+            callback(result, status, jqxhr);
         },
         error: function(){
             console.log('API Call error: Transport error');

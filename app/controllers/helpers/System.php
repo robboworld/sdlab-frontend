@@ -32,6 +32,8 @@ class System
 		{
 			header('Location: ?q='.$query_string);
 		}
+
+		exit;
 	}
 
 	/**
@@ -132,7 +134,8 @@ class System
 	 * Get list of self interfaces
 	 * 
 	 * @return array:
-	 */	static function get_interfaces($pattern = null)
+	 */
+	static function get_interfaces($pattern = null)
 	{
 
 		$osName = strtoupper(PHP_OS);
@@ -208,6 +211,118 @@ class System
 			{
 				$result = array_merge($result, $matches[$match]) ;
 			}
+		}
+
+		return $result;
+	}
+
+
+	/**
+	 * Method to clean values. Processes for XSS and specified bad code.
+	 *
+	 * @param   mixed   $source  Input string/array-of-string to be 'cleaned'
+	 * @param   string  $type    The return type for the variable:
+	 *                           INT:       An integer,
+	 *                           UINT:      An unsigned integer,
+	 *                           FLOAT:     A floating point number,
+	 *                           BOOLEAN:   A boolean value,
+	 *                           WORD:      A string containing A-Z or underscores only (not case sensitive),
+	 *                           ALNUM:     A string containing A-Z or 0-9 only (not case sensitive),
+	 *                           CMD:       A string containing A-Z, 0-9, underscores, periods or hyphens (not case sensitive),
+	 *                           METHOD:    A sanitised PHP method name,
+	 *                           CLASS:     A sanitised PHP class name,
+	 *                           BASE64:    A string containing A-Z, 0-9, forward slashes, plus or equals (not case sensitive),
+	 *                           STRING:    A fully decoded and sanitised string (default),
+	 *                           ARRAY:     An array,
+	 *                           PATH:      A sanitised file path,
+	 *                           TRIM:      A string trimmed from normal, non-breaking and multibyte spaces
+	 *                           USERNAME:  Do not use (use an application specific filter),
+	 *                           RAW:       The raw string is returned with no filtering,
+	 *                           unknown:   Do nothing.
+	 *
+	 * @return  mixed  'Cleaned' version of input parameter
+	 *
+	 * @since   11.1
+	 */
+	static function clean($source, $type = 'raw')
+	{
+		// Handle the type constraint
+		switch (strtoupper($type))
+		{
+			case 'INT':
+			case 'INTEGER':
+				// Only use the first integer value
+				preg_match('/-?[0-9]+/', (string) $source, $matches);
+				$result = @ (int) $matches[0];
+				break;
+
+			case 'UINT':
+				// Only use the first integer value
+				preg_match('/-?[0-9]+/', (string) $source, $matches);
+				$result = @ abs((int) $matches[0]);
+				break;
+
+			case 'FLOAT':
+			case 'DOUBLE':
+				// Only use the first floating point value
+				preg_match('/-?[0-9]+(\.[0-9]+)?/', (string) $source, $matches);
+				$result = @ (float) $matches[0];
+				break;
+
+			case 'BOOL':
+			case 'BOOLEAN':
+				$result = (bool) $source;
+				break;
+
+			case 'WORD':
+				$result = (string) preg_replace('/[^A-Z_]/i', '', $source);
+				break;
+
+			case 'ALNUM':
+				$result = (string) preg_replace('/[^A-Z0-9]/i', '', $source);
+				break;
+
+			case 'CMD':
+				$result = (string) preg_replace('/[^A-Z0-9_\.-]/i', '', $source);
+				$result = ltrim($result, '.');
+				break;
+
+			case 'METHOD':
+			case 'CLASSNAME':
+				$pattern = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/';
+				preg_match($pattern, (string) $source, $matches);
+				$result = @ (string) $matches[0];
+				break;
+
+			case 'BASE64':
+				$result = (string) preg_replace('/[^A-Z0-9\/+=]/i', '', $source);
+				break;
+
+			case 'ARRAY':
+				$result = (array) $source;
+				break;
+
+			case 'PATH':
+				$pattern = '/^[A-Za-z0-9_\/-]+[A-Za-z0-9_\.-]*([\\\\\/][A-Za-z0-9_-]+[A-Za-z0-9_\.-]*)*$/';
+				preg_match($pattern, (string) $source, $matches);
+				$result = @ (string) $matches[0];
+				break;
+
+			case 'TRIM':
+				$result = (string) trim($source);
+				//include 'phputf8.trim';
+				//$result = utf8_trim($result, chr(0xE3) . chr(0x80) . chr(0x80));
+				//$result = utf8_trim($result, chr(0xC2) . chr(0xA0));
+				break;
+
+			case 'USERNAME':
+				$result = (string) preg_replace('/[\x00-\x1F\x7F<>"\'%&]/', '', $source);
+				break;
+
+			case 'RAW':
+			default:
+				$result = $source;
+				break;
 		}
 
 		return $result;

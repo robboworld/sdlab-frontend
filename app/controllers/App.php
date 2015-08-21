@@ -28,7 +28,7 @@ class App
 
 		if($controller->user_access_level() >= 1)
 		{
-			if(!$_SESSION['sdlab']['session_key'])
+			if(!isset($_SESSION['sdlab']) || !isset($_SESSION['sdlab']['session_key']) || !$_SESSION['sdlab']['session_key'])
 			{
 				$this->controller(new SessionController('create'));
 			}

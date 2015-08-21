@@ -33,8 +33,6 @@ class ExperimentController extends Controller
 
 		/* Установки как список опций для формы*/
 		$this->view->form->setups = SetupController::loadSetups();
-		//System::dump($setups);
-
 
 
 		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] == 'create-experiment-form')
@@ -42,25 +40,67 @@ class ExperimentController extends Controller
 			/* fill the Experiment properties */
 			$experiment = new Experiment($this->session()->getKey());
 			$experiment->set('title', htmlspecialchars(isset($_POST['experiment_title']) ? $_POST['experiment_title'] : ''));
-			$experiment->set('setup_id', htmlspecialchars(isset($_POST['setup_id']) ? $_POST['setup_id'] : ''));
+			$setup_id = (isset($_POST['setup_id']) ? (int)$_POST['setup_id'] : '');
+			$experiment->set('setup_id', $setup_id);
 			$experiment->set('comments', htmlspecialchars(isset($_POST['experiment_comments']) ? $_POST['experiment_comments'] : ''));
 
 			//$experiment->set('DateStart_exp', (new DateTime($_POST['experiment_date_start']))->format(DateTime::ISO8601));
 			//$experiment->set('DateEnd_exp', (new DateTime($_POST['experiment_date_end']))->format(DateTime::ISO8601));
 
+
+			if(empty($experiment->title))
+			{
+				// Error: Not save
+				return;
+			}
+
+			// Check setup available
+			if($setup_id)
+			{
+				$found = false;
+				foreach ($this->view->form->setups as $s)
+				{
+					if ($s->id == $setup_id)
+					{
+						$found = true;
+						break;
+					}
+				}
+				if (!$found)
+				{
+					// Reset setup, not found
+					$setup_id = '';
+					$experiment->set('setup_id', $setup_id);
+				}
+			}
+
 			/* Access Experiment in view*/
 			$this->view->form->experiment = $experiment;
 
-
-
-
-			if(!empty($experiment->title))
+			if($experiment->save() && !is_null($experiment->id))
 			{
-				if($experiment->save() && !is_null($experiment->id))
+				// Set master of setup if set setup with no master
+				if($setup_id)
 				{
-					System::go('experiment/view/'.$experiment->id);
+					$setup = (new Setup())->load($setup_id);
+					if ($setup && !is_null($setup->id) && empty($setup->master_exp_id))
+					{
+						$setup->set('master_exp_id', $experiment->id);
+						$result = $setup->save();
+						if (!$result)
+						{
+							// Error update setup master
+							// Ignore
+						}
+					}
 				}
+
+				System::go('experiment/view/'.$experiment->id);
 			}
+		}
+		else
+		{
+			$this->view->form->experiment = new Experiment();
 		}
 	}
 
@@ -188,14 +228,58 @@ class ExperimentController extends Controller
 				if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] == 'edit-experiment-form')
 				{
 					$experiment->set('title', htmlspecialchars(isset($_POST['experiment_title']) ? $_POST['experiment_title'] : ''));
-					$experiment->set('setup_id', htmlspecialchars(isset($_POST['setup_id']) ? $_POST['setup_id'] : ''));
+					$setup_id = (isset($_POST['setup_id']) ? (int)$_POST['setup_id'] : '');
+					$experiment->set('setup_id', $setup_id);
 					$experiment->set('comments', htmlspecialchars(isset($_POST['experiment_comments']) ? $_POST['experiment_comments'] : ''));
-					if(!empty($experiment->title))
+
+					if(empty($experiment->title))
 					{
-						if($experiment->save() && !is_null($experiment->id))
+						// Error: Not save
+						return;
+					}
+
+					// Check setup available
+					if($setup_id)
+					{
+						$found = false;
+						foreach ($this->view->form->setups as $s)
 						{
-							System::go('experiment/view/'.$experiment->id);
+							if ($s->id == $setup_id)
+							{
+								$found = true;
+								break;
+							}
 						}
+						if (!$found)
+						{
+							// Reset setup, not found
+
+							// XXX: No reset old orphaned setups
+
+							//$setup_id = '';
+							//$experiment->set('setup_id', $setup_id);
+						}
+					}
+
+					if($experiment->save() && !is_null($experiment->id))
+					{
+						// Set master of setup if set setup with no master
+						if($setup_id && $found)
+						{
+							$setup = (new Setup())->load($setup_id);
+							if ($setup && !is_null($setup->id) && empty($setup->master_exp_id))
+							{
+								$setup->set('master_exp_id', $experiment->id);
+								$result = $setup->save();
+								if (!$result)
+								{
+									// Error update setup master
+									// Ignore
+								}
+							}
+						}
+
+						System::go('experiment/view/'.$experiment->id);
 					}
 				}
 			}
@@ -214,12 +298,156 @@ class ExperimentController extends Controller
 	/**
 	 * Action: Delete
 	 * Deleting experiment.
+	 * Deltetes all data related to experiment.
 	 */
 	function delete()
 	{
-		if(!empty($this->id))
+		if (!empty($this->id) && is_numeric($this->id))
 		{
+			$experiment = (new Experiment())->load($this->id);
 
+			// Only admin can delete experiment
+			if ($experiment && $experiment->id /*&& $experiment->session_key == $this->session()->getKey()*/ && $this->session()->getUserLevel() == 3)
+			{
+				$db = new DB();
+
+				// Check active experiment
+				$query = $db->prepare('select id from setups where master_exp_id = :master_exp_id and flag > 0');
+				$query->execute(array(
+						':master_exp_id' => $this->id
+				));
+				$setups = (array) $query->fetchAll(PDO::FETCH_COLUMN, 0);
+				$cnt_active = count($setups);
+
+				// Force delete experiment if has active setups
+				$force = (isset($_POST) && isset($_POST['force']) && is_numeric($_POST['force'])) ? (int) $_POST['force'] : 0;
+				if ($cnt_active && !$force)
+				{
+					// Error: experiment with active setups
+					System::go('experiment/view');
+					return;
+				}
+
+
+				// Speed db operations within transaction
+				$db->beginTransaction();
+
+				try
+				{
+					// Unactivate setup and unset master experiment
+					$sql_setups_update_query = 'update setups set flag = NULL, master_exp_id = NULL where master_exp_id = :master_exp_id';
+					$update = $db->prepare($sql_setups_update_query);
+					$result = $update->execute(array(':master_exp_id' => $this->id));
+					if (!$result)
+					{
+						error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
+					}
+
+					// Remove rows from tables
+					// Be careful of delete order, because used foreign keys between tables (if enabled)
+
+					// Need stop monitors before
+					// Get all monitors of experiment
+					$query = $db->prepare('select uuid from monitors where exp_id = :exp_id');
+					$query->execute(array(
+							':exp_id' => $this->id
+					));
+					$monitors = (array) $query->fetchAll(PDO::FETCH_COLUMN, 0);
+					// Remove monitors call for backend sensors API (auto stop)
+					$delmons = array();
+					$errmons = array();
+					foreach($monitors as $uuid)
+					{
+						// Send request for removing monitor
+						$query_params = array((string) $uuid);
+						$socket = new JSONSocket($this->config['socket']['path']);
+						$result = $socket->call('Lab.RemoveMonitor', $query_params);
+						if ($result)
+						{
+							$delmons[] = $uuid;
+						}
+						else
+						{
+							$errmons[] = $uuid;
+						}
+						unset($socket);
+					}
+					if (!empty($errmons))
+					{
+						error_log('Error remove monitors: {'. implode('},{', $errmons) . '}');  //DEBUG
+					}
+
+					// Remove monitors from DB
+					$delete = $db->prepare('delete from monitors where exp_id=:exp_id');
+					$result = $delete->execute(array(':exp_id' => $this->id));
+					if (!$result)
+					{
+						error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
+					}
+
+					// Remove consumers
+					// XXX: consumers table not used now
+					$delete = $db->prepare('delete from consumers where exp_id=:exp_id');
+					$result = $delete->execute(array(':exp_id' => $this->id));
+					if (!$result)
+					{
+						error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
+					}
+
+					// Remove ordinate
+					$delete = $db->prepare('delete from ordinate where id_plot IN (select id from plots where exp_id=:exp_id)');
+					$result = $delete->execute(array(':exp_id' => $this->id));
+					if (!$result)
+					{
+						error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
+					}
+
+					// Remove plots
+					$delete = $db->prepare('delete from plots where exp_id=:exp_id');
+					$result = $delete->execute(array(':exp_id' => $this->id));
+					if (!$result)
+					{
+						error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
+					}
+
+					// Remove detections
+					$delete = $db->prepare('delete from detections where exp_id=:exp_id');
+					$result = $delete->execute(array(':exp_id' => $this->id));
+					if (!$result)
+					{
+						error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
+					}
+
+					// Remove experiments
+					$delete = $db->prepare('delete from experiments where id=:id');
+					$result = $delete->execute(array(':id' => $this->id));
+					if (!$result)
+					{
+						error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
+					}
+				}
+				catch (PDOException $e)
+				{
+					error_log('PDOException Experiment::delete(): '.var_export($e->getMessage(),true));  //DEBUG
+					var_dump($e->getMessage());
+				}
+
+				$db->commit();
+
+				// TODO: Show info about errors while delete or about success (need session saved msgs)
+
+				System::go('experiment/view');
+			}
+			else
+			{
+				// Error: experiment not found or no access
+				System::go('experiment/view');
+			}
+		}
+		else
+		{
+			// Error: incorrect experiment id
+			System::go('experiment/view');
 		}
 	}
 
@@ -439,6 +667,68 @@ class ExperimentController extends Controller
 	}
 
 	/**
+	 * Check if some Setup is active in experiment.
+	 * Return boolean value and ids of active setups.
+	 * 
+	 * API method: Experiment.isActive
+	 * API params: experiment
+	 *
+	 * @param  array $params  Array of parameters
+	 *
+	 * @return array  Result in form array('result' => bool, 'items' => array()) or False on error
+	 */
+	function isActive($params)
+	{
+		// Check id 
+		if(!isset($params['experiment']) && empty($params['experiment']))
+		{
+			$this->error = 'Experiment not found';
+			return false;
+		}
+
+		// Load experiment
+		$experiment = (new Experiment())->load((int)$params['experiment']);
+		if(!$experiment || !($experiment->id))
+		{
+			$this->error = 'Experiment not found';
+			return false;
+		}
+
+		// Check access to experiment
+		if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
+		{
+			$this->error = 'Access denied';
+			return false;
+		}
+
+		$db = new DB();
+
+		// Check active setups in experiment
+		// TODO: use sql Count for query or return array of active
+		$query = $db->prepare('select id from setups where master_exp_id = :master_exp_id and flag > 0');
+		$res = $query->execute(array(
+				':master_exp_id' => $experiment->id
+		));
+		if (!$res)
+		{
+			error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+
+			$this->error = 'Error';
+			return false;
+		}
+
+		$setups = (array) $query->fetchAll(PDO::FETCH_COLUMN, 0);
+
+		return array(
+				'result' => ((count($setups) > 0) ? true : false),
+				'items'  => $setups
+		);
+	}
+
+	/**
+	 * Get list of experiments.
+	 * Returns only own experiments or all for admin
+	 * 
 	 * @return array
 	 */
 	protected function experimentsList()

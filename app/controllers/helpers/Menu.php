@@ -20,10 +20,10 @@ class Menu
 				{
 					$item_title = $item['title'];
 					if(isset($item['glyphicon']))
-				{
-					$item_title = '<span class="'.$item['glyphicon'].'"></span><span class="hidden-xs">&nbsp'.$item['title'].'</span>';
-				}
-				$menu_html .= '<li><a id="'.$id.'" href="'.$href.'">'.$item_title.'</a></li>';
+					{
+						$item_title = '<span class="'.$item['glyphicon'].'"></span><span class="hidden-xs">&nbsp'.$item['title'].'</span>';
+					}
+					$menu_html .= '<li><a id="'.$id.'" href="'.$href.'">'.$item_title.'</a></li>';
 				}
 			}
 

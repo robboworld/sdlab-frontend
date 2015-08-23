@@ -1,8 +1,8 @@
 <div class="row">
-	<h3 class="col-md-offset-2 col-md-8"><? print $this->view->content->title; ?></h3>
+	<h3 class="col-md-offset-1 col-md-10"><? print $this->view->content->title; ?></h3>
 </div>
 <div class="row setup-create">
-<div class="col-md-offset-2 col-md-8">
+<div class="col-md-offset-1 col-md-10">
 	<form action="<?print $_SERVER['REQUEST_URI']; ?>" method="post">
 		<input type="hidden" name="form-id" value="<? print $this->view->form->id; ?>">
 		<div class="form-group setup-title">
@@ -43,10 +43,10 @@
 				</div>
 				<div id="setup-type-length" class="setup-type well">
 					<div class="row form-group">
-						<div class="col-xs-12 col-md-4 col-sm-5 setup-label-long">
+						<div class="col-xs-12 col-md-6 col-sm-5 setup-label-long">
 							Продолжительность измерений
 						</div>
-						<div class="col-xs-12 col-md-8 col-sm-7 form-inline">
+						<div class="col-xs-12 col-md-6 col-sm-7 form-inline">
 							<? $time_det = Form::formTimeObject($this->view->form->setup->time_det) ;?>
 							<input type="text" name="time_det_day" class="form-control" size="1" placeholder="0" value="<? print $time_det->d; ?>"> дн.
 							<input type="text" name="time_det_hour" class="form-control" size="1" placeholder="0" value="<? print $time_det->h; ?>"> ч.
@@ -136,6 +136,12 @@
 					</tbody>
 				</table>
 
+				<div class="bg-info" style="display: none;">
+					<h4>
+						<span class="glyphicon glyphicon-info-sign"></span>
+						<span>В установке нет датчиков. Выберите нужные датчики из списка и нажмите "Добавить выбранные".</span>
+					</h4>
+				</div>
 				<hr>
 				<h4>Доступные датчики:</h4>
 				<table class="table table-responsive" id="sensor-list-table">
@@ -143,6 +149,12 @@
 
 					</tbody>
 				</table>
+				<div class="bg-info" style="display: none;">
+					<h4>
+						<span class="glyphicon glyphicon-info-sign"></span>
+						<span>Доступных датчиков нет. Подсоедините датчики к плате и нажмите "Обновите список доступных датчиков".</span>
+					</h4>
+				</div>
 				<div class="row sensor-block">
 					<div class="mrg-bot-5px col-xs-12 col-sm-6 col-md-6">
 						<a class="btn btn-default form-control" id="add-sensors"><span class="glyphicon glyphicon-arrow-up"></span> Добавить выбранные</a>
@@ -157,12 +169,14 @@
 </div>
 
 <div class="row mrg-top-20px">
-	<div class="col-sm-offset-6 col-sm-6 col-md-offset-6 col-md-4 btn-group">
+	<div class="button-center col-md-12">
+	<div class="btn-group">
 	<? if($this->view->form->id == 'edit-setup-form') : ?>
 		<a href="/?q=setup/create" class="width-auto btn btn-primary form-control">Создать</a>
 	<? endif; ?>
 		<a href="/?q=experiment/view" class="width-auto col-md-6 btn-default btn form-control">Отменить</a>
 		<input type="submit" class="width-auto btn btn-success form-control" value="<? print $this->view->form->submit->value; ?>" disabled>
+	</div>
 	</div>
 	</form>
 </div>

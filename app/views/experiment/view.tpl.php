@@ -146,7 +146,7 @@
 	</div>
 </div>
 <div class="row">
-	<div class="col-sm-10 col-md-10" >
+	<div class="col-sm-10 col-md-10">
 		<div class="row" id="widget-workspace">
 		<? if( isset($this->view->content->sensors)) :?>
 			<? foreach($this->view->content->sensors as $sensor): ?>

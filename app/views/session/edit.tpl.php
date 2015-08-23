@@ -1,13 +1,13 @@
+<div class="col-md-offset-1 col-md-6">
+	<h3>Редактирование сессии</h3>
+</div>
 <div class="col-md-4 pull-right">
 	<h3>
 		Ключ сессии:
 		<span class="text-danger"><? print $this->session()->getKey(); ?></span>
 	</h3>
 </div>
-<div class="col-md-8">
-	<h3>Редактирование сессии</h3>
-</div>	
-<div class="col-md-12">
+<div class="col-md-offset-1 col-md-10">
 	<form class="row" action="?<? print $_SERVER['QUERY_STRING'];?>" method="post">
 		<input type="hidden" name="form-id" value="edit-session-form">
 		<div class="form-group col-md-6">
@@ -27,16 +27,22 @@
 			<label>Комментарий</label>
 			<textarea class="text-area form-control" maxlength="2000" name="session_comments" placeholder="Комментарий"><?print $this->session()->comments;?></textarea>
 		</div>
-		<div class="form-group col-md-offset-9 col-md-3">
-			<input type="submit" class="form-control btn-success" value="Сохранить">
+
+		<div class="button-center col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4">
+			<div class="btn-group">
+				<input type="submit" class="form-control btn-success" value="Сохранить">
+			</div>
 		</div>
 	</form>
 </div>
-
+<?
+/*
 <div class="col-lg-12">
 	<hr class="clearfix">
 </div>
-<div class="col-md-12">
+*/
+?>
+<div class="col-md-offset-1 col-md-10">
 	<h3>Эксперименты в этой сессии</h3>
 
 	<? if($this->view->experiments_in_session) : ?>
@@ -57,7 +63,12 @@
 		<? endforeach; ?>
 	</table>
 	<? endif; ?>
+	<div class="button-center col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4">
+		<div class="btn-group">
+			<a class="btn btn-primary" href="?q=experiment">Новый эксперимент</a>
+		</div>
+	</div>
+
 	<div class="col-md-12 text-right">
-		<a class="btn btn-primary" href="?q=experiment">Новый эксперимент</a>
 	</div>
 </div>

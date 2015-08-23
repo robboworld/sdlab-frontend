@@ -49,8 +49,8 @@
 						<div class="input-group input-group-sm">
 							<input type="text" name="session_key" placeholder="Ключ сессии (123456)" title="тестовый ключ - 123456" class="form-control">
 							<span class="input-group-btn">
-								<a href="#" class="btn btn-sm btn-success" onclick="document.getElementById('nav-buttons').submit(); return false;"><span class="glyphicon glyphicon-log-in"></span><span class="hidden-xs">&nbsp Восстановить</span></a>
-								<a href="?q=session/create" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-plus"></span><span class="hidden-xs">&nbspНовая сессия</span></a>
+								<button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-log-in">&nbsp;</span><span class="hidden-xs">Восстановить</span></button>
+								<a href="?q=session/create" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-plus">&nbsp;</span><span class="hidden-xs">Новая сессия</span></a>
 							</span>
 						</div>
 					</form>

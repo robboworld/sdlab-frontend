@@ -56,8 +56,8 @@ $(document).ready(function(){
                 });
             }, SDExperimentSensors.updaterTime*1000);
         }
-    })
-})
+    });
+});
 var SDExperimentSensors = {
     updaterId : null,
     updaterTime : 3
@@ -65,9 +65,14 @@ var SDExperimentSensors = {
 
 
 function updateSensorValue(id, onalways){
+    var pos = id.lastIndexOf("#"), idx = 0, sid = id;
+    if(pos > 0){
+        sid = id.slice(0, pos);
+        idx = parseInt(id.substr(pos+1));
+    }
     var rq = coreAPICall('Sensors.GetData', {
-        Sensor: id,
-        ValueIdx: 0
+        Sensor: sid,
+        ValueIdx: idx
     }, function(data){
         if(typeof data.Reading != 'undefined'){
             $('.sensor-widget[sensor-id="'+id+'"]').find('.sensor-value').html(data.Reading);

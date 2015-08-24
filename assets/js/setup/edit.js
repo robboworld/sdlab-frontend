@@ -54,33 +54,36 @@ function updateSensorsList(data){
             var sensor = data[id];
             sensor.id = id;
             var info = (typeof sensor.sensor_name !== 'undefined') ? true : false;
-            if($('#sensors-in-setup tbody').find('input[value="'+sensor.id+'"]').size() == 0){
-                $('#sensor-list-table tbody').append('\
-                    <tr sensor-id="'+ sensor.id +'" class="success">\
-                        <td><input type="checkbox" checked="checked"/></td>\
-                        <td>' + sensor.id + '</td>\
-                        <td>' + (info ? sensor.Values[0].value_name : '-') + '</td>\
-                        <td>' + (info ? sensor.Values[0].si_notation : '-') + '</td>\
-                        <td>' + (info ? sensor.Values[0].si_name : '-') + '</td>\
-                        <td>' + sensor.Values[0].Range.Min + '</td>\
-                        <td>' + sensor.Values[0].Range.Max + '</td>\
-                        <td>' + ((info && typeof sensor.Values[0].error !== 'undefined') ? sensor.Values[0].error : '-') + '</td>\
-                    </tr>'
-                );
-            }
-            else{
-                $('#sensor-list-table tbody').append('\
-                    <tr sensor-id="'+ sensor.id +'" class="success" style="display: none;">\
-                        <td><input type="checkbox"/></td>\
-                        <td>' + sensor.id + '</td>\
-                        <td>' + (info ? sensor.Values[0].value_name : '-') + '</td>\
-                        <td>' + (info ? sensor.Values[0].si_notation : '-') + '</td>\
-                        <td>' + (info ? sensor.Values[0].si_name : '-') + '</td>\
-                        <td>' + sensor.Values[0].Range.Min + '</td>\
-                        <td>' + sensor.Values[0].Range.Max + '</td>\
-                        <td>' + ((info && typeof sensor.Values[0].error !== 'undefined') ? sensor.Values[0].error : '-') + '</td>\
-                    </tr>'
-                );
+            for (var i=0;i<sensor.Values.length;i++){
+                var sid = '' + sensor.id + '#' + i;
+                if($('#sensors-in-setup tbody').find('input[name="sensors['+sensor.id+']['+i+'][id]"]').size() == 0){
+                    $('#sensor-list-table tbody').append('\
+                        <tr sensor-id="'+ sid +'" class="success">\
+                            <td><input type="checkbox" checked="checked"/></td>\
+                            <td>' + sensor.id + '</td>\
+                            <td>' + (info ? sensor.Values[i].value_name : '-') + '</td>\
+                            <td>' + (info ? sensor.Values[i].si_notation : '-') + '</td>\
+                            <td>' + (info ? sensor.Values[i].si_name : '-') + '</td>\
+                            <td>' + sensor.Values[i].Range.Min + '</td>\
+                            <td>' + sensor.Values[i].Range.Max + '</td>\
+                            <td>' + ((info && typeof sensor.Values[i].error !== 'undefined') ? sensor.Values[i].error : '-') + '</td>\
+                        </tr>'
+                    );
+                }
+                else{
+                    $('#sensor-list-table tbody').append('\
+                        <tr sensor-id="'+ sid +'" class="success" style="display: none;">\
+                            <td><input type="checkbox"/></td>\
+                            <td>' + sensor.id + '</td>\
+                            <td>' + (info ? sensor.Values[i].value_name : '-') + '</td>\
+                            <td>' + (info ? sensor.Values[i].si_notation : '-') + '</td>\
+                            <td>' + (info ? sensor.Values[i].si_name : '-') + '</td>\
+                            <td>' + sensor.Values[i].Range.Min + '</td>\
+                            <td>' + sensor.Values[i].Range.Max + '</td>\
+                            <td>' + ((info && typeof sensor.Values[i].error !== 'undefined') ? sensor.Values[i].error : '-') + '</td>\
+                        </tr>'
+                    );
+                }
             }
         }
     } else {
@@ -92,10 +95,18 @@ function updateSensorsList(data){
 function addSensorsToSetup(){
     $('#sensor-list-table').find(':checked').parent().parent().each(function(id){
         var sensorId = $(this).attr('sensor-id');
+        var pos = sensorId.lastIndexOf("#"), idx = 0, sid = sensorId;
+        if(pos > 0){
+            sid = sensorId.slice(0, pos);
+            idx = parseInt(sensorId.substr(pos+1));
+        }
         $('#sensors-in-setup tbody').append('\
             <tr>\
-                <td><input type="hidden" name="sensors['+id+'][id]" value="' + sensorId + '"> ' + sensorId+ '</td>\
-                <td><input type="text" placeholder="Имя датчика" name="sensors['+id+'][name]" class="form-control" required="true"></td>\
+                <td>' + sid+ '\
+                    <input type="hidden" name="sensors['+sid+']['+idx+'][id]" value="' + sid + '"/>\
+                    <input type="hidden" name="sensors['+sid+']['+idx+'][val_id]" value="' + idx + '"/>\
+                </td>\
+                <td><input type="text" placeholder="Имя датчика" name="sensors['+sid+']['+idx+'][name]" class="form-control" required="true"></td>\
                 <td class="text-right"><a class="btn btn-sm btn-danger remove-sensor">Удалить</a></td>\
             </tr>');
         $(this).find(':checked').removeAttr('checked');
@@ -105,8 +116,10 @@ function addSensorsToSetup(){
 }
 
 function removeSensorFromSetup(obj){
-    var sensorId = $(obj).parent().parent().find('input[type=hidden]').val();
+    var sensor = $(obj).parent().parent().find('input[type=hidden][name$="[id]"]').val();
+    var idx = $(obj).parent().parent().find('input[type=hidden][name$="[val_id]"]').val();
+    var sensorId = '' + sensor + '#' + idx;
     $(obj).parent().parent().remove();
-    $('tr[sensor-id="' +sensorId +'"]').removeClass('success').show();
-    console.log('Remove sensor #'+sensorId +' from setup configuration.');
+    $('tr[sensor-id="'+ sensorId +'"]').removeClass('success').show();
+    console.log('Remove sensor #'+ sensorId +' from setup configuration.');
 }

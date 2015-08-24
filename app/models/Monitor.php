@@ -148,7 +148,7 @@ class Monitor extends Model
 
 		if (isset($fields['deleted']))
 		{
-			$where['deleted'] = ((int) $fields['deleted'] > 0) ? '((deleted isnotnull) and cast(deleted as integer)>0)' : '((deleted isnull) or cast(deleted as integer)=0)';
+			$where['deleted'] = ((int) $fields['deleted'] > 0) ? '((deleted notnull) and cast(deleted as integer)>0)' : '((deleted isnull) or cast(deleted as integer)=0)';
 		}
 
 		// Set where filters

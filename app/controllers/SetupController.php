@@ -129,7 +129,7 @@ class SetupController extends Controller
 
 			if($setup = (new Setup())->load($this->id))
 			{
-				/* если пользователь не может редактирвать то отправляем на страницу экспериментов*/
+				/* если пользователь не может редактировать, то отправляем на страницу экспериментов*/
 				if($setup->userCanEdit($this->session()))
 				{
 					$this->view->form->setup = $setup;
@@ -230,17 +230,17 @@ class SetupController extends Controller
 			if ($getinfo)
 			{
 				$search = $db->prepare(
-						"select a.sensor_id as id, a.name as name, a.setup_id as setup_id, "
+						"select a.sensor_id as id, a.sensor_val_id, a.name as name, a.setup_id as setup_id, "
 							. "s.value_name as value_name, s.si_notation as si_notation, s.si_name as si_name, s.max_range as max_range, s.min_range as min_range, s.resolution as resolution "
 						. "from setup_conf as a "
-						. "left join sensors as s on a.sensor_id = s.sensor_id "
+						. "left join sensors as s on a.sensor_id = s.sensor_id and a.sensor_val_id = s.sensor_val_id "
 						. "where a.setup_id = :setup_id "
-						. "group by a.sensor_id"
+						. "group by a.sensor_id, a.sensor_val_id"
 				);
 			}
 			else 
 			{
-				$search = $db->prepare("select sensor_id as id, name as name, setup_id as setup_id from setup_conf where setup_id = :setup_id");
+				$search = $db->prepare("select sensor_id as id, sensor_val_id, name as name, setup_id as setup_id from setup_conf where setup_id = :setup_id");
 			}
 			$search->execute(array(
 				':setup_id' => $id
@@ -265,19 +265,23 @@ class SetupController extends Controller
 		if(!empty($this->id))
 		{
 			$db = new DB();
-			$insert_query = "insert into setup_conf (setup_id, sensor_id, name) values (:setup_id, :sensor_id, :name)";
+			$insert_query = "insert into setup_conf (setup_id, sensor_id, sensor_val_id, name) values (:setup_id, :sensor_id, :sensor_val_id, :name)";
 
 			$set = $db->prepare($insert_query);
-			foreach($sensors as $sensor)
+			foreach($sensors as $items)
 			{
-				$sensor = (object) $sensor;
-				if(!empty($sensor->id) && !empty($sensor->name))
+				foreach($items as $sensor)
 				{
-					$set->execute(array(
-						':setup_id' => $this->id,
-						':sensor_id' => $sensor->id,
-						':name' => $sensor->name
-					));
+					$sensor = (object) $sensor;
+					if(!empty($sensor->id) && !empty($sensor->name) && isset($sensor->val_id))
+					{
+						$set->execute(array(
+								':setup_id' => $this->id,
+								':sensor_id' => $sensor->id,
+								':sensor_val_id' => $sensor->val_id,
+								':name' => $sensor->name
+						));
+					}
 				}
 			}
 		}

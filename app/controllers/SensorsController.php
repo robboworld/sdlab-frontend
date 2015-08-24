@@ -58,47 +58,52 @@ class SensorsController extends Controller
 
 			// TODO: move to sensors model class, update also by cron task, or on connect sensors?
 
-			$names = array();
-			foreach($result as $name => $value)
+			$db = new DB();
+
+			// Get known sensors
+			$query = $db->prepare('select distinct sensor_id, sensor_val_id from sensors');
+			$query->execute();
+			$items = (array) $query->fetchAll(PDO::FETCH_OBJ);
+			$known = array();
+			foreach($items as $k => $item)
 			{
-				$names[] = $name;
+				$key = '' . $item->sensor_id . '#' . (int)$item->sensor_val_id;
+				$known[$key] = $item;
 			}
 
-			if (!empty($names))
+			// Prepare insert query
+			$insert = $db->prepare('insert into sensors (sensor_id, sensor_val_id, sensor_name, value_name, si_notation, si_name, max_range, min_range, error, resolution)' .
+					' values (:sensor_id, :sensor_val_id, :sensor_name, :value_name, :si_notation, :si_name, :max_range, :min_range, :error, :resolution)');
+
+			foreach($result as $sensor_id => $obj)
 			{
-				$db = new DB();
-
-				$query = $db->prepare('select distinct sensor_id from sensors');
-				$query->execute();
-				$items = (array) $query->fetchAll(PDO::FETCH_COLUMN, 0);
-
-				$diff = (array) array_diff($names, $items);
-
-				$insert = $db->prepare('insert into sensors (sensor_id, sensor_name, value_name, si_notation, si_name, max_range, min_range, error, resolution)' .
-						' values (:sensor_id, :sensor_name, :value_name, :si_notation, :si_name, :max_range, :min_range, :error, :resolution)');
-
-				foreach ($diff as $sensor_id)
+				$sensor_name = (string) preg_replace('/\-.*/i', '', $sensor_id);
+				if (strlen($sensor_name) == 0)
 				{
-					$sensor_name = (string) preg_replace('/\-.*/i', '', $sensor_id);
-					if (strlen($sensor_name) == 0)
+					continue;
+				}
+
+				foreach($obj->{'Values'} as $sensor_val_id => &$data)
+				{
+					$key = '' . $sensor_id . '#' . (int)$sensor_val_id;
+					if (isset($known[$key]))
 					{
 						continue;
 					}
 
-					$data = $result->{$sensor_id}->Values[0];
-
 					try
 					{
 						$res = $insert->execute(array(
-								':sensor_id'   => $sensor_id,
-								':sensor_name' => $sensor_name,
-								':value_name'  => System::getValsTranslate($data->Name),
-								':si_notation' => System::getValsTranslate($data->Name, 'si_notation'),
-								':si_name'     => System::getValsTranslate($data->Name, 'si_name'),
-								':max_range'   => (isset($data->Range->Max) && !is_null($data->Range->Max)) ? $data->Range->Max : null,
-								':min_range'   => (isset($data->Range->Min) && !is_null($data->Range->Min)) ? $data->Range->Min : null,
-								':error'       => NULL, // todo: use error or resolution for sensors?
-								':resolution'  => $data->Resolution
+								':sensor_id'     => $sensor_id,
+								':sensor_val_id' => (int)$sensor_val_id,
+								':sensor_name'   => $sensor_name,
+								':value_name'    => System::getValsTranslate($data->{'Name'}),
+								':si_notation'   => System::getValsTranslate($data->{'Name'}, 'si_notation'),
+								':si_name'       => System::getValsTranslate($data->{'Name'}, 'si_name'),
+								':max_range'     => (isset($data->{'Range'}->{'Max'}) && !is_null($data->{'Range'}->{'Max'})) ? $data->{'Range'}->{'Max'} : null,
+								':min_range'     => (isset($data->{'Range'}->{'Min'}) && !is_null($data->{'Range'}->{'Min'})) ? $data->{'Range'}->{'Min'} : null,
+								':error'         => NULL, // todo: use error or resolution for sensors?
+								':resolution'    => $data->{'Resolution'}
 						));
 						if (!$res)
 						{
@@ -117,10 +122,10 @@ class SensorsController extends Controller
 			// Get additional sensors data
 			if(isset($params['getinfo']) && $params['getinfo'])
 			{
-				foreach($result as $name => $sensor)
+				foreach($result as $sensor_id => $sensor)
 				{
 					// Add additional data to main sensor data
-					$sensor->sensor_name = (string) preg_replace('/\-.*/i', '', $name);
+					$sensor->sensor_name = (string) preg_replace('/\-.*/i', '', $sensor_id);
 
 					foreach ($sensor->{'Values'} as $value)
 					{
@@ -153,8 +158,8 @@ class SensorsController extends Controller
 	{
 		$socket = new JSONSocket($this->config['socket']['path']);
 		$result = $socket->call('Lab.GetData', (object) array(
-			'Sensor' => $params['Sensor'],
-			'ValueIdx' => (int) $params['ValueIdx']
+				'Sensor'   => $params['Sensor'],
+				'ValueIdx' => (int) $params['ValueIdx']
 		));
 
 		return $result;
@@ -223,10 +228,9 @@ class SensorsController extends Controller
 					foreach($sensors as $sensor)
 					{
 						$params_array[] = (object) array(
-							'Sensor'   => $sensor->id,
-							'ValueIdx' => 0
+								'Sensor'   => $sensor->id,
+								'ValueIdx' => (int) $sensor->sensor_val_id
 						);
-
 					}
 
 					/* формируем массив параметров для метода апи датчиков*/
@@ -254,7 +258,7 @@ class SensorsController extends Controller
 						if(!empty($result))
 						{
 							$db = new DB();
-							$insert = $db->prepare('insert into detections (exp_id, time, sensor_id, detection, error) values (:exp_id, :time, :sensor_id, :detection, :error)');
+							$insert = $db->prepare('insert into detections (exp_id, time, sensor_id, sensor_val_id, detection, error) values (:exp_id, :time, :sensor_id, :sensor_val_id, :detection, :error)');
 
 							for($i = 0; $i < count($sensors); $i++)
 							{
@@ -288,15 +292,12 @@ class SensorsController extends Controller
 									':exp_id' => $experiment->id,
 									':time' => $result[0]->Time,
 									':sensor_id' => $sensors[$i]->id,
+									':sensor_val_id' => $sensors[$i]->sensor_val_id,
 									':detection' => $result[0]->Readings[$i],
 									':error' => $sensor_error
 								));
 							}
-							/*
 
-							$db->exec('insert ');
-							*/
-							//var_dump($result[0]->Readings);
 							return array('result' => true);
 						}
 						else
@@ -459,7 +460,7 @@ class SensorsController extends Controller
 					{
 						$params_array[] = (object) array(
 								'Sensor'   => $sensor->id,
-								'ValueIdx' => 0
+								'ValueIdx' => (int) $sensor->sensor_val_id
 						);
 					}
 
@@ -725,7 +726,7 @@ class SensorsController extends Controller
 						$insert_values = array();
 						$insert_block_size = 30;
 
-						$datafields = array('exp_id', 'time', 'sensor_id', 'detection', 'error');
+						$datafields = array('exp_id', 'time', 'sensor_id', 'sensor_val_id', 'detection', 'error');
 						$datafields_str = implode(',', $datafields );
 
 						$question_marks = '(' . DB::placeholders('?', count($datafields)) . ')';
@@ -776,7 +777,7 @@ class SensorsController extends Controller
 									continue;
 								}
 
-								$data_values = array($experiment->id, $d->Time, $sensors[$i]->id, $detection, $sensor_error);
+								$data_values = array($experiment->id, $d->Time, $sensors[$i]->id, $sensors[$i]->sensor_val_id, $detection, $sensor_error);
 
 								// Merge to long array of values
 								$insert_values = array_merge($insert_values, $data_values);
@@ -789,7 +790,7 @@ class SensorsController extends Controller
 									// Setup the placeholders and data values to insert query
 									$insert_sql = 'insert into detections (' . $datafields_str . ') values ' . implode(',', array_fill(0, $j, $question_marks));
 
-									$db->beginTransaction();  // speed inserts within transaction
+									$db->beginTransaction();  // speed up inserts within transaction
 
 									$stmt = $db->prepare($insert_sql);
 									try
@@ -821,7 +822,7 @@ class SensorsController extends Controller
 							// Setup the placeholders and data values to insert query
 							$insert_sql = 'insert into detections (' . $datafields_str . ') values ' . implode(',', array_fill(0, $j, $question_marks));
 
-							$db->beginTransaction();  // speed inserts within transaction
+							$db->beginTransaction();  // speed up inserts within transaction
 
 							$stmt = $db->prepare($insert_sql);
 							try

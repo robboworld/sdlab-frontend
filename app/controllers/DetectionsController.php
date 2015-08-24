@@ -13,6 +13,16 @@ class DetectionsController extends Controller
 	}
 
 
+	/**
+	 * Get detections data for plot.
+	 * API method: Detections.getGraphData
+	 * API params: plot
+	 *
+	 * @param  array  $params  Array of parameters:
+	 *                           plot  - id of plot
+	 *
+	 * @return array  Result in form array('result' => array of objects) or False on error
+	 */
 	function getGraphData($params)
 	{
 		if($plot = (new Plot())->load($params['plot']))
@@ -20,9 +30,9 @@ class DetectionsController extends Controller
 			$experiment = (new Experiment())->load($plot->exp_id);
 			$setup = (new Setup())->load($experiment->setup_id);
 
-			$detections_query = $this->db->prepare('select * from detections where exp_id = :experiment_id and sensor_id = :sensor_id');
+			$detections_query = $this->db->prepare('select * from detections where exp_id = :experiment_id and sensor_id = :sensor_id and sensor_val_id = :sensor_val_id');
 
-			$ordinate_query = $this->db->query('select ordinate.*, setup_conf.name, setup_conf.sensor_id from ordinate left join setup_conf on setup_conf.setup_id = '.(int)$setup->id.' AND setup_conf.sensor_id = ordinate.id_sensor_y where id_plot = '.(int)$plot->id.' ', PDO::FETCH_OBJ);
+			$ordinate_query = $this->db->query('select ordinate.*, setup_conf.name, setup_conf.sensor_id, setup_conf.sensor_val_id from ordinate left join setup_conf on setup_conf.setup_id = '.(int)$setup->id.' AND setup_conf.sensor_id = ordinate.id_sensor_y AND setup_conf.sensor_val_id = ordinate.sensor_val_id_y where id_plot = '.(int)$plot->id.' ', PDO::FETCH_OBJ);
 			//System::dump($ordinate_query);
 			if($ordinate_query)
 			{
@@ -32,7 +42,8 @@ class DetectionsController extends Controller
 					//System::dump($item);
 					$sensor_select = $detections_query->execute(array(
 						':experiment_id' => $experiment->id,
-						':sensor_id' => $item->sensor_id
+						':sensor_id' => $item->sensor_id,
+						':sensor_val_id' => $item->sensor_val_id
 					));
 					if($sensor_select)
 					{
@@ -63,6 +74,17 @@ class DetectionsController extends Controller
 	}
 
 
+	/**
+	 * Get experiment detections for timeseries graph.
+	 * API method: Detections.getGraphDataAll
+	 * API params: experiment, show-sensor[]
+	 * 
+	 * @param  array  $params  Array of parameters:
+	 *                           experiment  - id of experiment,
+	 *                           show-sensor - list of sensors identificators strings in format "sensor_id + # + value_id"
+	 * 
+	 * @return array  Result in form array('result' => array of objects) or False on error
+	 */
 	function getGraphDataAll($params)
 	{
 		if(!empty($params['experiment']))
@@ -90,12 +112,12 @@ class DetectionsController extends Controller
 				$db = new DB();
 
 				// Get unique sensors list from detections data of experiment
-				$query = 'select a.sensor_id, '
+				$query = 'select a.sensor_id, a.sensor_val_id, '
 							. 's.value_name, s.si_notation, s.si_name, s.max_range, s.min_range, s.resolution '
 						. 'from detections as a '
-						. 'left join sensors as s on a.sensor_id = s.sensor_id '
+						. 'left join sensors as s on a.sensor_id = s.sensor_id and a.sensor_val_id = s.sensor_val_id '
 						. 'where a.exp_id = :exp_id '
-						. 'group by a.sensor_id order by a.sensor_id';
+						. 'group by a.sensor_id, a.sensor_val_id order by a.sensor_id';
 				$load = $db->prepare($query);
 				$load->execute(array(
 						':exp_id' => $experiment->id
@@ -111,9 +133,10 @@ class DetectionsController extends Controller
 				// Prepare available_sensors list
 				foreach($sensors as $sensor)
 				{
-					if(!array_key_exists($sensor->sensor_id, $available_sensors))
+					$key = '' . $sensor->sensor_id . '#' . (int)$sensor->sensor_val_id;
+					if(!array_key_exists($key, $available_sensors))
 					{
-						$available_sensors[$sensor->sensor_id] = $sensor;
+						$available_sensors[$key] = $sensor;
 					}
 				}
 				//$result['available_sensors'] = $available_sensors;
@@ -132,7 +155,7 @@ class DetectionsController extends Controller
 				$query = //'select strftime(\'%Y.%m.%d %H:%M:%f\', time) as time, detection '
 						 'select (strftime(\'%s\',time) - strftime(\'%S\',time) + strftime(\'%f\',time))*1000 as time, detection '
 						. 'from detections '
-						. 'where exp_id = :exp_id and sensor_id = :sensor_id and (error is null or error = \'\')'
+						. 'where exp_id = :exp_id and sensor_id = :sensor_id and sensor_val_id = :sensor_val_id and (error isnull or error = \'\')'
 						. 'order by strftime(\'%s\', time)';
 				$load = $db->prepare($query);
 
@@ -141,13 +164,16 @@ class DetectionsController extends Controller
 				foreach($displayed_sensors as $sensor)
 				{
 					$data = new stdClass();
-					$data->label = empty($sensor->value_name) ? 'неизвестный' : $sensor->value_name ;
-					$data->sensor_id = empty($sensor->sensor_id) ? 'unknown' : $sensor->sensor_id ;
-					$data->color = ++$i;
+					// TODO: add to label name of sensor from setup_info (but unknown setup id for each detection, setup can be changed)
+					$data->label         = empty($sensor->value_name) ? 'неизвестный' : $sensor->value_name ;
+					$data->sensor_id     = $sensor->sensor_id;
+					$data->sensor_val_id = $sensor->sensor_val_id;
+					$data->color         = ++$i;
 
 					$res = $load->execute(array(
-							':exp_id'    => $experiment->id,
-							':sensor_id' => $sensor->sensor_id,
+							':exp_id'        => $experiment->id,
+							':sensor_id'     => $sensor->sensor_id,
+							':sensor_val_id' => $sensor->sensor_val_id
 					));
 					$detections = $load->fetchAll(PDO::FETCH_NUM);
 

@@ -251,8 +251,9 @@ $canSetupControl = $setup_exists && $ownSetup;
 <div class="row">
 	<div class="col-md-10" id="widget-workspace">
 		<? if( isset($this->view->content->sensors)) :?>
-			<? foreach($this->view->content->sensors as $sensor): ?>
-				<div class="col-md-3 sensor-widget" sensor-id="<? print $sensor->id; ?>">
+			<? foreach($this->view->content->sensors as $sensor): 
+				$skey = '' . $sensor->id . '#' . (int)$sensor->sensor_val_id; ?>
+				<div class="col-md-3 sensor-widget" sensor-id="<? print $skey; ?>">
 					<div class="panel panel-default">
 						<div class="panel-heading">
 						<span class="panel-title">
@@ -262,7 +263,7 @@ $canSetupControl = $setup_exists && $ownSetup;
 						</span>
 						</div>
 						<div class="panel-body">
-							<small class="pull-right">id: <? print htmlspecialchars($sensor->id, ENT_QUOTES, 'UTF-8'); ?></small>
+							<small class="pull-right">id: <? print htmlspecialchars($skey, ENT_QUOTES, 'UTF-8'); ?></small>
 							<div class="widget-pane info active ">
 								<h3 class="sensor-value">Подождите..</h3>
 								<small class="sensor-value-name"><?

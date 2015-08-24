@@ -57,7 +57,7 @@ class SessionController extends Controller
 		if(!$this->session()) System::go();
 
 		/* Если форма отправлена */
-		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] == 'edit-session-form')
+		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'edit-session-form')
 		{
 			if(isset($_POST['session_comments']))
 			{

@@ -8,19 +8,21 @@ class Plot extends Model
 	protected  $id;
 	protected $exp_id;
 	protected $id_sensor_x;
+	protected $sensor_val_id_x;
 	protected $scales;
 	protected $start;
 	protected $stop;
 
 	private $sql_load_query = 'select * from plots where id = :id';
 	private $sql_insert_query = 'insert into setups
-										(exp_id, id_sensor_x, scales, start, stop)
+										(exp_id, id_sensor_x, sensor_val_id_x, scales, start, stop)
 										values
-										(:exp_id, :id_sensor_x, :scales, :start, :stop)';
+										(:exp_id, :id_sensor_x, :sensor_val_id_x, :scales, :start, :stop)';
 
 	private $sql_update_query = 'update setups set
 										exp_id = :exp_id,
 										id_sensor_x = :id_sensor_x,
+										sensor_val_id_x = :sensor_val_id_x,
 										scales = :scales,
 										start = :start,
 										stop = :stop
@@ -28,11 +30,12 @@ class Plot extends Model
 
 	function __construct()
 	{
-		$this->id =
-		$this->exp_id =
-		$this->id_sensor_x =
-		$this->scales =
-		$this->start =
+		$this->id = null;
+		$this->exp_id = null;
+		$this->id_sensor_x = null;
+		$this->sensor_val_id_x = null;
+		$this->scales = null;
+		$this->start = null;
 		$this->stop = null;
 		parent::__construct();
 	}
@@ -68,6 +71,7 @@ class Plot extends Model
 				':id' => $this->id,
 				':exp_id' => $this->exp_id,
 				':id_sensor_x' => $this->id_sensor_x,
+				':sensor_val_id_x' => $this->sensor_val_id_x,
 				':scales' => $this->scales,
 				':start' => $this->start,
 				':stop' => $this->stop
@@ -79,6 +83,7 @@ class Plot extends Model
 			$result = $insert->execute(array(
 				':exp_id' => $this->exp_id,
 				':id_sensor_x' => $this->id_sensor_x,
+				':sensor_val_id_x' => $this->sensor_val_id_x,
 				':scales' => $this->scales,
 				':start' => $this->start,
 				':stop' => $this->stop

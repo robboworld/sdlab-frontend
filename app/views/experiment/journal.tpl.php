@@ -15,10 +15,10 @@
 			<tr>
 				<td>№</td>
 				<td>Время</td>
-				<? foreach ($this->view->content->displayed_sensors as $sensor) :?>
+				<? foreach ($this->view->content->displayed_sensors as $skey => $sensor) :?>
 				<td><? print htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?><br/>
 					<small><? echo htmlspecialchars($sensor->value_name, ENT_QUOTES, 'UTF-8') . ', ' . htmlspecialchars($sensor->si_notation, ENT_QUOTES, 'UTF-8'); ?></small><br/>
-					<small class="muted">(id: <? print htmlspecialchars($sensor->id, ENT_QUOTES, 'UTF-8'); ?>)</small>
+					<small class="muted">(id: <? print htmlspecialchars($skey, ENT_QUOTES, 'UTF-8'); ?>)</small>
 				</td>
 				<? endforeach; ?>
 			</tr>
@@ -29,11 +29,11 @@
 			<tr>
 				<td><? print (int)$i;?></td>
 				<td><? print htmlspecialchars($time, ENT_QUOTES, 'UTF-8'); ?></td>
-				<? foreach ($this->view->content->displayed_sensors as $sensor) :?>
+				<? foreach ($this->view->content->displayed_sensors as $skey => $sensor) :?>
 				<td><? 
-					if (isset($row[$sensor->id]))
+					if (isset($row[$skey]))
 					{
-						print ($row[$sensor->id]->error !== 'NaN') ? (float)$row[$sensor->id]->detection : '';
+						print ($row[$skey]->error !== 'NaN') ? (float)$row[$skey]->detection : '';
 					}
 				 ?></td>
 				<? endforeach; ?>
@@ -48,9 +48,9 @@
 	<form method="post" action="?<? print $_SERVER['QUERY_STRING'];?>">
 		<input type="hidden" name="form-id" value="experiment-journal-form">
 		<ul class="nav">
-			<? foreach ($this->view->content->available_sensors as $sensor) :?>
+			<? foreach ($this->view->content->available_sensors as $skey => $sensor) :?>
 				<li>
-					<label><input type="checkbox" <? if (array_key_exists($sensor->id, $this->view->content->displayed_sensors)) print 'checked';?> name="show-sensor[]" value="<? print htmlspecialchars($sensor->id, ENT_QUOTES, 'UTF-8'); ?>"> <? print htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?></label>
+					<label><input type="checkbox" <? if (array_key_exists($skey, $this->view->content->displayed_sensors)) print 'checked';?> name="show-sensor[]" value="<? print htmlspecialchars($skey, ENT_QUOTES, 'UTF-8'); ?>"/> <? print htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?></label>
 				</li>
 			<? endforeach; ?>
 		</ul>

@@ -36,7 +36,7 @@ $(document).ready(function(){
 function showRescanResults(data) {
     if(typeof data.error == 'undefined'){
         $('.sensors-list').empty();
-        var c, sensor, info;
+        var i, c, sensor, info, vals = '';
         for (id in data){
             $('.sensors-list').append('\
                 <div class="alert alert-info alert-dismissible" role="alert">\
@@ -49,10 +49,15 @@ function showRescanResults(data) {
             sensor = data[id];
             sensor.id = id;
             info = (typeof sensor.sensor_name !== 'undefined') ? true : false;
+            if(info){
+                for(i=0;i<sensor.Values.length;i++){
+                    vals += '<br/><span>' + sensor.Values[i].value_name + ' (' + sensor.Values[i].si_name + ')' + ' [' + sensor.Values[i].Range.Min + '&nbsp;:&nbsp;' + sensor.Values[i].Range.Max + ']' + '<span>';
+                }
+            }
             $(c).append('\
                 <div>\
                     <strong>' + sensor.id + '</strong>\
-                        ' + (info ? ('<br/><span>' + sensor.Values[0].value_name + ' (' + sensor.Values[0].si_name + ')' + ' [' + sensor.Values[0].Range.Min + '&nbsp;:&nbsp;' + sensor.Values[0].Range.Max + ']' + '<span>')  : '') +'\
+                        ' + vals +'\
                 <div>'
             );
         }

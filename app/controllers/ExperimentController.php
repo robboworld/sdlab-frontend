@@ -35,7 +35,7 @@ class ExperimentController extends Controller
 		$this->view->form->setups = SetupController::loadSetups();
 
 
-		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] == 'create-experiment-form')
+		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'create-experiment-form')
 		{
 			/* fill the Experiment properties */
 			$experiment = new Experiment($this->session()->getKey());
@@ -193,7 +193,7 @@ class ExperimentController extends Controller
 			// All experiments
 			$this->view->content->list = self::experimentsList();
 			self::setViewTemplate('view.all');
-			self::setTitle('Все экспериметы');
+			self::setTitle('Все эксперименты');
 
 			self::addJs('functions');
 			self::addJs('experiment/view.all');
@@ -225,7 +225,7 @@ class ExperimentController extends Controller
 				/* Установки как список опций для формы*/
 				$this->view->form->setups = SetupController::loadSetups();
 
-				if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] == 'edit-experiment-form')
+				if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'edit-experiment-form')
 				{
 					$experiment->set('title', htmlspecialchars(isset($_POST['experiment_title']) ? $_POST['experiment_title'] : ''));
 					$setup_id = (isset($_POST['setup_id']) ? (int)$_POST['setup_id'] : '');
@@ -472,7 +472,7 @@ class ExperimentController extends Controller
 				$this->view->form->experiment = $experiment;
 
 
-				if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] == 'experiment-journal-form')
+				if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'experiment-journal-form')
 				{
 					if(isset($_POST['show-sensor']) && !empty($_POST['show-sensor']) && is_array($_POST['show-sensor']))
 					{
@@ -486,7 +486,7 @@ class ExperimentController extends Controller
 				/* Возможно стоит вынести все в отдельный контроллер или модель*/
 				$db = new DB();
 
-				$query = 'select id, exp_id, strftime(\'%Y.%m.%d %H:%M:%f\', time) as time, sensor_id, detection, error from detections where exp_id = '.(int)$experiment->id . ' order by strftime(\'%s\', time)';
+				$query = 'select id, exp_id, strftime(\'%Y.%m.%d %H:%M:%f\', time) as time, sensor_id, sensor_val_id, detection, error from detections where exp_id = '.(int)$experiment->id . ' order by strftime(\'%s\', time)';
 				$detections = $db->query($query, PDO::FETCH_OBJ);
 
 				/* Формирование вывода на основе датчиков в установке. */
@@ -496,9 +496,10 @@ class ExperimentController extends Controller
 				/*Формируем список доступных датчиков*/
 				foreach($sensors as $sensor)
 				{
-					if(!array_key_exists($sensor->id, $available_sensors))
+					$key = '' . $sensor->id . '#' . (int)$sensor->sensor_val_id;
+					if(!array_key_exists($key, $available_sensors))
 					{
-						$available_sensors[$sensor->id] = $sensor;
+						$available_sensors[$key] = $sensor;
 					}
 				}
 				$this->view->content->available_sensors = $available_sensors;
@@ -517,10 +518,11 @@ class ExperimentController extends Controller
 				$journal = array();
 				foreach($detections as $row)
 				{
-					/*если есть в списке доступных датчиков до добавим в вывод журнала*/
-					if(array_key_exists($row->sensor_id, $this->view->content->displayed_sensors))
+					/*если есть в списке доступных датчиков, то добавим в вывод журнала*/
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if(array_key_exists($key, $this->view->content->displayed_sensors))
 					{
-						$journal[$row->time][$row->sensor_id] = $row;
+						$journal[$row->time][$key] = $row;
 					}
 				}
 				$this->view->content->detections = &$journal;
@@ -584,7 +586,7 @@ class ExperimentController extends Controller
 				$this->view->form = new Form('plot-edit-form');
 				$this->view->form->submit->value = 'Сохранить график';
 
-				if(isset($_POST['form-id']) && $_POST['form-id'] == 'plot-edit-form')
+				if(isset($_POST['form-id']) && $_POST['form-id'] === 'plot-edit-form')
 				{
 					// Save graph form
 				
@@ -632,12 +634,12 @@ class ExperimentController extends Controller
 			// Get available in detections sensors list
 
 			// Get unique sensors list from detections data of experiment
-			$query = 'select a.sensor_id, '
+			$query = 'select a.sensor_id, a.sensor_val_id, '
 						. 's.value_name, s.si_notation, s.si_name, s.max_range, s.min_range, s.resolution '
 					. 'from detections as a '
-					. 'left join sensors as s on a.sensor_id = s.sensor_id '
+					. 'left join sensors as s on a.sensor_id = s.sensor_id and a.sensor_val_id = s.sensor_val_id '
 					. 'where a.exp_id = :exp_id '
-					. 'group by a.sensor_id order by a.sensor_id';
+					. 'group by a.sensor_id, a.sensor_val_id order by a.sensor_id';
 			$load = $db->prepare($query);
 			$load->execute(array(
 					':exp_id' => $experiment->id
@@ -653,9 +655,10 @@ class ExperimentController extends Controller
 			// Prepare available_sensors list
 			foreach($sensors as $sensor)
 			{
-				if(!array_key_exists($sensor->sensor_id, $available_sensors))
+				$key = '' . $sensor->sensor_id . '#' . (int)$sensor->sensor_val_id;
+				if(!array_key_exists($key, $available_sensors))
 				{
-					$available_sensors[$sensor->sensor_id] = $sensor;
+					$available_sensors[$key] = $sensor;
 				}
 			}
 

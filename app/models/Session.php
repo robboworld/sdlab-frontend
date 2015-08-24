@@ -26,14 +26,15 @@ class Session extends Model
 		if(isset($this->id))
 		{
 			$result = $this->db->query("update sessions set
-										session_key = '$this->session_key',
-										name = '$this->name',
-										DateStart = '$this->DateStart',
-										DateEnd = '$this->DateEnd',
-										title = '$this->title',
-										comments = '$this->comments',
-										expiry = '$this->expiry'
-									where id = '$this->id'");
+										session_key = " . $this->db->quote($this->session_key) . ",
+										name = " . $this->db->quote($this->name) . ",
+										DateStart = " . $this->db->quote($this->DateStart) . ",
+										DateEnd = " . $this->db->quote($this->DateEnd) . ",
+										title = " . $this->db->quote($this->title) . ",
+										comments = " . $this->db->quote($this->comments) . ",
+										expiry = " . $this->db->quote($this->expiry) . "
+									where id = " . $this->db->quote($this->id)
+			);
 		}
 		else
 		{
@@ -46,14 +47,15 @@ class Session extends Model
 													comments,
 													expiry
 												) values (
-													'$this->session_key',
-													'$this->name',
-													'$this->DateStart',
-													'$this->DateEnd',
-													'$this->title',
-													'$this->comments',
-													'$this->expiry'
-												)");
+													" . $this->db->quote($this->session_key) . ",
+													" . $this->db->quote($this->name) . ",
+													" . $this->db->quote($this->DateStart) . ",
+													" . $this->db->quote($this->DateEnd) . ",
+													" . $this->db->quote($this->title) . ",
+													" . $this->db->quote($this->comments) . ",
+													" . $this->db->quote($this->expiry) . "
+												)"
+			);
 			$this->id = $this->db->lastInsertId();
 		}
 
@@ -62,7 +64,7 @@ class Session extends Model
 
 	function load($key)
 	{
-		$row = $this->db->query("select * from sessions where session_key = '$key'");
+		$row = $this->db->query("select * from sessions where session_key = " . $this->db->quote($key));
 		$session = $row->fetch(PDO::FETCH_OBJ);
 
 		if($session)

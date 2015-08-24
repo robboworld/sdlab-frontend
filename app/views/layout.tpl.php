@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title><? print $this->view->title; ?> - ScratchDuino</title>
+	<title><? print htmlspecialchars($this->view->title, ENT_QUOTES, 'UTF-8'); ?> - ScratchDuino</title>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<script src="assets/js/lib/jquery-1.11.1.min.js"></script>
@@ -31,7 +31,7 @@
 				<div class="pull-right text-right col-md-5">
 					<div class="btn-group ">
 						<a href="?q=session/edit" id="session-name" class="btn btn-sm btn-info navbar-btn" title="Редактировать сессию">
-							<? print $this->session()->name; ?>
+							<? print htmlspecialchars($this->session()->name, ENT_QUOTES, 'UTF-8'); ?>
 						</a>
 						<a href="?q=session/destroy" class="btn btn-sm btn-default navbar-btn">Выход</a>
 						<a href="?q=session/create" class="btn btn-sm btn-default navbar-btn">Новая сессия</a>
@@ -41,7 +41,7 @@
 
 			<? else : ?>
 				<div class="col-md-5 pull-right">
-					<form class="navbar-form" action="?q=session/create<? if(isset($_GET['q'])) : ?>&destination=<? print $_GET['q']; endif; ?>" method="post">
+					<form class="navbar-form" action="?q=session/create<? if(isset($_GET['q'])) : ?>&destination=<? print urlencode($_GET['q']); endif; ?>" method="post">
 						<div class="input-group input-group-sm">
 							<input type="text" name="session_key" placeholder="Ключ сессии (123456)" title="тестовый ключ - 123456" class="form-control">
 							<span class="input-group-btn">

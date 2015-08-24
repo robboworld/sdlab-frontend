@@ -12,9 +12,10 @@ class SessionController extends Controller
 			{
 				$this->session($session);
 				$this->session()->setSession();
+
 				if(isset($_GET['destination']) && $_GET['destination'] != $_GET['q'])
 				{
-					System::go($_GET['destination']);
+					System::go(System::clean($_GET['destination'], 'path'));
 				}
 				else
 				{
@@ -24,7 +25,7 @@ class SessionController extends Controller
 			}
 		}
 
-		if($_POST['session_new'] == true)
+		if(isset($_POST['session_new']) && $_POST['session_new'] == true)
 		{
 			if(isset($_POST['session_title']) && isset($_POST['session_name']))
 			{
@@ -35,9 +36,10 @@ class SessionController extends Controller
 					$this->session()->set('name', $_POST['session_name']);
 					$this->session()->save();
 					$this->session()->setSession();
+
 					if(isset($_GET['destination']) && $_GET['destination'] != $_GET['q'])
 					{
-						System::go($_GET['destination']);
+						System::go(System::clean($_GET['destination'], 'path'));
 					}
 					else
 					{
@@ -55,7 +57,7 @@ class SessionController extends Controller
 		if(!$this->session()) System::go();
 
 		/* Если форма отправлена */
-		if(isset($_POST) && $_POST['form-id'] == 'edit-session-form')
+		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'edit-session-form')
 		{
 			if(isset($_POST['session_comments']))
 			{

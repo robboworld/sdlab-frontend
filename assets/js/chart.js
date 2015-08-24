@@ -113,24 +113,23 @@ function buildGraph(data, placeholder, options){
             shadowSize: 0	// Drawing is faster without shadows
         },
         yaxis: {
-            min: 15,
-            max: 25,
+            min: 0,
+            max: 100,
             tickSize: 1,
             //zoomRange: [1, 10],
             pan: [-10, 10]
         },
         /*
-         xaxis: {
-         show: true,
-         mode: 'time',
-         timeformat: "%Y/%m/%d %H:%m:%S",
-         minTickSize: [1, 'second'],
-         timezone: 'browser',
-         zoomRange: [1, 10],
-         pan: [-10, 10]
-         },
-
-         */
+        xaxis: {
+            show: true,
+            mode: 'time',
+            timeformat: "%Y/%m/%d %H:%m:%S",
+            minTickSize: [1, 'second'],
+            timezone: 'browser',
+            zoomRange: [1, 10],
+            pan: [-10, 10]
+        },
+        */
         xaxis: {
             //tickSize: 100,
             //zoomRange: [1, 10],
@@ -151,8 +150,58 @@ function buildGraph(data, placeholder, options){
         }
     }
 
+    var plottooltip = false;
     if(typeof (options) != 'undefined'){
+        if (typeof options.plottooltip !== 'undefined'){
+            if(options.plottooltip) {
+                plottooltip = true;
+            }
+            options.plottooltip = null;
+        }
+
         $.extend(settings, options)
     }
-    var plot = $.plot(placeholder, data, settings);
+
+    plot = $.plot(placeholder, data, settings);
+
+    if (plottooltip){
+        var tooltipid = 'tooltip';
+
+        if ($("#"+tooltipid).length == 0){
+            $("<div id='"+tooltipid+"'></div>").css({
+                position: "absolute",
+                display: "none",
+                border: "1px solid #fdd",
+                padding: "2px",
+                "background-color": "#fee",
+                opacity: 0.80
+            }).appendTo("body");
+        }
+
+        $(placeholder).bind("plothover", function (event, pos, item) {
+            /*
+            if ($("#enablePosition:checked").length > 0) {
+                var str = "(" + pos.x.toFixed(2) + ", " + pos.y.toFixed(2) + ")";
+                $("#hoverdata").text(str);
+            }
+            */
+            //if ($("#enableTooltip:checked").length > 0)
+            {
+                if (item) {
+                    var x = item.datapoint[0],
+                    y = item.datapoint[1].toFixed(2);
+
+                    var xdt = (new Date(x)).toISOString();
+
+                    $("#"+tooltipid).html(item.series.label + " : " + xdt + " : " + y)
+                        .css({top: item.pageY+5, left: item.pageX+5})
+                        .fadeIn(200);
+                } else {
+                    $("#"+tooltipid).hide();
+                }
+            }
+        });
+    }
+
+    return ;
 }

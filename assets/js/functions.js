@@ -1,15 +1,15 @@
 
 /* Вызов к php-прослойке */
 function coreAPICall(method, params, callback){
-    $.ajax({
+    return rq = $.ajax({
         url: '?q=api',
         method: 'get',
         data: {
             method: method,
             params: params
         },
-        success: function(result){
-            callback(result);
+        success: function(result, status, jqxhr){
+            callback(result, status, jqxhr);
         },
         error: function(){
             console.log('API Call error: Transport error');
@@ -41,25 +41,26 @@ function nano(value){
     return value * 1000000000;
 }
 
-function  Graph (data) {
+function Graph(data) {
     this.data = data;
-    this.getMinValue = function (){
+    this.getMinValue = function(){
         var min = null;
-        this.data.forEach(function(sensor){
-           sensor.data.forEach(function(point){
-               if(point[1] < min || min == null) min = point[1];
-           })
+        $.each(this.data, function(si, sensor){
+            $.each(sensor.data, function(pi, point){
+                var p = parseFloat(point[1]);
+                if(p < min || min == null) min = p;
+            });
         });
         return min;
-    }
-
-    this.getMaxValue = function (){
+    };
+    this.getMaxValue = function(){
         var max = null;
-        this.data.forEach(function(sensor){
-            sensor.data.forEach(function(point){
-                if(point[1] > max || max == null) max = point[1];
-            })
+        $.each(this.data, function(si, sensor){
+            $.each(sensor.data, function(pi, point){
+                var p = parseFloat(point[1]);
+                if(p > max || max == null) max = p;
+            });
         });
         return max;
-    }
+    };
 }

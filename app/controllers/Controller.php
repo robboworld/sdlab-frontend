@@ -10,7 +10,9 @@ class Controller
 	protected $user_access_level = 1;
 	function __construct($action = 'index')
 	{
-		$this->action = $action;
+		$this->action = System::clean($action, 'method');
+		$this->view = new stdClass();
+		$this->view->content = new stdClass();
 	}
 
 	function index()
@@ -82,7 +84,11 @@ class Controller
 	{
 		if(!isset($this->view->template)) $this->view->template = $this->action;
 
-		include(VIEWS.'/'.self::getControllerName().'/'.$this->view->template.'.tpl.php');
+		$tpl_path = VIEWS.'/'.self::getControllerName().'/'.$this->view->template.'.tpl.php';
+		if (file_exists($tpl_path))
+		{
+			include($tpl_path);
+		}
 	}
 
 	protected function getControllerName()

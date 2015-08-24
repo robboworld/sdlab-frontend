@@ -4,21 +4,29 @@ class ApiController extends Controller
 {
 	function __construct()
 	{
+		$method_query = explode('.', isset($_GET['method']) ? $_GET['method'] : '');
 
-		$method_query = explode('.', $_GET['method']);
+		// Check values
+		$method_query[0] = isset($method_query[0]) ? System::clean($method_query[0], 'class')  : '';
+		$method_query[1] = isset($method_query[1]) ? System::clean($method_query[1], 'method') : '';
+
 		$api_method_class = $method_query[0].'Controller';
+
 		$this->controller = new $api_method_class;
 		$this->method = $method_query[1];
-		$this->params = $_GET['params'];
-
-
+		$this->params = isset($_GET['params']) ? $_GET['params'] : array();
 	}
 
 	function api()
 	{
 		if(method_exists($this->controller, $this->method))
 		{
+			// Inject App in called controller
+			// xxx: cannot do that in constructor of new sub controller, because it creates when no binded $this->app in the current api controller!
+			$this->controller->app = $this->app;
 
+
+			// Call method
 			$result = $this->controller->{$this->method}($this->params);
 
 			if($result)

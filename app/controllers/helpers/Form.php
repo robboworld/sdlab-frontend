@@ -12,6 +12,7 @@ class Form
 	function __construct($id = 'new-form')
 	{
 		$this->id = $id;
+		$this->submit = new stdClass();
 		$this->submit->value = 'Отправить';
 	}
 

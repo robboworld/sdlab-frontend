@@ -161,10 +161,69 @@ class SensorsController extends Controller
 				'Sensor'   => $params['Sensor'],
 				'ValueIdx' => (int) $params['ValueIdx']
 		));
+		unset($socket);
 
 		return $result;
 	}
 
+	/**
+	 * Get data from sensors.
+	 * API method: Sensors.getDataItems
+	 * API params: [Sensor, ValueIdx]
+	 *
+	 * @param  array  $params Array of parameters
+	 *
+	 * @return array  The sensor array with data array (Sensor, ValueIdx, result(Time, Reading)) or False on error
+	 */
+	function getDataItems($params)
+	{
+		if (!is_array($params)) 
+		{
+			$this->error = 'Error';
+
+			return false;
+		}
+
+		// TODO: Create backend Lab.GetItemsData for read multi sensors
+
+		$result = array();
+		foreach ($params as $sensor)
+		{
+			if(!isset($sensor['Sensor']))
+			{
+				continue;
+			}
+
+			$obj = array(
+					'Sensor' => $sensor['Sensor']
+			);
+
+			$idx = 0;
+			if (isset($sensor['ValueIdx']))
+			{
+				$idx = (int)$sensor['ValueIdx'];
+				$obj['ValueIdx'] = $idx;
+			}
+
+			$socket = new JSONSocket($this->config['socket']['path']);
+			$obj['result'] = $socket->call('Lab.GetData', (object) array(
+					'Sensor'   => $sensor['Sensor'],
+					'ValueIdx' => $idx
+			));
+			unset($socket);
+
+			$result[] = $obj;
+		}
+
+		if (empty($result))
+		{
+			$this->error = 'Error';
+
+			return false;
+		}
+
+		return $result;
+	}
 
 	/**
 	 * Get data strob from Setup for experiment.
@@ -322,7 +381,14 @@ class SensorsController extends Controller
 			}
 			else
 			{
-				$this->error = 'Experiment not found';
+				if (empty($experiment->id))
+				{
+					$this->error = 'Experiment not found';
+				}
+				else
+				{
+					$this->error = 'Setup not found';
+				}
 
 				return false;
 			}
@@ -521,7 +587,14 @@ class SensorsController extends Controller
 			}
 			else
 			{
-				$this->error = 'Experiment not found';
+				if (empty($experiment->id))
+				{
+					$this->error = 'Experiment not found';
+				}
+				else
+				{
+					$this->error = 'Setup not found';
+				}
 
 				return false;
 			}
@@ -852,7 +925,14 @@ class SensorsController extends Controller
 			}
 			else
 			{
-				$this->error = 'Experiment not found';
+				if (empty($experiment->id))
+				{
+					$this->error = 'Experiment not found';
+				}
+				else
+				{
+					$this->error = 'Setup not found';
+				}
 
 				return false;
 			}

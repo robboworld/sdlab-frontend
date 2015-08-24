@@ -124,6 +124,7 @@
 					<thead>
 						<tr>
 							<td><label>ID</label></td>
+							<td>Название физ. вел.</td>
 							<td>Имя датчика</td>
 							<td></td>
 						</tr>
@@ -136,6 +137,7 @@
 										<input type="hidden" name="sensors[<? print $sensor->id; ?>][<? echo (int)$sensor->sensor_val_id; ?>][id]" value="<? print $sensor->id; ?>"/>
 										<input type="hidden" name="sensors[<? print $sensor->id; ?>][<? echo (int)$sensor->sensor_val_id; ?>][val_id]" value="<? print (int)$sensor->sensor_val_id; ?>"/>
 									</td>
+									<td><? print htmlspecialchars($sensor->value_name, ENT_QUOTES, 'UTF-8'); ?></td>
 									<td><input type="text" placeholder="Имя датчика" name="sensors[<? print $sensor->id; ?>][<? echo (int)$sensor->sensor_val_id; ?>][name]" class="form-control" required="required" value="<? print !empty($sensor->name) ? $sensor->name : '' ; ?>"/></td>
 									<td class="text-right"><a class="btn btn-sm btn-danger remove-sensor">Удалить</a></td>
 								</tr>

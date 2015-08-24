@@ -49,6 +49,7 @@ function showRescanResults(data) {
             sensor = data[id];
             sensor.id = id;
             info = (typeof sensor.sensor_name !== 'undefined') ? true : false;
+            vals = '';
             if(info){
                 for(i=0;i<sensor.Values.length;i++){
                     vals += '<br/><span>' + sensor.Values[i].value_name + ' (' + sensor.Values[i].si_name + ')' + ' [' + sensor.Values[i].Range.Min + '&nbsp;:&nbsp;' + sensor.Values[i].Range.Max + ']' + '<span>';

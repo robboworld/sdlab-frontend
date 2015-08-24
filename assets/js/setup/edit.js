@@ -61,7 +61,7 @@ function updateSensorsList(data){
                         <tr sensor-id="'+ sid +'" class="success">\
                             <td><input type="checkbox" checked="checked"/></td>\
                             <td>' + sensor.id + '</td>\
-                            <td>' + (info ? sensor.Values[i].value_name : '-') + '</td>\
+                            <td class="sensor-setup-valname">' + (info ? sensor.Values[i].value_name : '-') + '</td>\
                             <td>' + (info ? sensor.Values[i].si_notation : '-') + '</td>\
                             <td>' + (info ? sensor.Values[i].si_name : '-') + '</td>\
                             <td>' + sensor.Values[i].Range.Min + '</td>\
@@ -75,7 +75,7 @@ function updateSensorsList(data){
                         <tr sensor-id="'+ sid +'" class="success" style="display: none;">\
                             <td><input type="checkbox"/></td>\
                             <td>' + sensor.id + '</td>\
-                            <td>' + (info ? sensor.Values[i].value_name : '-') + '</td>\
+                            <td class="sensor-setup-valname">' + (info ? sensor.Values[i].value_name : '-') + '</td>\
                             <td>' + (info ? sensor.Values[i].si_notation : '-') + '</td>\
                             <td>' + (info ? sensor.Values[i].si_name : '-') + '</td>\
                             <td>' + sensor.Values[i].Range.Min + '</td>\
@@ -106,6 +106,7 @@ function addSensorsToSetup(){
                     <input type="hidden" name="sensors['+sid+']['+idx+'][id]" value="' + sid + '"/>\
                     <input type="hidden" name="sensors['+sid+']['+idx+'][val_id]" value="' + idx + '"/>\
                 </td>\
+                <td>' + $(this).find('.sensor-setup-valname').first().text() + '</td>\
                 <td><input type="text" placeholder="Имя датчика" name="sensors['+sid+']['+idx+'][name]" class="form-control" required="true"></td>\
                 <td class="text-right"><a class="btn btn-sm btn-danger remove-sensor">Удалить</a></td>\
             </tr>');

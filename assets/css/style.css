@@ -2,12 +2,16 @@ body {
 	overflow-x: hidden;
 }
 #data-container {
-	//padding-left: 165px;
-	//padding-right: 15px;
-	//margin-left: auto;
-	//margin-right: auto;
+	/*
+	padding-left: 165px;
+	padding-right: 15px;
+	margin-left: auto;
+	margin-right: auto;
+	*/
 	padding-bottom: 30px;
-	//overflow: hidden;
+	/*
+	overflow: hidden;
+	*/
 }
 #menu-container {
 	width: 150px;
@@ -85,11 +89,8 @@ body {
 .bg-default { background-color: #EEE; }
 .mrg-top-5px { margin-top: 5px; }
 .mrg-bot-5px { margin-bottom: 5px; }
-.float-left { float: left; }
 .text-area { resize: vertical; min-height: 250px; }
 .width-auto { width: auto; }
-.button-center { text-align: center; }
-.button-center .btn-group { float: none; }
 /* exp-page */ 
 h3.exp-title {
 	margin: 0;
@@ -119,10 +120,32 @@ h3.exp-title {
 	background-color: #fff;
 	color: #428bca;
 }
-.ses-title { text-align: center; }
 .exp-title a { margin-bottom: 3px; }
 .exp-title span { vertical-align: middle; }
 .exp-title span.glyphicon { vertical-align: text-top; }
+
+.row-experiment .remove-button,
+.row-experiment .edit-button {
+  background: white;
+  color: white;
+  border: none;
+  box-shadow: none;
+}
+.row-experiment .edit-button {
+  transition-property: background;
+  transition-duration: 1s;
+}
+.row-experiment .remove-button {
+  transition-property: background;
+  transition-duration: 1.2s;
+}
+.row-experiment:hover .remove-button {
+  background: #419641;
+}
+.row-experiment:hover .edit-button {
+  background: #428bca;
+}
+
 .period-work {
 	display: inline-block;
 	margin-right: 5px;

@@ -14,7 +14,7 @@ class System
 		print('</pre>');
 	}
 
-	static function dateformat($string, $format = 'd.m.Y H:s')
+	static function dateformat($string, $format = 'd.m.Y H:i:s')
 	{
 		return (new DateTime($string))->format($format);
 	}

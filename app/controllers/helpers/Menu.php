@@ -19,9 +19,9 @@ class Menu
 				else
 				{
 					$item_title = $item['title'];
-					if(isset($item['glyphicon']))
+					if(isset($item['icon']))
 					{
-						$item_title = '<span class="'.$item['glyphicon'].'"></span><span class="hidden-xs">&nbsp'.$item['title'].'</span>';
+						$item_title = '<span class="'.$item['icon'].'"></span><span class="hidden-xs">&nbsp;'.$item['title'].'</span>';
 					}
 					$menu_html .= '<li><a id="'.$id.'" href="'.$href.'">'.$item_title.'</a></li>';
 				}
@@ -39,7 +39,7 @@ class Menu
 	{
 		$menu['page/view'] = array(
 			'title' => 'Система',
-			'glyphicon' => 'glyphicon glyphicon-home',
+			'icon' => 'glyphicon glyphicon-home',
 			'user_level' => 0
 		);
 		/*
@@ -51,27 +51,27 @@ class Menu
 		*/
 		$menu['experiment/view'] = array(
 			'title' => 'Эксперименты',
-			'glyphicon' => 'glyphicon glyphicon-list',
+			'icon' => 'glyphicon glyphicon-list',
 			'user_level' => 1
 		);
 
 		/*
 		$menu['page/view/journal'] = array(
 			'title' => 'Журнал',
-			'glyphicon' => '',
+			'icon' => '',
 			'user_level' => 1
 		);
 
 		$menu['page/view/graphs'] = array(
 			'title' => 'Графики',
-			'glyphicon' => '',
+			'icon' => '',
 			'user_level' => 1
 		);
 		*/
 
 		$menu['page/view/help'] = array(
 			'title' => 'Помощь',
-			'glyphicon' => 'glyphicon glyphicon-info-sign',
+			'icon' => 'glyphicon glyphicon-info-sign',
 			'user_level' => 0
 		);
 

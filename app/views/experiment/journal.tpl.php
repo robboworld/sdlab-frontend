@@ -4,9 +4,6 @@
 		<span class="glyphicon glyphicon-chevron-left"></span> <? print $this->view->form->experiment->title; ?>
 	</a>
 </div>
-<div class="col-md-12">
-
-</div>
 <div class="col-md-9">
 	<h3><? print htmlspecialchars($this->view->content->title, ENT_QUOTES, 'UTF-8'); ?></h3>
 	<!-- <input type="checkbox"> Включить в отчет -->

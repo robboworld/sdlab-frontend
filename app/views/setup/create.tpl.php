@@ -1,5 +1,7 @@
 <div class="row">
-	<h3 class="col-md-offset-1 col-md-10"><? print htmlspecialchars($this->view->content->title, ENT_QUOTES, 'UTF-8'); ?></h3>
+	<div class="col-md-offset-1 col-md-10">
+		<h3><? print htmlspecialchars($this->view->content->title, ENT_QUOTES, 'UTF-8'); ?></h3>
+	</div>
 </div>
 <form action="<? print htmlspecialchars($_SERVER['REQUEST_URI'], ENT_QUOTES, 'UTF-8'); ?>" method="post">
 <div class="row setup-create">
@@ -191,12 +193,12 @@
 	</div>
 </div>
 <div class="row mrg-top-20px">
-	<div class="button-center col-md-12">
-		<div class="btn-group">
+	<div class="col-md-offset-1 col-md-10 text-center">
+		<div class="btn-group" style="float: none;">
+			<a href="/?q=experiment/view" class="col-md-6 btn-default btn width-auto form-control">Отменить</a>
 		<? if($this->view->form->id == 'edit-setup-form') : ?>
 			<a href="/?q=setup/create" class="btn btn-primary width-auto form-control">Создать</a>
 		<? endif; ?>
-			<a href="/?q=experiment/view" class="col-md-6 btn-default btn width-auto form-control">Отменить</a>
 			<input type="submit" class="btn btn-success width-auto form-control" value="<? print $this->view->form->submit->value; ?>" disabled="disabled" />
 		</div>
 	</div>

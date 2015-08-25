@@ -357,6 +357,29 @@ class SensorsController extends Controller
 								));
 							}
 
+							// Update experiment start
+							$sql_exp_update_query = "update experiments set DateStart_exp = :DateStart_exp where id = :id and ((DateStart_exp isnull) or (DateStart_exp = 0) or (DateStart_exp = ''))";
+							$update = $db->prepare($sql_exp_update_query);
+							$result = $update->execute(array(
+									':DateStart_exp' => (new DateTime())->format('U'),
+									':id' => $experiment->id
+							));
+							if (!$result)
+							{
+								error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
+							}
+							// Update experiment stop
+							$sql_exp_update_query = "update experiments set DateEnd_exp = :DateEnd_exp where id = :id";
+							$update = $db->prepare($sql_exp_update_query);
+							$result = $update->execute(array(
+									':DateEnd_exp' => (new DateTime())->format('U'),
+									':id' => $experiment->id
+							));
+							if (!$result)
+							{
+								error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
+							}
+
 							return array('result' => true);
 						}
 						else
@@ -560,25 +583,49 @@ class SensorsController extends Controller
 					$result = $socket->call('Lab.StartMonitor', (object) $query_params);
 
 					// Try get uuid of created monitor
-					if (!empty($result))
-					{
-						// Save started monitor uuid
-						$monitor = new Monitor();
-						$monitor->set('exp_id', (int)$experiment->id);
-						$monitor->set('setup_id', (int)$setup->id);
-						$monitor->set('uuid', (string)$result);
-						$monitor->set('created', System::dateformat('now', 'Y-m-d\TH:i:s\Z'));
-
-						$result = $monitor->save();
-
-						return array('result' => true);
-					}
-					else
+					if (empty($result))
 					{
 						$this->error = 'Monitoring not started';
 
 						return false;
 					}
+
+					// Save started monitor uuid
+					$monitor = new Monitor();
+					$monitor->set('exp_id', (int)$experiment->id);
+					$monitor->set('setup_id', (int)$setup->id);
+					$monitor->set('uuid', (string)$result);
+					$monitor->set('created', System::dateformat('now', 'Y-m-d\TH:i:s\Z'));
+
+					$result = $monitor->save();
+					if (!$result)
+					{
+						error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
+					}
+
+					// Update experiment start
+					$sql_exp_update_query = "update experiments set DateStart_exp = :DateStart_exp where id = :id and ((DateStart_exp isnull) or (DateStart_exp = 0) or (DateStart_exp = ''))";
+					$update = $db->prepare($sql_exp_update_query);
+					$result = $update->execute(array(
+							':DateStart_exp' => (new DateTime())->format('U'),
+							':id' => $experiment->id
+					));
+					if (!$result)
+					{
+						error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
+					}
+					// Update experiment stop reset
+					$sql_exp_update_query = "update experiments set DateEnd_exp = NULL where id = :id";
+					$update = $db->prepare($sql_exp_update_query);
+					$result = $update->execute(array(
+							':id' => $experiment->id
+					));
+					if (!$result)
+					{
+						error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
+					}
+
+					return array('result' => true);
 				}
 				else
 				{
@@ -920,6 +967,18 @@ class SensorsController extends Controller
 				// Set active state
 				$setup->set('flag', null);
 				$setup->save();
+
+				// Update experiment stop
+				$sql_exp_update_query = "update experiments set DateEnd_exp = :DateEnd_exp where id = :id";
+				$update = $db->prepare($sql_exp_update_query);
+				$result = $update->execute(array(
+						':DateEnd_exp' => (new DateTime())->format('U'),
+						':id' => $experiment->id
+				));
+				if (!$result)
+				{
+					error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
+				}
 
 				return array('result' => true);
 			}

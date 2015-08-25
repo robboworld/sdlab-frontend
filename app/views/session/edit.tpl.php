@@ -28,9 +28,9 @@
 			<textarea class="text-area form-control" maxlength="2000" name="session_comments" placeholder="Комментарий"><?print $this->session()->comments;?></textarea>
 		</div>
 
-		<div class="button-center col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4">
-			<div class="btn-group">
-				<input type="submit" class="form-control btn-success" value="Сохранить">
+		<div class="col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4 text-center">
+			<div class="btn-group" style="float:none;">
+				<input type="submit" class="form-control btn btn-success" value="Сохранить">
 			</div>
 		</div>
 	</form>
@@ -48,23 +48,27 @@
 	<? if($this->view->experiments_in_session) : ?>
 	<table class="table">
 		<thead>
-			<td><label>#ID</label></td>
-			<td><label>Дата начала / Дата окончания</label></td>
-			<td><label>Название экссперимента</label></td>
-			<td><label>Установка</label></td>
+			<tr>
+				<td><label>#ID</label></td>
+				<td><label>Дата начала / Дата окончания</label></td>
+				<td><label>Название экссперимента</label></td>
+				<td><label>Установка</label></td>
+			</tr>
 		</thead>
-		<? foreach ($this->view->experiments_in_session as $item) : ?>
-		<tr>
-			<td>#<? print $item->id?></td>
-			<td><? print System::dateformat($item->DateStart_exp);?> / <? if(!empty($item->DateEnd_exp)) print System::dateformat($item->DateEnd_exp);?></td>
-			<td><a href="?q=experiment/view/<? print $item->id?>"><? print $item->title?></a></td>
-			<td><? print (new Setup())->load($item->setup_id)->title; ?></td>
-		</tr>
-		<? endforeach; ?>
+		<tbody>
+			<? foreach ($this->view->experiments_in_session as $item) : ?>
+			<tr>
+				<td>#<? print $item->id?></td>
+				<td><? print System::dateformat('@'.$item->DateStart_exp);?> / <? if(!empty($item->DateEnd_exp)) print System::dateformat($item->DateEnd_exp);?></td>
+				<td><a href="?q=experiment/view/<? print $item->id?>"><? print $item->title?></a></td>
+				<td><? print (new Setup())->load($item->setup_id)->title; ?></td>
+			</tr>
+			<? endforeach; ?>
+		</tbody>
 	</table>
 	<? endif; ?>
-	<div class="button-center col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4">
-		<div class="btn-group">
+	<div class="col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4 text-center">
+		<div class="btn-group" style="float: none;">
 			<a class="btn btn-primary" href="?q=experiment">Новый эксперимент</a>
 		</div>
 	</div>

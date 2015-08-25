@@ -44,7 +44,7 @@
 		<div class="col-md-offset-1 form-group col-md-10">
 			<textarea class="text-area form-control" maxlength="2000" name="experiment_comments" placeholder="Комментарий"><? print htmlspecialchars($this->view->form->experiment->comments, ENT_QUOTES, 'UTF-8');?></textarea>
 		</div>
-		<div class="button-center col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4">
+		<div class="col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4 text-center">
 			<? if($this->view->form->id == 'edit-experiment-form') : ?>
 				<a href="?q=experiment/view/<?print (int)$this->view->form->experiment->id; ?>" class="btn btn-default">Отмена</a>
 			<? endif;?>

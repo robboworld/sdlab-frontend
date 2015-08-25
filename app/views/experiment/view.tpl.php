@@ -12,14 +12,14 @@ $canSetupControl = $setup_exists && $ownSetup;
 <div class="row">
 	<div class="col-md-12">
 		<a href="/?q=experiment/view" class="btn btn-sm btn-default">
-			<span class="glyphicon glyphicon-chevron-left"></span> Все эксперименты
+			<span class="glyphicon glyphicon-chevron-left">&nbsp;</span>Все эксперименты
 		</a>
 	</div>
 </div>
 
 <div class="row">
 	<div class="col-md-12">
-		<h3 class="ses-title"><? print mb_strtoupper(htmlspecialchars($this->view->content->session->title, ENT_QUOTES, 'UTF-8'), 'UTF-8'); ?></h3>
+		<h3 class="text-center"><? print mb_strtoupper(htmlspecialchars($this->view->content->session->title, ENT_QUOTES, 'UTF-8'), 'UTF-8'); ?></h3>
 	</div>
 	<?
 	/*
@@ -33,6 +33,7 @@ $canSetupControl = $setup_exists && $ownSetup;
 <div class="row exp-view">
 	<div class="col-md-12">
 		<table class="table table-responsive table-bordered table-condensed exp-table">
+			<tbody>
 			<tr>
 				<td class="col-md-12 padng-3px">
 					<h3 class="exp-title">
@@ -43,16 +44,16 @@ $canSetupControl = $setup_exists && $ownSetup;
 						<div class="date-block">
 							<div id="exp_datestart" class="text-left ln-hgt-16px">
 								<? if(!empty($this->view->content->experiment->DateStart_exp))
-									print System::dateformat($this->view->content->experiment->DateStart_exp); ?>
+									print System::dateformat('@'.$this->view->content->experiment->DateStart_exp); ?>
 							</div>
 							<div id="exp_end" class="text-left ln-hgt-16px">
 								<? if(!empty($this->view->content->experiment->DateEnd_exp))
-									print System::dateformat($this->view->content->experiment->DateEnd_exp); ?>
+									print System::dateformat('@'.$this->view->content->experiment->DateEnd_exp); ?>
 							</div>
 						</div>
 						<div class="label-block">
 							<div class="text-right ln-hgt-16px">
-								<span class="label label-primary"> начат</span>
+								<span class="label label-primary">начат</span>
 							</div>
 							<div class="text-right ln-hgt-16px">
 								<span class="label label-primary">завершен</span>
@@ -147,7 +148,7 @@ $canSetupControl = $setup_exists && $ownSetup;
 								{
 									echo '*';
 								}
-								?></span>
+								?></span></div>
 							</div>
 						</div>
 						<div class="col-xs-12 col-sm-6 col-md-4">
@@ -181,7 +182,7 @@ $canSetupControl = $setup_exists && $ownSetup;
 											$now = new DateTime();
 											if ($now->format('U') > $setup_stopat_date->format('U'))
 											{
-												$setup_stopat_class = 'bg-success';
+												$setup_stopat_class = 'alert-success';
 											}
 										}
 										else
@@ -204,7 +205,7 @@ $canSetupControl = $setup_exists && $ownSetup;
 												$now = new DateTime();
 												if ($now->format('U') > $setup_stopat_date->format('U'))
 												{
-													$setup_stopat_class = 'bg-success';
+													$setup_stopat_class = 'alert-success';
 												}
 											}
 											else
@@ -216,7 +217,7 @@ $canSetupControl = $setup_exists && $ownSetup;
 												$now = new DateTime();
 												if ($now->format('U') > $setup_stopat_date->format('U'))
 												{
-													$setup_stopat_class = 'bg-success';
+													$setup_stopat_class = 'alert-success';
 												}
 											}
 										}
@@ -251,13 +252,14 @@ $canSetupControl = $setup_exists && $ownSetup;
 			<tr>
 				<td colspan="2">
 					<div>
-						Установка не выбрана. Нужно <a href="?q=experiment/edit/<? print $this->view->content->experiment->id;?>">выбрать установку</a>
+						Установка не выбрана. Нужно <a href="?q=experiment/edit/<? print (int) $this->view->content->experiment->id;?>">выбрать установку</a>
 						или
-						<a href="?q=setup/create&master=<? print $this->view->content->experiment->id;?>">создать новую</a>.
+						<a href="?q=setup/create&master=<? print (int) $this->view->content->experiment->id;?>">создать новую</a>.
 					</div>
 				</td>
 			</tr>
 		<? endif;?>
+			</tbody>
 		</table>
 	</div>
 </div>
@@ -272,7 +274,7 @@ $canSetupControl = $setup_exists && $ownSetup;
 						<div class="panel-heading">
 							<span class="panel-title">
 
-								<span class="glyphicon glyphicon-eye-open"></span> <? print $sensor->name; ?>
+								<span class="glyphicon glyphicon-eye-open sensor-icon-btn" style="cursor:pointer;"></span> <? print $sensor->name; ?>
 
 							</span>
 						</div>
@@ -292,24 +294,25 @@ $canSetupControl = $setup_exists && $ownSetup;
 		<? endif; ?>
 		</div>
 	</div>
-	<div class="float-left col-xs-12 col-sm-2 col-md-2">
+	<div class="col-xs-12 col-sm-2 col-md-2 pull-left">
 		<div class="row">
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
 				<a class="btn btn-default form-control <? echo (!$canSetupControl) ? 'disabled' : ''; 
 					?>" id="experiment-action" data-experiment-state="<? echo (int)$setup_active;?>" experiment-id="<? print $this->view->content->experiment->id?>" data-text-0="Старт" data-text-1="Стоп" <? echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><? 
 					echo ($setup_active) ? 'Стоп' : 'Старт';
 					?></a>
-		</div>
+			</div>
 
-		<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
-				<a class="btn btn-default form-control <? echo (!$canSetupControl) ? 'disabled' : '';
-					?>" id="experiment-strob" experiment-id="<? print $this->view->content->experiment->id?>" <? echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>>Строб</a>
-		</div>
-		<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
-				<a class="btn btn-default form-control" href="/?q=experiment/journal/<? print $this->view->content->experiment->id; ?>">Журнал</a>
-		</div>
-		<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
-				<a class="btn btn-default form-control" href="/?q=experiment/graph/<? print $this->view->content->experiment->id; ?>">Графики</a>
+			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
+					<a class="btn btn-default form-control <? echo (!$canSetupControl) ? 'disabled' : '';
+						?>" id="experiment-strob" experiment-id="<? print $this->view->content->experiment->id?>" <? echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>>Строб</a>
+			</div>
+			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
+					<a class="btn btn-default form-control" href="/?q=experiment/journal/<? print $this->view->content->experiment->id; ?>">Журнал</a>
+			</div>
+			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
+					<a class="btn btn-default form-control" href="/?q=experiment/graph/<? print $this->view->content->experiment->id; ?>">Графики</a>
+			</div>
 		</div>
 	</div>
 </div>
@@ -322,10 +325,11 @@ $canSetupControl = $setup_exists && $ownSetup;
 	</div>
 	<div class="col-xs-6 col-sm-2 col-md-2 pull-right text-right">
 	<? if(!isset($this->view->content->experiment->DateEnd_exp)) :?>
-		<a href="#" class="btn btn-default form-control disabled">Завершить эксперимент</a>
+		<!-- <a href="#" class="btn btn-default form-control disabled">Завершить</a> -->
 	<? else : ?>
-		<h4>Эксперимент завершен.</h4>
+		<span>Эксперимент завершен.</span>
 	<? endif; ?>
+	</div>
 </div>
 
 <? /*todo: релоад после выполнения строба, или удаление кнопки редактирования из dom */?>

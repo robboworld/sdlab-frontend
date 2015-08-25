@@ -33,20 +33,20 @@
 						<a href="?q=session/edit" id="session-name" class="btn btn-sm btn-info navbar-btn" title="Редактировать сессию">
 							<? print htmlspecialchars($this->session()->name, ENT_QUOTES, 'UTF-8'); ?>
 						</a>
-						<a href="?q=session/destroy" class="btn btn-sm btn-default navbar-btn">Выход</a>
-						<a href="?q=session/create" class="btn btn-sm btn-default navbar-btn">Новая сессия</a>
+						<a href="?q=session/destroy" class="btn btn-sm btn-default navbar-btn"><span class="glyphicon glyphicon-log-out">&nbsp;</span><span class="hidden-xs">Выход</span></a>
+						<a href="?q=session/create" class="btn btn-sm btn-default navbar-btn"><span class="glyphicon glyphicon-plus">&nbsp;</span><span class="hidden-xs">Новая сессия</span></a>
 					</div>
 
 				</div>
 
 			<? else : ?>
-				<div class="col-md-5 pull-right">
-					<form class="navbar-form" action="?q=session/create<? if(isset($_GET['q'])) : ?>&destination=<? print urlencode($_GET['q']); endif; ?>" method="post">
+				<div class="col-md-5 col-sm-6 col-xs-6 pull-right">
+					<form id="nav-buttons" class="navbar-form" action="?q=session/create<? if(isset($_GET['q'])) : ?>&destination=<? print $_GET['q']; endif; ?>" method="post">
 						<div class="input-group input-group-sm">
 							<input type="text" name="session_key" placeholder="Ключ сессии (123456)" title="тестовый ключ - 123456" class="form-control">
 							<span class="input-group-btn">
-								<input type="submit" class="btn btn-success" value="Восстановить">
-								<a href="?q=session/create" class="btn btn-sm btn-success">Новая сессия</a>
+								<button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-log-in">&nbsp;</span><span class="hidden-xs">Восстановить</span></button>
+								<a href="?q=session/create" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-plus">&nbsp;</span><span class="hidden-xs">Новая сессия</span></a>
 							</span>
 						</div>
 					</form>

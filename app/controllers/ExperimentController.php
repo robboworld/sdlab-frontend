@@ -25,8 +25,8 @@ class ExperimentController extends Controller
 	 */
 	function create()
 	{
-		self::setTitle('Создать эксперимент');
-		self::setContentTitle('Создать эксперимент');
+		self::setTitle('Создание эксперимента');
+		self::setContentTitle('Создание эксперимента');
 
 		$this->view->form = new Form('create-experiment-form');
 		$this->view->form->submit->value = 'Создать эксперимент';
@@ -214,8 +214,8 @@ class ExperimentController extends Controller
 			if($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3)
 			{
 				self::setViewTemplate('create');
-				self::setTitle('Редактировать '.$experiment->title);
-				self::setContentTitle('Редактировать "'.$experiment->title.'"');
+				self::setTitle('Редактирование '.$experiment->title);
+				self::setContentTitle('Редактирование "'.$experiment->title.'"');
 
 				/*Объект формы*/
 				$this->view->form = new Form('edit-experiment-form');

@@ -33,7 +33,7 @@ class System
 			header('Location: ?q='.$query_string);
 		}
 
-		exit;
+		exit();
 	}
 
 	/**

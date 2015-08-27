@@ -769,17 +769,16 @@ class SensorsController extends Controller
 
 						// Check stopping result
 						// XXX: may be errors with messages as "Monitor xxxxxxxx is inactive"
-						/*
 						if ($result)
 						{
 						}
 						else
 						{
-							$this->error = 'Monitoring not started';
+							//$this->error = 'Monitoring not started';
+							error_log('Error Lab.StopMonitor' . (isset($result->error) ? ': '.var_export($result->error,true) : ''));  //DEBUG
 
-							return false;
+							//return false;
 						}
-						*/
 
 						unset($socket);
 					}

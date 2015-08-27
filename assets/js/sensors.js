@@ -9,7 +9,7 @@ function destroySensorWidget(id){
 function updateSensorsList(sensors){
 
     /* надо сравнивать с существующим списком. вынести в свойство общего объекта. */
-    if(typeof sensors.error == 'undefined'){
+    if(typeof sensors.error === 'undefined'){
 
         /*
         sensors.forEach(function(entry){

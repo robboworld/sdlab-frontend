@@ -39,8 +39,8 @@
 	});
 
 	function dataRecived(data){
-		if(typeof data.error == 'undefined'){
-			if (typeof g == 'undefined'){
+		if(typeof data.error === 'undefined'){
+			if (typeof g === 'undefined'){
 				g = new Graph(data.result);
 			}else{
 				g.data = data.result;

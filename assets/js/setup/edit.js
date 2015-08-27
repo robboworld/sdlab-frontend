@@ -48,7 +48,7 @@ $(document).ready(function(){
 
 function updateSensorsList(data){
 
-    if(typeof data.error == 'undefined'){
+    if(typeof data.error === 'undefined'){
         $('#sensor-list-table tbody').empty();
         for (id in data){
             var sensor = data[id];

@@ -274,12 +274,12 @@ $canSetupControl = $setup_exists && $ownSetup;
 						<div class="panel-heading">
 							<span class="panel-title">
 
-								<span class="glyphicon glyphicon-eye-open sensor-icon-btn" style="cursor:pointer;"></span> <? print $sensor->name; ?>
+								<span class="glyphicon glyphicon-eye-open sensor-icon-btn" style="cursor:pointer;"></span> <? print htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?>
 
 							</span>
 						</div>
 						<div class="panel-body">
-							<small class="pull-right">id: <? print htmlspecialchars($skey, ENT_QUOTES, 'UTF-8');; ?></small>
+							<small class="pull-right">id: <? print htmlspecialchars($skey, ENT_QUOTES, 'UTF-8'); ?></small>
 							<div class="widget-pane info active ">
 								<h3 class="sensor-value">Подождите..</h3>
 								<small class="sensor-value-name"><?
@@ -298,20 +298,20 @@ $canSetupControl = $setup_exists && $ownSetup;
 		<div class="row">
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
 				<a class="btn btn-default form-control <? echo (!$canSetupControl) ? 'disabled' : ''; 
-					?>" id="experiment-action" data-experiment-state="<? echo (int)$setup_active;?>" experiment-id="<? print $this->view->content->experiment->id?>" data-text-0="Старт" data-text-1="Стоп" <? echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><? 
+					?>" id="experiment-action" data-experiment-state="<? echo (int)$setup_active;?>" experiment-id="<? print $this->view->content->experiment->id; ?>" data-text-0="Старт" data-text-1="Стоп" <? echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><? 
 					echo ($setup_active) ? 'Стоп' : 'Старт';
 					?></a>
 			</div>
 
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
 					<a class="btn btn-default form-control <? echo (!$canSetupControl) ? 'disabled' : '';
-						?>" id="experiment-strob" experiment-id="<? print $this->view->content->experiment->id?>" <? echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>>Строб</a>
+						?>" id="experiment-strob" experiment-id="<? print (int)$this->view->content->experiment->id; ?>" <? echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>>Строб</a>
 			</div>
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
-					<a class="btn btn-default form-control" href="/?q=experiment/journal/<? print $this->view->content->experiment->id; ?>">Журнал</a>
+					<a class="btn btn-default form-control" href="/?q=experiment/journal/<? print (int)$this->view->content->experiment->id; ?>">Журнал</a>
 			</div>
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
-					<a class="btn btn-default form-control" href="/?q=experiment/graph/<? print $this->view->content->experiment->id; ?>">Графики</a>
+					<a class="btn btn-default form-control" href="/?q=experiment/graph/<? print (int)$this->view->content->experiment->id; ?>">Графики</a>
 			</div>
 		</div>
 	</div>

@@ -126,10 +126,10 @@
 				<table class="table table-responsive" id="sensors-in-setup">
 					<thead>
 						<tr>
-							<td><label>ID</label></td>
-							<td>Название физ. вел.</td>
-							<td>Имя датчика</td>
-							<td></td>
+							<th>ID</th>
+							<th>Название физ. вел.</th>
+							<th>Имя датчика</th>
+							<th></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -159,15 +159,20 @@
 							<? endforeach; ?>
 						<? endif; ?>
 					</tbody>
+					<tfoot style="display: none;">
+						<tr>
+							<td colspan="4">
+								<div class="alert alert-info">
+									<span class="glyphicon glyphicon-info-sign"></span>
+									<span>В установке нет датчиков. Выберите нужные датчики из списка ниже и нажмите "Добавить выбранные".</span>
+								</div>
+							</td>
+						</tr>
+					</tfoot>
 				</table>
 
-				<div class="bg-info" style="display: none;">
-					<h4>
-						<span class="glyphicon glyphicon-info-sign"></span>
-						<span>В установке нет датчиков. Выберите нужные датчики из списка и нажмите "Добавить выбранные".</span>
-					</h4>
-				</div>
 				<hr />
+
 				<h4>Доступные датчики:</h4>
 				<table class="table table-responsive" id="sensor-list-table">
 					<thead>
@@ -185,13 +190,18 @@
 					<tbody>
 
 					</tbody>
+					<tfoot style="display: none;">
+						<tr>
+							<td colspan="8">
+								<div class="alert alert-info">
+									<span class="glyphicon glyphicon-info-sign"></span>
+									<span>Доступных датчиков нет.<!-- Подсоедините датчики к плате и нажмите "Обновите список доступных датчиков".--></span>
+								</div>
+							</td>
+						</tr>
+					</tfoot>
 				</table>
-				<div class="bg-info" style="display: none;">
-					<h4>
-						<span class="glyphicon glyphicon-info-sign"></span>
-						<span>Доступных датчиков нет. Подсоедините датчики к плате и нажмите "Обновите список доступных датчиков".</span>
-					</h4>
-				</div>
+
 				<div class="row sensor-block">
 					<div class="mrg-bot-5px col-xs-12 col-sm-6 col-md-6">
 						<a class="btn btn-default form-control" id="add-sensors"><span class="glyphicon glyphicon-arrow-up"></span>Добавить выбранные</a>

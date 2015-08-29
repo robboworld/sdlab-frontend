@@ -1,9 +1,13 @@
-
-<h3><? print htmlspecialchars($this->view->content->title, ENT_QUOTES, 'UTF-8'); ?></h3>
+<div class="row">
+	<div class="col-md-offset-1 col-md-10">
+		<h3><? print htmlspecialchars($this->view->content->title, ENT_QUOTES, 'UTF-8'); ?></h3>
+	</div>
+</div>
 <form action="<? print htmlspecialchars($_SERVER['REQUEST_URI'], ENT_QUOTES, 'UTF-8'); ?>" method="post">
-<div class="col-md-10">
-		<input type="hidden" name="form-id" value="<? print htmlspecialchars($this->view->form->id, ENT_QUOTES, 'UTF-8'); ?>">
-		<div class="form-group">
+<div class="row setup-create">
+	<div class="col-md-offset-1 col-md-10">
+		<input type="hidden" name="form-id" value="<? print $this->view->form->id; ?>">
+		<div class="form-group setup-title">
 			<input class="form-control" name="setup_title" type="text" required="required" placeholder="Название установки" value="<? print htmlspecialchars($this->view->form->setup->title, ENT_QUOTES, 'UTF-8'); ?>"/>
 		</div>
 		<? 
@@ -37,30 +41,29 @@
 
 					-->
 				</div>
-				<br>
 				<div class="alert alert-warning" id="setup-type-alert">
 					Нужно выбрать тип измерений
 				</div>
 				<div id="setup-type-length" class="setup-type well">
 					<div class="row form-group">
-						<div class="col-md-4">
+						<div class="col-xs-12 col-md-6 col-sm-5 setup-label-long">
 							Продолжительность измерений
 						</div>
-						<div class="col-md-8 form-inline">
+						<div class="col-xs-12 col-md-6 col-sm-7 form-inline">
 							<? $time_det = Form::formTimeObject($this->view->form->setup->time_det) ;?>
-							<input type="text" name="time_det_day" class="form-control" size="4" placeholder="0" value="<? print $time_det->d; ?>"> дн.
-							<input type="text" name="time_det_hour" class="form-control" size="4" placeholder="0" value="<? print $time_det->h; ?>"> час.
-							<input type="text" name="time_det_min" class="form-control" size="4" placeholder="1" value="<? print $time_det->m; ?>"> мин.
-							<input type="text" name="time_det_sec" class="form-control" size="4" placeholder="1" value="<? print $time_det->s; ?>"> сек.
+							<input type="text" name="time_det_day" class="form-control" size="1" placeholder="0" value="<? print $time_det->d; ?>"> дн.
+							<input type="text" name="time_det_hour" class="form-control" size="1" placeholder="0" value="<? print $time_det->h; ?>"> ч.
+							<input type="text" name="time_det_min" class="form-control" size="1" placeholder="1" value="<? print $time_det->m; ?>"> мин.
+							<input type="text" name="time_det_sec" class="form-control" size="1" placeholder="1" value="<? print $time_det->s; ?>"> сек.
 						</div>
 					</div>
 				</div>
 				<div id="setup-type-amount" class="setup-type well">
 					<div class="row form-group">
-						<div class="col-md-4">
+						<div class="col-xs-6 col-md-6 col-sm-6 setup-label">
 							Число измерений
 						</div>
-						<div class="col-md-8 form-inline">
+						<div class="col-xs-6 col-md-6 col-sm-6 form-inline">
 							<input type="text" name="amount" class="form-control" size="10" placeholder="1" value="<? print $this->view->form->setup->amount; ?>">
 						</div>
 					</div>
@@ -83,33 +86,33 @@
 				-->
 				<div class="well">
 					<div class="row form-group">
-						<div class="col-md-4">
+						<div class="col-xs-6 col-md-6 col-sm-6 setup-label">
 							Интервал измерений
 						</div>
-						<div class="col-md-8 form-inline">
+						<div class="col-xs-6 col-md-6 col-sm-6 form-inline">
 							<!--
 							<input type="text" class="form-control" size="4" placeholder="0"> дн.
 							<input type="text" class="form-control" size="4" placeholder="0"> час.
 							-->
-							<input type="text" name="interval" class="form-control" required="required" size="4" placeholder="10" value="<? print $this->view->form->setup->interval; ?>"> сек.
+							<input type="text" name="interval" class="form-control" required="required" size="10" placeholder="10" value="<? print $this->view->form->setup->interval; ?>"> сек.
 						</div>
 					</div>
 					<?
 					// TODO: repeate on errors not realised in backend monitoring, need push this parameters to backend and configure RRD/RRA
 					?>
 					<div class="row form-group" style="display:none;">
-						<div class="col-md-4">
+						<div class="col-xs-6 col-md-6 col-sm-6 setup-label mrg-top-m5px">
 							Число повторных измерений<br>(при обнаружении ошибок)
 						</div>
-						<div class="col-md-8 form-inline">
+						<div class="col-xs-6 col-md-6 col-sm-6 form-inline">
 							<input type="text" name="number_error" class="form-control" size="10" placeholder="0" value="<? print $this->view->form->setup->number_error; ?>">
 						</div>
 					</div>
 					<div class="row form-group" style="display:none;">
-						<div class="col-md-4">
+						<div class="col-xs-6 col-md-6 col-sm-6 setup-label">
 							Интервал повторных измерений
 						</div>
-						<div class="col-md-8 form-inline">
+						<div class="col-xs-6 col-md-6 col-sm-6 form-inline">
 							<input type="text" name="period_repeated_det" class="form-control" size="10" placeholder="0" value="<? print $this->view->form->setup->period_repeated_det; ?>"> сек.
 						</div>
 					</div>
@@ -138,7 +141,19 @@
 										<input type="hidden" name="sensors[<? print $sensor->id; ?>][<? echo (int)$sensor->sensor_val_id; ?>][val_id]" value="<? print (int)$sensor->sensor_val_id; ?>"/>
 									</td>
 									<td><? print htmlspecialchars($sensor->value_name, ENT_QUOTES, 'UTF-8'); ?></td>
-									<td><input type="text" placeholder="Имя датчика" name="sensors[<? print $sensor->id; ?>][<? echo (int)$sensor->sensor_val_id; ?>][name]" class="form-control" required="required" value="<? print !empty($sensor->name) ? $sensor->name : '' ; ?>"/></td>
+									<td class="sensor-setup-name"><input type="text" placeholder="Имя датчика" name="sensors[<? print $sensor->id; ?>][<? echo (int)$sensor->sensor_val_id; ?>][name]" class="form-control" required="required" value="<? 
+										if (isset($sensor->name) && mb_strlen($sensor->name,'utf-8')>0)
+										{
+											echo htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8');
+										}
+										else
+										{
+											if (isset($sensor->value_name) && mb_strlen($sensor->value_name,'utf-8')>0)
+											{
+												echo htmlspecialchars($sensor->value_name, ENT_QUOTES, 'UTF-8');
+											}
+										}
+									?>"/></td>
 									<td class="text-right"><a class="btn btn-sm btn-danger remove-sensor">Удалить</a></td>
 								</tr>
 							<? endforeach; ?>
@@ -146,6 +161,12 @@
 					</tbody>
 				</table>
 
+				<div class="bg-info" style="display: none;">
+					<h4>
+						<span class="glyphicon glyphicon-info-sign"></span>
+						<span>В установке нет датчиков. Выберите нужные датчики из списка и нажмите "Добавить выбранные".</span>
+					</h4>
+				</div>
 				<hr />
 				<h4>Доступные датчики:</h4>
 				<table class="table table-responsive" id="sensor-list-table">
@@ -165,23 +186,33 @@
 
 					</tbody>
 				</table>
-				<div class="row">
-					<div class="col-md-6">
+				<div class="bg-info" style="display: none;">
+					<h4>
+						<span class="glyphicon glyphicon-info-sign"></span>
+						<span>Доступных датчиков нет. Подсоедините датчики к плате и нажмите "Обновите список доступных датчиков".</span>
+					</h4>
+				</div>
+				<div class="row sensor-block">
+					<div class="mrg-bot-5px col-xs-12 col-sm-6 col-md-6">
 						<a class="btn btn-default form-control" id="add-sensors"><span class="glyphicon glyphicon-arrow-up"></span>Добавить выбранные</a>
 					</div>
-					<div class="col-md-6">
+					<div class="mrg-bot-5px col-xs-12 col-sm-6 col-md-6">
 						<a class="btn btn-default form-control" id="sensors-list-update"><span class="glyphicon glyphicon-refresh"></span>Обновить список доступных датчиков</a>
 					</div>
 				</div>
 			</div>
 		</div>
+	</div>
 </div>
-<div class="col-md-2">
-	<input type="submit" class="btn btn-success form-control" value="<? print $this->view->form->submit->value; ?>" disabled="disabled" />
-	<br><br><a href="/?q=experiment/view" class="btn btn-danger form-control">Отменить</a>
-	<? if($this->view->form->id == 'edit-setup-form') : ?>
-		<br><br><a href="/?q=setup/create" class="btn btn-primary form-control">Новая установка</a>
-	<? endif; ?>
-	<br><br>
+<div class="row mrg-top-20px">
+	<div class="col-md-offset-1 col-md-10 text-center">
+		<div class="btn-group" style="float: none;">
+			<a href="/?q=experiment/view" class="col-md-6 btn-default btn width-auto form-control">Отменить</a>
+		<? if($this->view->form->id == 'edit-setup-form') : ?>
+			<a href="/?q=setup/create" class="btn btn-primary width-auto form-control">Создать</a>
+		<? endif; ?>
+			<input type="submit" class="btn btn-success width-auto form-control" value="<? print $this->view->form->submit->value; ?>" disabled="disabled" />
+		</div>
+	</div>
 </div>
 </form>

@@ -137,11 +137,17 @@ function buildGraph(data, placeholder, options){
         },
         points: {
             show: true
+//            fill: true
         },
         lines: {
             show: true,
             fill: true
         },
+//        bars: {
+//            show: true,
+//            barWidth: 1,
+//            align: "left"
+//        },
         zoom: {
             interactive: true
         },
@@ -151,7 +157,7 @@ function buildGraph(data, placeholder, options){
     }
 
     var plottooltip = false;
-    if(typeof (options) != 'undefined'){
+    if(typeof (options) !== 'undefined'){
         if (typeof options.plottooltip !== 'undefined'){
             if(options.plottooltip) {
                 plottooltip = true;

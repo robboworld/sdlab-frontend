@@ -83,7 +83,7 @@ function updateSensorValue(id, onalways){
         Sensor: sid,
         ValueIdx: idx
     }, function(data){
-        if(typeof data.Reading != 'undefined'){
+        if(typeof data.Reading !== 'undefined'){
             $('.sensor-widget[sensor-id="'+id+'"]').find('.sensor-value').html(data.Reading);
             $('.sensor-widget[sensor-id="'+id+'"]').find('.panel-body').removeClass('bg-danger');
         }else{
@@ -114,15 +114,15 @@ function updateSensorsValues(ids, onalways){
     }
 
     var rq = coreAPICall('Sensors.GetDataItems', items, function(data, status, jqxhr){
-        if(typeof data.error == 'undefined'){
+        if(typeof data.error === 'undefined'){
             for(var i=0;i<data.length;i++){
                 var sel;
-                if(typeof data[i].ValueIdx != 'undefined'){
+                if(typeof data[i].ValueIdx !== 'undefined'){
                     sel = '.sensor-widget[sensor-id="'+data[i].Sensor +'#'+data[i].ValueIdx+'"]';
                 }else{
                     sel =  '.sensor-widget[sensor-id="'+data[i].Sensor +'"]';
                 }
-                if((typeof data[i].result.error == 'undefined') && (typeof data[i].result.Reading != 'undefined')){
+                if((typeof data[i].result.error === 'undefined') && (typeof data[i].result.Reading !== 'undefined')){
                     $(sel).find('.sensor-value').html(data[i].result.Reading);
                     $(sel).find('.panel-body').removeClass('bg-danger');
                 }else{

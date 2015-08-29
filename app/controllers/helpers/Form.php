@@ -27,6 +27,8 @@ class Form
 		{
 			header('Location: '.$query_string);
 		}
+
+		exit();
 	}
 
 	/**

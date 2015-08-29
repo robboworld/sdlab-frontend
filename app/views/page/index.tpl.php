@@ -2,6 +2,7 @@
 <div class="col-md-6">
 	<h3>Информация</h3>
 	<table class="table">
+		<tbody>
 		<tr>
 			<td>Имя устройства: </td>
 			<td><? print $this->app->config['lab']['name']?></td>
@@ -12,6 +13,7 @@
 			<td><? echo 'eth0 : ' . (empty($this->view->ip_address) ? 'Адрес неизвестен' : $this->view->ip_address); ?></td>
 		</tr>
 		<? endif; ?>
+		</tbody>
 	</table>
 </div>
 <!--
@@ -32,6 +34,7 @@
 
 
 		<table class="table">
+			<tbody>
 			<tr>
 				<td>{ФИО}</td>
 				<td><a href="?q=page/view/experiment">{experiment name}</a></td>
@@ -44,6 +47,7 @@
 				<td>{ФИО}</td>
 				<td><a href="?q=page/view/experiment">{experiment name}</a></td>
 			</tr>
+			</tbody>
 		</table>
 	</div>
 </div>

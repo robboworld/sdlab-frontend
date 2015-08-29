@@ -12,30 +12,34 @@
 <div class="col-md-8">
 	<table class="table table-responsive">
 		<thead>
-		<td></td>
-		<td></td>
-		<td>В отчет</td>
+			<tr>
+				<td></td>
+				<td></td>
+				<td>В отчет</td>
+			</tr>
 		</thead>
-		<tr>
-			<td><a href="?q=page/view/graphs.edit">{Название графика}</a></td>
-			<td>{Дата/время создания/модификации}</td>
-			<td><input type="checkbox"></td>
-		</tr>
-		<tr>
-			<td><a href="?q=page/view/graphs.edit">{Название графика}</a></td>
-			<td>{Дата/время создания/модификации}</td>
-			<td><input type="checkbox"></td>
-		</tr>
-		<tr>
-			<td><a href="?q=page/view/graphs.edit">{Название графика}</a></td>
-			<td>{Дата/время создания/модификации}</td>
-			<td><input type="checkbox"></td>
-		</tr>
-		<tr>
-			<td><a href="?q=page/view/graphs.edit">{Название графика}</a></td>
-			<td>{Дата/время создания/модификации}</td>
-			<td><input type="checkbox"></td>
-		</tr>
+		<tbody>
+			<tr>
+				<td><a href="?q=page/view/graphs.edit">{Название графика}</a></td>
+				<td>{Дата/время создания/модификации}</td>
+				<td><input type="checkbox"></td>
+			</tr>
+			<tr>
+				<td><a href="?q=page/view/graphs.edit">{Название графика}</a></td>
+				<td>{Дата/время создания/модификации}</td>
+				<td><input type="checkbox"></td>
+			</tr>
+			<tr>
+				<td><a href="?q=page/view/graphs.edit">{Название графика}</a></td>
+				<td>{Дата/время создания/модификации}</td>
+				<td><input type="checkbox"></td>
+			</tr>
+			<tr>
+				<td><a href="?q=page/view/graphs.edit">{Название графика}</a></td>
+				<td>{Дата/время создания/модификации}</td>
+				<td><input type="checkbox"></td>
+			</tr>
+		</tbody>
 	</table>
 	<a href="?q=page/view/graphs.edit" class="btn btn-default">Добавить</a>
 </div>

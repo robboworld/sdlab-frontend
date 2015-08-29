@@ -22,7 +22,7 @@ function setInterfaceError(holder, message, autoclose){
     $(holder).html('<div class="alert alert-danger">' + message + '</div>');
     var error = $(holder).find('div.alert');
     //автоудаление сообщения об ошибке
-    if(typeof autoclose == 'number'){
+    if(typeof autoclose === 'number'){
         setTimeout(function(){
             error.fadeOut(400, function(){
                 error.remove();

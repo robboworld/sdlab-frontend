@@ -18,7 +18,12 @@ class Menu
 				}
 				else
 				{
-					$menu_html .= '<li><a id="'.$id.'" href="'.$href.'">'.$item['title'].'</a></li>';
+					$item_title = $item['title'];
+					if(isset($item['icon']))
+					{
+						$item_title = '<span class="'.$item['icon'].'"></span><span class="hidden-xs">&nbsp;'.$item['title'].'</span>';
+					}
+					$menu_html .= '<li><a id="'.$id.'" href="'.$href.'">'.$item_title.'</a></li>';
 				}
 			}
 
@@ -34,33 +39,39 @@ class Menu
 	{
 		$menu['page/view'] = array(
 			'title' => 'Система',
+			'icon' => 'glyphicon glyphicon-home',
 			'user_level' => 0
 		);
 		/*
 		$this->menu['sensors'] = array(
 			'title' => 'Датчики',
+			'glyphicon' => '',
 			'user_level' => 1
 		);
 		*/
 		$menu['experiment/view'] = array(
 			'title' => 'Эксперименты',
+			'icon' => 'glyphicon glyphicon-list',
 			'user_level' => 1
 		);
 
 		/*
 		$menu['page/view/journal'] = array(
 			'title' => 'Журнал',
+			'icon' => '',
 			'user_level' => 1
 		);
 
 		$menu['page/view/graphs'] = array(
 			'title' => 'Графики',
+			'icon' => '',
 			'user_level' => 1
 		);
 		*/
 
 		$menu['page/view/help'] = array(
 			'title' => 'Помощь',
+			'icon' => 'glyphicon glyphicon-info-sign',
 			'user_level' => 0
 		);
 

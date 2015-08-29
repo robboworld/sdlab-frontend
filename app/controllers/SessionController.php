@@ -87,7 +87,7 @@ class SessionController extends Controller
 			Form::redirect();
 		}
 
-		self::setTitle('Редактировать сессию');
+		self::setTitle('Редактирование сессии');
 
 		/* загружаем эксперименты доступные в сессии*/
 		$experiments_in_session = ExperimentController::loadExperiments($this->session()->getKey());

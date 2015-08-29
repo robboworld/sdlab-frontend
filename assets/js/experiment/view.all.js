@@ -9,7 +9,7 @@ $(document).ready(function(){
     if (delbtns.length) {
         delbtns.click(function(){
             var rq = coreAPICall('Experiment.isActive', {experiment: $(this).data('experiment')}, function(data, st, xhr){
-                if (typeof data.error == 'undefined'){
+                if (typeof data.error === 'undefined'){
                     if (data.result){
                         var msg;
                         if (data.items.length <= 1){
@@ -34,7 +34,7 @@ $(document).ready(function(){
 })
 
 function showRescanResults(data) {
-    if(typeof data.error == 'undefined'){
+    if(typeof data.error === 'undefined'){
         $('.sensors-list').empty();
         var i, c, sensor, info, vals = '';
         for (id in data){

@@ -1,7 +1,18 @@
+<? 
+// todo: can edit and delete access check, edit only for admin or owner
+$show_action = true;
+?>
 <div class="col-md-12">
-	<h1>Все эксперименты</h1>
+	<div class="row">
+		<div class="col-md-6">
+			<h1>Все эксперименты</h1>
+		</div>
+	</div>
+	<div>
+		<a href="?q=experiment" class="btn btn-primary"><span class="glyphicon glyphicon-plus">&nbsp;</span>Новый эксперимент</a>
+	</div>
 	<form id="sdform" method="post" action="?<? print $_SERVER['QUERY_STRING']?>" >
-		<input type="hidden" name="force" value="0">
+		<input type="hidden" name="force" value="0"/>
 	<? if(isset($this->view->content->list )) : ?>
 		<table class="table">
 			<thead>
@@ -20,26 +31,26 @@
 				<td>
 					Дата завершения
 				</td>
-				<? if($this->session()->getUserLevel() == 3) :?>
+				<? /*if($this->session()->getUserLevel() == 3) :*/?>
 				<td class="text-right">
 					Действие
 				</td>
-				<? endif; ?>
+				<? /*endif;*/ ?>
 			</tr>
 			</thead>
 			<tbody>
 			<? foreach($this->view->content->list as $item) :?>
-				<tr
+				<tr class="row-experiment 
 					<?
 						if(empty($item->DateEnd_exp) && !empty($item->DateStart_exp))
 						{
-							print 'class="warning"';
+							print 'warning';
 						}
 						elseif (!empty($item->DateEnd_exp))
 						{
-							print 'class="success"';
+							print 'success';
 						}
-					?>>
+					?>">
 					<?
 						if($this->session()->getUserLevel() == 3) :
 							$user = (new Session)->load($item->session_key);
@@ -54,16 +65,18 @@
 						</a>
 					</td>
 					<td>
-						<? if(!empty($item->DateStart_exp)) print System::dateformat($item->DateStart_exp); ?>
+						<? if(!empty($item->DateStart_exp)) print System::dateformat('@'.$item->DateStart_exp); ?>
 					</td>
 					<td>
-						<? if(!empty($item->DateEnd_exp)) print System::dateformat($item->DateEnd_exp); ?>
+						<? if(!empty($item->DateEnd_exp)) print System::dateformat('@'.$item->DateEnd_exp); ?>
 					</td>
-					<? if($this->session()->getUserLevel() == 3) :?>
+					
 					<td class="text-right">
-						<button type="button" class="experiment-delete-btn btn btn-danger" data-experiment="<? echo (int)$item->id; ?>">Удалить</button>
+						<a href="/?q=experiment/edit/<? print $item->id; ?>" class="btn btn-sm btn-default btn-info"><span class="glyphicon glyphicon-pencil"></span></a>
+						<? if($this->session()->getUserLevel() == 3) :?>
+						<button type="button" class="experiment-delete-btn btn btn-sm btn-danger" data-experiment="<? echo (int)$item->id; ?>"><span class="glyphicon glyphicon-remove"></span></button>
+						<? endif; ?>
 					</td>
-					<? endif; ?>
 				</tr>
 			<? endforeach; ?>
 			</tbody>
@@ -73,14 +86,10 @@
 		</div>
 		<div class="row">
 			<? if($this->session()->getUserLevel() == 3) :?>
-			<div class="col-md-2 text-left">
+			<div class="col-md-4 text-left">
 				<a href="javascript:void(0)" id="sensors-rescan" class="btn btn-primary">Обновить список датчиков</a>
 			</div>
 			<? endif; ?>
-			<div class="col-md-<? echo (($this->session()->getUserLevel() == 3) ? '10' : '12');?> text-right">
-
-				<a href="?q=experiment" class="btn btn-primary">Новый эксперимент</a>
-			</div>
 		</div>
 	</form>
 </div>

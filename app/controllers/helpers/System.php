@@ -327,4 +327,18 @@ class System
 
 		return $result;
 	}
+
+
+	/**
+	 * Get float microtime (sec.msec).
+	 * For debug purposes.
+	 * 
+	 * @return float
+	 */
+	function microtime_float()
+	{
+		//list($usec, $sec) = explode(" ", microtime());
+		//return ((float)$usec + (float)$sec);
+		return array_sum(explode(' ', microtime()));
+	}
 }

@@ -317,6 +317,8 @@ class SensorsController extends Controller
 						if(!empty($result))
 						{
 							$db = new DB();
+							$db->beginTransaction();  // speed up inserts within transaction
+
 							$insert = $db->prepare('insert into detections (exp_id, time, sensor_id, sensor_val_id, detection, error) values (:exp_id, :time, :sensor_id, :sensor_val_id, :detection, :error)');
 
 							for($i = 0; $i < count($sensors); $i++)
@@ -347,14 +349,26 @@ class SensorsController extends Controller
 									}
 								}
 
-								$insert->execute(array(
-									':exp_id' => $experiment->id,
-									':time' => $result[0]->Time,
-									':sensor_id' => $sensors[$i]->id,
-									':sensor_val_id' => $sensors[$i]->sensor_val_id,
-									':detection' => $result[0]->Readings[$i],
-									':error' => $sensor_error
-								));
+								try
+								{
+									$res = $insert->execute(array(
+										':exp_id' => $experiment->id,
+										':time' => $result[0]->Time,
+										':sensor_id' => $sensors[$i]->id,
+										':sensor_val_id' => $sensors[$i]->sensor_val_id,
+										':detection' => $result[0]->Readings[$i],
+										':error' => $sensor_error
+									));
+									if (!$res)
+									{
+										error_log('PDOError: '.var_export($insert->errorInfo(),true));  //DEBUG
+									}
+								}
+								catch (PDOException $e)
+								{
+									error_log('PDOException experimentStop(): '.var_export($e->getMessage(),true));  //DEBUG
+									var_dump($e->getMessage());
+								}
 							}
 
 							// Update experiment start
@@ -379,6 +393,8 @@ class SensorsController extends Controller
 							{
 								error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
 							}
+
+							$db->commit();
 
 							return array('result' => true);
 						}
@@ -853,6 +869,8 @@ class SensorsController extends Controller
 
 						$question_marks = '(' . DB::placeholders('?', count($datafields)) . ')';
 
+						$db->beginTransaction();  // speed up inserts within transaction
+
 						$j = 0;
 						foreach($data as $d)
 						{
@@ -912,8 +930,6 @@ class SensorsController extends Controller
 									// Setup the placeholders and data values to insert query
 									$insert_sql = 'insert into detections (' . $datafields_str . ') values ' . implode(',', array_fill(0, $j, $question_marks));
 
-									$db->beginTransaction();  // speed up inserts within transaction
-
 									$stmt = $db->prepare($insert_sql);
 									try
 									{
@@ -929,8 +945,6 @@ class SensorsController extends Controller
 										var_dump($e->getMessage());
 									}
 
-									$db->commit();
-
 									// Reset block counter and arrays
 									$j = 0;
 									$insert_values = array();
@@ -943,8 +957,6 @@ class SensorsController extends Controller
 						{
 							// Setup the placeholders and data values to insert query
 							$insert_sql = 'insert into detections (' . $datafields_str . ') values ' . implode(',', array_fill(0, $j, $question_marks));
-
-							$db->beginTransaction();  // speed up inserts within transaction
 
 							$stmt = $db->prepare($insert_sql);
 							try
@@ -960,9 +972,9 @@ class SensorsController extends Controller
 								error_log('PDOException experimentStop(): '.var_export($e->getMessage(),true));  //DEBUG
 								var_dump($e->getMessage());
 							}
-
-							$db->commit();
 						}
+
+						$db->commit();
 					}
 				}
 

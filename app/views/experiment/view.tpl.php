@@ -1,13 +1,170 @@
 <?
 // Setup status
-$setup_exists = isset($this->view->content->setup);
-$setup_active = $setup_exists && $this->view->content->setup->flag;
-$ownSetup = $setup_exists && ($this->view->content->setup->master_exp_id == $this->view->content->experiment->id);
+$setup_exists    = isset($this->view->content->setup);
+$setup_active    = $setup_exists && $this->view->content->setup->flag;  //#setup_status_active
+$ownSetup        = $setup_exists && ($this->view->content->setup->master_exp_id == $this->view->content->experiment->id);
 $canSetupControl = $setup_exists && $ownSetup;
 
-?>
-<script>
+// Init stats
+$amount          = 0;       //#setup_amount_cnt
+$done_cnt        = 0;       //#setup_done_cnt
+                            //#setup_interval
+$remain_cnt      = 0;       //#setup_remain_cnt
+$remain_cnt_text = '';
+$created         = time();
 
+//#setup_time_det
+
+$now = new DateTime();
+//#setup_stopat_parent
+$stopat_title_1 = "Ориентировочное время окончания измерений";
+$stopat_title_0 = "Ориентировочное время, если начать измерения прямо сейчас";
+$setup_stopat_date  = null;
+$setup_stopat_text  = '';   //#setup_stopat
+$setup_stopat_class = '';
+$finished = null;
+
+#experiment-action
+
+if($setup_exists)
+{
+	// Amount of detections
+	// Check Setup mode
+	$amount = $this->view->content->setup->amount ? $this->view->content->setup->amount : '*';
+
+	// Get already done count of detections
+	if ($this->view->content->monitor && isset($this->view->content->monitor->info))
+	{
+
+		// TODO: need from backend API Monitor.Info about last data value (DS.last_ds) and test it to "U" with last_update date
+
+		$created = System::cutdatemsec($this->view->content->monitor->info->Created);
+		if ($this->view->content->monitor->info->Last === $created /* && $this->view->content->monitor->info->last_ds == "U" */)
+		{
+			// No data in rrd
+		}
+		else
+		{
+			$timestamp_last    = System::dateformat(System::cutdatemsec($this->view->content->monitor->info->Last), 'U');
+			$timestamp_created = System::dateformat($created, 'U');
+
+			$done_cnt = ($timestamp_last >= $timestamp_created) ?
+					(int)(($timestamp_last - $timestamp_created) / $this->view->content->monitor->info->Archives[0]->Step) :
+					0;
+		}
+	}
+
+	// Remain detections
+	// Check Setup mode
+	if ($this->view->content->setup->amount)
+	{
+		$remain_cnt = $this->view->content->setup->amount - $done_cnt;
+		$remain_cnt = ($remain_cnt >= 0) ? $remain_cnt : 0;
+		$remain_cnt_text = $remain_cnt;
+	}
+	else
+	{
+		$remain_cnt_text = '*';
+	}
+
+	// Stop at time
+	if ($setup_active)
+	{
+		// Check Setup mode
+		if ($this->view->content->setup->amount)
+		{
+			// Has monitor data
+			if ($this->view->content->monitor && isset($this->view->content->monitor->info))
+			{
+				$setup_stopat_date = new DateTime(System::cutdatemsec($this->view->content->monitor->info->Created));
+				$setup_stopat_date->modify('+'.$this->view->content->setup->time().' sec');
+				$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+
+				if ($now->format('U') > $setup_stopat_date->format('U'))
+				{
+					$setup_stopat_class = 'alert-success';
+					$finished = true;
+				}
+				else 
+				{
+					$finished = false;
+				}
+			}
+			else
+			{
+				$setup_stopat_text = 'Неизвестно';
+			}
+		}
+		else
+		{
+			// Has monitor data
+			if ($this->view->content->monitor && isset($this->view->content->monitor->info))
+			{
+				// TODO: need from backend API Monitor.Info about last data value (DS.last_ds) and test it to "U" with last_update date
+
+				if ($this->view->content->monitor->info->StopAt !== System::nulldate())
+				{
+					$setup_stopat_date = new DateTime(System::cutdatemsec($this->view->content->monitor->info->StopAt));
+					$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+
+					if ($now->format('U') > $setup_stopat_date->format('U'))
+					{
+						$setup_stopat_class = 'alert-success';
+						$finished = true;
+					}
+					else
+					{
+						$finished = false;
+					}
+				}
+				else
+				{
+					$setup_stopat_date = new DateTime(System::cutdatemsec($this->view->content->monitor->info->Created));
+					$setup_stopat_date->modify('+'.$this->view->content->setup->time().' sec');
+					$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+
+					if ($now->format('U') > $setup_stopat_date->format('U'))
+					{
+						$setup_stopat_class = 'alert-success';
+						$finished = true;
+					}
+					else
+					{
+						$finished = false;
+					}
+				}
+			}
+			else
+			{
+				$setup_stopat_text = 'Неизвестно';
+			}
+		}
+	}
+	else
+	{
+		$setup_stopat_date = new DateTime();
+		$setup_stopat_date->modify('+'.$this->view->content->setup->time().' sec');
+		$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+	}
+}
+?>
+
+<script type="text/javascript">
+<!--
+    $(document).ready(function(){
+        SDExperiment.exp_id = <? echo (int)$this->view->content->experiment->id; ?>;
+        <? if($setup_exists && $setup_active && ($finished === false)) : ?>
+
+        // Monitoring status polling
+        SDExperiment.stopTimer('MonId');
+        SDExperiment.updaterMonId = setInterval(function() {
+            updateExperimentStatus(SDExperiment.exp_id);
+        }, SDExperiment.updaterMonTime*1000);
+        $('#setup_status_active i.glyphicon').addClass('blink').show();
+        <? endif;?>
+
+    });
+//-->
 </script>
 <div class="row">
 	<div class="col-md-12">
@@ -65,11 +222,11 @@ $canSetupControl = $setup_exists && $ownSetup;
 		<? if(isset($this->view->content->experiment->comments)) : ?>
 			<tr>
 				<td colspan="2" class="bg-default">
-					<small><? print $this->view->content->experiment->comments; ?></small>
+					<small><? print htmlspecialchars($this->view->content->experiment->comments, ENT_QUOTES, 'UTF-8'); ?></small>
 				</td>
 			</tr>
 		<? endif;?>
-		<? if(isset($this->view->content->setup)) :?>
+		<? if ($setup_exists) :?>
 			<tr>
 				<td colspan="2">
 					<div class="">
@@ -81,7 +238,7 @@ $canSetupControl = $setup_exists && $ownSetup;
 					<div class="setup-status">
 						<? if ($setup_active) : ?>
 						<div id="setup_status_active" class="col-md-2">
-							<span class="label label-danger">Активна</span>
+							<span class="label label-danger"><i class="glyphicon glyphicon-exclamation-sign" style="display:none;">&nbsp;</i>Активна</span>
 						</div>
 						<? endif; ?>
 						<? if ($ownSetup) : ?>
@@ -97,143 +254,26 @@ $canSetupControl = $setup_exists && $ownSetup;
 					<div class="mrg-top-5px">
 						<div class="col-xs-12 col-sm-6 col-md-4">
 							<div class="mrg-bot-5px">
-								<div class="special-label">Число измерений: <span class="badge"><? print $this->view->content->setup->amount ? $this->view->content->setup->amount : '*'; ?></span></div>
+								<div class="special-label">Число измерений: <span id="setup_amount_cnt" class="badge"><? print $amount; ?></span></div>
 							</div>
 							<div class="mrg-bot-5px">
-								<div class="special-label">Выполнено: <span id="setup_done_cnt" class="badge"><? 
-
-									$done_cnt= 0;
-									// Has monitor data
-									if ($this->view->content->monitor && isset($this->view->content->monitor->info))
-									{
-										// TODO: need from backend API Monitor.Info about last data value (DS.last_ds) and test it to "U" with last_update date
-
-										$created = System::cutdatemsec($this->view->content->monitor->info->Created);
-										if ($this->view->content->monitor->info->Last === $created /* && $this->view->content->monitor->info->last_ds == "U" */)
-										{
-											// No data in rrd
-										}
-										else
-										{
-											$timestamp_last    = System::dateformat(System::cutdatemsec($this->view->content->monitor->info->Last),'U');
-											$timestamp_created = System::dateformat($created,'U');
-
-											$done_cnt = ($timestamp_last >= $timestamp_created) ?
-													(int)(($timestamp_last - $timestamp_created) / $this->view->content->monitor->info->Archives[0]->Step) :
-													0;
-										}
-									}
-									echo $done_cnt;
-									?></span>
-								</div>
+								<div class="special-label">Выполнено: <span id="setup_done_cnt" class="badge"><? echo $done_cnt; ?></span></div>
 							</div>
 						</div>
 						<div class="col-xs-12 col-sm-6 col-md-4">
 							<div class="mrg-bot-5px">
-								<div class="special-label">Интервал измерений: <span class="badge"><? print $this->view->content->setup->interval; ?></span></div>
+								<div class="special-label">Интервал измерений: <span id="setup_interval" class="badge"><? print $this->view->content->setup->interval; ?></span></div>
 							</div>
 							<div class="mrg-bot-5px">
-								<div class="special-label">Осталось: <span id="setup_last_cnt" class="badge"><?php 
-
-								$last_cnt = 0;
-								// Check Setup mode
-								
-								if ($this->view->content->setup->amount)
-								{
-									$last_cnt = $this->view->content->setup->amount - $done_cnt;
-									$last_cnt = ($last_cnt >= 0) ? $last_cnt : 0;
-									echo $last_cnt;
-								}
-								else
-								{
-									echo '*';
-								}
-								?></span></div>
+								<div class="special-label">Осталось: <span id="setup_remain_cnt" class="badge"><?php echo $remain_cnt_text; ?></span></div>
 							</div>
 						</div>
 						<div class="col-xs-12 col-sm-6 col-md-4">
 							<div class="mrg-bot-5px">
-								<div class="special-label">Продолжительность: <span class="badge"><? print System::secToTime($this->view->content->setup->time()); ?></span></div>
-							</div><?php 
-
-							$stopat_title_1 = "Ориентировочное время окончания измерений";
-							$stopat_title_0 = "Ориентировочное время, если начать измерения прямо сейчас";
-
-							?>
-							<div id="setup_stopat" class="mrg-bot-5px" title="<?php echo ($setup_active ? $stopat_title_1 : $stopat_title_0);?>" data-title-0="<?php echo $stopat_title_0;?>" data-title-1="<?php echo $stopat_title_1;?>">
-								<div class="special-label">Завершение: <?
-
-								$setup_stopat_text = '';
-								$setup_stopat_class = '';
-
-								// Output stop at time by active status
-								if ($setup_active)
-								{
-									// Check Setup mode
-									if ($this->view->content->setup->amount)
-									{
-										// Has monitor data
-										if ($this->view->content->monitor && isset($this->view->content->monitor->info))
-										{
-											$setup_stopat_date = new DateTime(System::cutdatemsec($this->view->content->monitor->info->Created));
-											$setup_stopat_date->modify('+'.$this->view->content->setup->time().' sec');
-											$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
-
-											$now = new DateTime();
-											if ($now->format('U') > $setup_stopat_date->format('U'))
-											{
-												$setup_stopat_class = 'alert-success';
-											}
-										}
-										else
-										{
-											$setup_stopat_text = 'Неизвестно';
-										}
-									}
-									else
-									{
-										// Has monitor data
-										if ($this->view->content->monitor && isset($this->view->content->monitor->info))
-										{
-											// TODO: need from backend API Monitor.Info about last data value (DS.last_ds) and test it to "U" with last_update date
-
-											if ($this->view->content->monitor->info->StopAt !== System::nulldate())
-											{
-												$setup_stopat_date = new DateTime(System::cutdatemsec($this->view->content->monitor->info->StopAt));
-												$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
-
-												$now = new DateTime();
-												if ($now->format('U') > $setup_stopat_date->format('U'))
-												{
-													$setup_stopat_class = 'alert-success';
-												}
-											}
-											else
-											{
-												$setup_stopat_date = new DateTime(System::cutdatemsec($this->view->content->monitor->info->Created));
-												$setup_stopat_date->modify('+'.$this->view->content->setup->time().' sec');
-												$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
-
-												$now = new DateTime();
-												if ($now->format('U') > $setup_stopat_date->format('U'))
-												{
-													$setup_stopat_class = 'alert-success';
-												}
-											}
-										}
-										else
-										{
-											$setup_stopat_text = 'Неизвестно';
-										}
-									}
-								}
-								else
-								{
-									$setup_stopat_date = new DateTime();
-									$setup_stopat_date->modify('+'.$this->view->content->setup->time().' sec');
-									$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
-								}
-								?><span id="setup_stopat" class="badge <? echo $setup_stopat_class;?>"><? echo $setup_stopat_text;?></span></div>
+								<div class="special-label">Продолжительность: <span id="setup_time_det" class="badge"><? print System::secToTime($this->view->content->setup->time()); ?></span></div>
+							</div>
+							<div class="mrg-bot-5px" id="setup_stopat_parent" title="<?php echo ($setup_active ? $stopat_title_1 : $stopat_title_0);?>" data-title-0="<?php echo $stopat_title_0;?>" data-title-1="<?php echo $stopat_title_1;?>">
+								<div class="special-label">Завершение: <span id="setup_stopat" class="badge <? echo $setup_stopat_class;?>"><? echo $setup_stopat_text;?></span></div>
 							</div>
 						</div>
 						<div class="col-xs-12 col-sm-6 col-md-3" style="display: none;">
@@ -266,7 +306,7 @@ $canSetupControl = $setup_exists && $ownSetup;
 <div class="row">
 	<div class="col-sm-10 col-md-10">
 		<div class="row" id="widget-workspace">
-		<? if( isset($this->view->content->sensors)) :?>
+		<? if (isset($this->view->content->sensors)) :?>
 			<? foreach($this->view->content->sensors as $sensor): 
 				$skey = '' . $sensor->id . '#' . (int)$sensor->sensor_val_id; ?>
 				<div class="col-xs-6 col-sm-4 col-md-3 sensor-widget" sensor-id="<? print $skey; ?>">

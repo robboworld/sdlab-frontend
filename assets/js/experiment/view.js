@@ -49,12 +49,9 @@ $(document).ready(function(){
     })
 
     $(document).on('change', '#experiment-sensors-refresh', function(){
-        if(SDExperimentSensors.updaterId !== null){
-            clearInterval(SDExperimentSensors.updaterId);
-            SDExperimentSensors.updaterId = null;
-        }
+        SDExperiment.stopTimer('SensorId');  // Stop polling
         if($(this).prop('checked')) {
-            SDExperimentSensors.updaterId = setInterval(function() {
+            SDExperiment.updaterSensorId = setInterval(function() {
                 var ids = [];
                 $('.sensor-widget').each(function(){
                     var sensorId = $(this).attr('sensor-id');
@@ -63,15 +60,24 @@ $(document).ready(function(){
                 if(ids.length){
                     updateSensorsValues(ids);
                 }
-            }, SDExperimentSensors.updaterTime*1000);
+            }, SDExperiment.updaterSensorTime*1000);
         }
     });
 });
-var SDExperimentSensors = {
-    updaterId : null,
-    updaterTime : 3
+var SDExperiment = {
+    updaterSensorId : null,
+    updaterSensorTime : 3,
+    updaterMonId : null,
+    updaterMonTime : 5,
+    stopTimer : function(name){
+        if((typeof name !== 'string') || (name.length == 0) || !this.hasOwnProperty('updater'+name)) return;
+        var id = 'updater'+name;
+        if(this[id] !== null){
+            clearInterval(this[id]);
+            this[id] = null;
+        }
+    }
 };
-
 
 function updateSensorValue(id, onalways){
     var pos = id.lastIndexOf("#"), idx = 0, sid = id;
@@ -97,6 +103,7 @@ function updateSensorValue(id, onalways){
     }
 }
 
+// Batch sensors update
 function updateSensorsValues(ids, onalways){
     var items = [], pos, idx, sid;
     for(var i=0;i<ids.length;i++){
@@ -154,7 +161,6 @@ function getExperimentStrob(experiment_id){
         }else{
             $('#experiment-strob').attr('disabled', false).text('Строб: Не выполнено').addClass('btn-warning');
         }
-
     })
 }
 
@@ -178,4 +184,74 @@ function experimentAction(act, experiment_id){
             alert($('#experiment-action').data('text-'+(act?'0':'1'))+': Не выполнено: '+data.error);
         }
     })
+}
+
+function updateExperimentStatus(exp_id, uuid, onalways){
+    uuid = uuid || '';
+    var rq = coreAPICall('Sensors.experimentStatus', {experiment: exp_id/*, uuid: uuid*/}, function(data, st, xhr){
+        if(typeof data.result !== 'undefined'){
+            var setup = data.result.setup,
+                mon = data.result.monitor,
+                stat = data.result.stat;
+            if((setup == null)                                           // no Setup binded to Experiment?
+                || (uuid.length>0 && monitor == null)                    // no monitoring active?
+                || (uuid.length>0 && monitor.uuid !== xhr.monitor_uuid)  // another monitoring?
+                || (stat == null)                                        // no stats?
+            ){
+                showExpStateUndefined();
+                SDExperiment.stopTimer('MonId');  // Stop polling
+                $('#setup_status_active i.glyphicon').hide().removeClass('blink');
+                return;
+            }
+            else {
+                //if(setup.active){ $('#setup_status_active').show(); }else{ $('#setup_status_active').hide(); }
+                $('#setup_amount_cnt').text(stat.amount);
+                $('#setup_done_cnt').text(stat.done_cnt);
+                $('#setup_interval').text(setup.interval);
+                $('#setup_remain_cnt').text(stat.remain_cnt);
+                $('#setup_time_det').text(stat.time_det);
+                $('#setup_stopat_parent').attr('title',$('#setup_stopat_parent').data('title-'+(setup.active ? '1' : '0')));
+                $('#setup_stopat').text(stat.stopat).toggleClass('alert-success', ((stat.finished === false || stat.finished === true) ? stat.finished : false));
+
+                if(!setup.active || (stat.finished !== false)){
+                    SDExperiment.stopTimer('MonId');  // Stop polling
+                    $('#setup_status_active i.glyphicon').hide().removeClass('blink');
+                }
+            }
+        } else if (typeof data.error !== 'undefined'){
+            //error
+            showExpStateUndefined();
+            SDExperiment.stopTimer('MonId');  // Stop polling
+            $('#setup_status_active i.glyphicon').hide().removeClass('blink');
+        }
+    });
+    rq.monitor_uuid = uuid;
+    if(typeof onalways === "function"){
+        rq.always(function(d,textStatus,err) {onalways();});
+    }
+}
+
+function showExpStateUndefined() {
+    // Reset to undefined state
+    $('#setup_amount_cnt').text('?');
+    $('#setup_done_cnt').text('?');
+    $('#setup_interval').text('?');
+    $('#setup_remain_cnt').text('?');
+    $('#setup_time_det').text('?');
+    $('#setup_stopat').text('?').removeClass('alert-success');
+
+    // Show alert
+    if($('table.exp-table tbody .exp-row-alert').length==0){
+        $('table.exp-table tbody').append('\
+            <tr class="exp-row-alert">\
+                <td colspan="2">\
+                    <div class="alert alert-warning alert-dismissible" role="alert">\
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>\
+                        <div>Внимание! Параметры эксперимента изменились. Пожалуйста, <a href="#">обновите страницу</a>.<div>\
+                    </div>\
+                </td>\
+            </tr>\
+        ');
+        $('.exp-row-alert .alert a').attr('href','javascript:void(0);').click(function(){window.location.reload();});
+    }
 }

@@ -317,6 +317,8 @@ class SensorsController extends Controller
 						if(!empty($result))
 						{
 							$db = new DB();
+							$db->beginTransaction();  // speed up inserts within transaction
+
 							$insert = $db->prepare('insert into detections (exp_id, time, sensor_id, sensor_val_id, detection, error) values (:exp_id, :time, :sensor_id, :sensor_val_id, :detection, :error)');
 
 							for($i = 0; $i < count($sensors); $i++)
@@ -347,14 +349,26 @@ class SensorsController extends Controller
 									}
 								}
 
-								$insert->execute(array(
-									':exp_id' => $experiment->id,
-									':time' => $result[0]->Time,
-									':sensor_id' => $sensors[$i]->id,
-									':sensor_val_id' => $sensors[$i]->sensor_val_id,
-									':detection' => $result[0]->Readings[$i],
-									':error' => $sensor_error
-								));
+								try
+								{
+									$res = $insert->execute(array(
+										':exp_id' => $experiment->id,
+										':time' => $result[0]->Time,
+										':sensor_id' => $sensors[$i]->id,
+										':sensor_val_id' => $sensors[$i]->sensor_val_id,
+										':detection' => $result[0]->Readings[$i],
+										':error' => $sensor_error
+									));
+									if (!$res)
+									{
+										error_log('PDOError: '.var_export($insert->errorInfo(),true));  //DEBUG
+									}
+								}
+								catch (PDOException $e)
+								{
+									error_log('PDOException experimentStop(): '.var_export($e->getMessage(),true));  //DEBUG
+									var_dump($e->getMessage());
+								}
 							}
 
 							// Update experiment start
@@ -379,6 +393,8 @@ class SensorsController extends Controller
 							{
 								error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
 							}
+
+							$db->commit();
 
 							return array('result' => true);
 						}
@@ -758,7 +774,7 @@ class SensorsController extends Controller
 					unset($socket);
 
 					// Stop only valid
-					if($mon->info)
+					if(isset($mon->info))
 					{
 						// Prepare parameters for backend sensors API method
 						$query_params = array($mon->uuid);
@@ -775,6 +791,9 @@ class SensorsController extends Controller
 						else
 						{
 							//$this->error = 'Monitoring not started';
+
+							//TODO: add other error checking, because error operation on socket returns false too!
+
 							error_log('Error Lab.StopMonitor' . (isset($result->error) ? ': '.var_export($result->error,true) : ''));  //DEBUG
 
 							//return false;
@@ -850,6 +869,8 @@ class SensorsController extends Controller
 
 						$question_marks = '(' . DB::placeholders('?', count($datafields)) . ')';
 
+						$db->beginTransaction();  // speed up inserts within transaction
+
 						$j = 0;
 						foreach($data as $d)
 						{
@@ -909,8 +930,6 @@ class SensorsController extends Controller
 									// Setup the placeholders and data values to insert query
 									$insert_sql = 'insert into detections (' . $datafields_str . ') values ' . implode(',', array_fill(0, $j, $question_marks));
 
-									$db->beginTransaction();  // speed up inserts within transaction
-
 									$stmt = $db->prepare($insert_sql);
 									try
 									{
@@ -926,8 +945,6 @@ class SensorsController extends Controller
 										var_dump($e->getMessage());
 									}
 
-									$db->commit();
-
 									// Reset block counter and arrays
 									$j = 0;
 									$insert_values = array();
@@ -940,8 +957,6 @@ class SensorsController extends Controller
 						{
 							// Setup the placeholders and data values to insert query
 							$insert_sql = 'insert into detections (' . $datafields_str . ') values ' . implode(',', array_fill(0, $j, $question_marks));
-
-							$db->beginTransaction();  // speed up inserts within transaction
 
 							$stmt = $db->prepare($insert_sql);
 							try
@@ -957,9 +972,9 @@ class SensorsController extends Controller
 								error_log('PDOException experimentStop(): '.var_export($e->getMessage(),true));  //DEBUG
 								var_dump($e->getMessage());
 							}
-
-							$db->commit();
 						}
+
+						$db->commit();
 					}
 				}
 
@@ -1002,6 +1017,306 @@ class SensorsController extends Controller
 			return false;
 		}
 	
+		return false;
+	}
+
+
+	/**
+	 * Check status of experiment monitoring.
+	 * API method: Sensors.experimentStatus
+	 * API params: experiment[, uuid]
+	 *
+	 * Return object format:
+	 * <code>
+	 * {
+	 *     setup : {
+	 *         id                  : integer,
+	 *         active              : bool,
+	 *         interval            : integer,
+	 *         amount              : integer,
+	 *         time_det            : integer,
+	 *         number_error        : integer,
+	 *         period_repeated_det : integer,
+	 *     }
+	 *     monitor : {
+	 *         uuid                : string
+	 *     }
+	 *     stat : {
+	 *         amount              : string,
+	 *         done_cnt            : string,
+	 *         remain_cnt          : string,
+	 *         time_det            : string,
+	 *         stopat              : string,
+	 *         finished            : bool,
+	 *     }
+	 * }
+	 * </code>
+	 *
+	 * @param  array $params  Array of parameters
+	 *
+	 * @return array  Result in form array('result' => object) or False on error
+	 */
+	function experimentStatus($params)
+	{
+		if(!empty($params['experiment']))
+		{
+			$experiment = (new Experiment())->load($params['experiment']);
+			if(!empty($experiment->setup_id))
+			{
+				// Check access to experiment
+				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
+				{
+					$this->error = 'Access denied';
+
+					return false;
+				}
+
+				// Load Setup
+				$setup = (new Setup())->load($experiment->setup_id);
+				if (!$setup)
+				{
+					$this->error = 'Setup not found';
+
+					return false;
+				}
+
+				$monitors = (new Monitor())->loadItems(
+						array(
+								'exp_id' => (int)$experiment->id,
+								'setup_id' => (int)$experiment->setup_id,
+								'deleted' => 0
+						),
+						'id', 'DESC', 1
+				);
+				$monitor = (!empty($monitors)) ? $monitors[0] : null;
+
+				// Get last monitoring info from api
+				if (!empty($monitor))
+				{
+					// Prepare parameters for api method
+					$query_params = array($monitor->uuid);
+
+					// Send request for get monitor info
+					$socket = new JSONSocket($this->config['socket']['path']);
+					$result = $socket->call('Lab.GetMonInfo', $query_params);
+
+					// Get results
+					if($result)
+					{
+						//Prepare results
+						$nd = System::nulldate();
+
+						if(isset($result->Created) && ($result->Created === $nd))
+						{
+							$result->Created = null;
+						}
+
+						if(isset($result->StopAt) && ($result->StopAt === $nd))
+						{
+							$result->StopAt = null;
+						}
+
+						if(isset($result->Last) && ($result->Last === $nd))
+						{
+							$result->Last = null;
+						}
+
+						$monitor->info = $result;
+					}
+					else
+					{
+						// TODO: error get monitor data from backend api, may by need return error
+					}
+				}
+
+				// Init return data
+				$return = array(
+					'setup'   => array(
+						'id'                  => (int)$setup->id,
+						'active'              => ($setup->flag ? true : false),
+						'interval'            => $setup->interval,
+						'amount'              => $setup->amount,
+						'time_det'            => $setup->time_det,
+						'number_error'        => $setup->number_error,
+						'period_repeated_det' => $setup->period_repeated_det
+					),
+					'monitor' => null,
+					'stat'    => array(
+						'amount'              => '',
+						'done_cnt'            => '',
+						'remain_cnt'          => '',
+						'time_det'            => '',
+						'stopat'              => '',
+						'finished'            => false
+					)
+				);
+
+				if (!empty($monitor))
+				{
+					$return['monitor'] = array(
+						'uuid'                => $monitor->uuid
+					);
+				}
+
+				$setup_active    = $setup->flag ? true : false ;
+
+				// Init stats
+				$amount          = 0;
+				$done_cnt        = 0;
+				$remain_cnt      = 0;
+				$remain_cnt_text = '';
+				$created         = time();
+
+				$now = new DateTime();
+				$setup_stopat_date  = null;
+				$setup_stopat_text  = '';
+				$finished = null;
+
+				// Amount of detections
+				$amount = ($setup->amount ? $setup->amount : '*');
+
+				// Get already done count of detections
+				if ($monitor && isset($monitor->info))
+				{
+					// TODO: need from backend API Monitor.Info about last data value (DS.last_ds) and test it to "U" with last_update date
+
+					$created = System::cutdatemsec($monitor->info->Created);
+					if ($monitor->info->Last === $created /* && $monitor->info->last_ds == "U" */)
+					{
+						// No data in rrd
+					}
+					else
+					{
+						$timestamp_last    = System::dateformat(System::cutdatemsec($monitor->info->Last), 'U');
+						$timestamp_created = System::dateformat($created, 'U');
+
+						$done_cnt = ($timestamp_last >= $timestamp_created) ?
+								(int)(($timestamp_last - $timestamp_created) / $monitor->info->Archives[0]->Step) :
+								0;
+					}
+				}
+
+				// Remain detections
+				// Check Setup mode
+				if ($setup->amount)
+				{
+					$remain_cnt = $setup->amount - $done_cnt;
+					$remain_cnt = ($remain_cnt >= 0) ? $remain_cnt : 0;
+					$remain_cnt_text = $remain_cnt;
+				}
+				else
+				{
+					$remain_cnt_text = '*';
+				}
+
+				// Stop at time
+				if ($setup_active)
+				{
+					// Check Setup mode
+					if ($setup->amount)
+					{
+						// Has monitor data
+						if ($monitor && isset($monitor->info))
+						{
+							$setup_stopat_date = new DateTime(System::cutdatemsec($monitor->info->Created));
+							$setup_stopat_date->modify('+'.$setup->time().' sec');
+							$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+
+							if ($now->format('U') > $setup_stopat_date->format('U'))
+							{
+								$finished = true;
+							}
+							else
+							{
+								$finished = false;
+							}
+						}
+						else
+						{
+							$setup_stopat_text = 'Неизвестно';
+						}
+					}
+					else
+					{
+						// Has monitor data
+						if ($monitor && isset($monitor->info))
+						{
+							// TODO: need from backend API Monitor.Info about last data value (DS.last_ds) and test it to "U" with last_update date
+
+							if ($monitor->info->StopAt !== System::nulldate())
+							{
+								$setup_stopat_date = new DateTime(System::cutdatemsec($monitor->info->StopAt));
+								$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+
+								if ($now->format('U') > $setup_stopat_date->format('U'))
+								{
+									$finished = true;
+								}
+								else
+								{
+									$finished = false;
+								}
+							}
+							else
+							{
+								$setup_stopat_date = new DateTime(System::cutdatemsec($monitor->info->Created));
+								$setup_stopat_date->modify('+'.$setup->time().' sec');
+								$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+
+								if ($now->format('U') > $setup_stopat_date->format('U'))
+								{
+									$finished = true;
+								}
+								else
+								{
+									$finished = false;
+								}
+							}
+						}
+						else
+						{
+							$setup_stopat_text = 'Неизвестно';
+						}
+					}
+				}
+				else
+				{
+					$setup_stopat_date = new DateTime();
+					$setup_stopat_date->modify('+'.$setup->time().' sec');
+					$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+				}
+
+				// Fill stat data
+				$return['stat']['amount']     = (string)$amount;
+				$return['stat']['done_cnt']   = (string)$done_cnt;
+				$return['stat']['remain_cnt'] = $remain_cnt_text;
+				$return['stat']['time_det']   = System::secToTime($setup->time());
+				$return['stat']['stopat']     = $setup_stopat_text;
+				$return['stat']['finished']   = $finished;
+
+				return array('result' => $return);
+			}
+			else
+			{
+				if (empty($experiment->id))
+				{
+					$this->error = 'Experiment not found';
+				}
+				else
+				{
+					$this->error = 'Setup not found';
+				}
+
+				return false;
+			}
+		}
+		else
+		{
+			$this->error = 'Experiment not found';
+
+			return false;
+		}
+
 		return false;
 	}
 

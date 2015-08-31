@@ -19,22 +19,24 @@ $(document).ready(function(){
 
 
 
-    /* Получаем список доступных датчиков */
-    coreAPICall('Sensors.getSensors', {getinfo: true}, updateSensorsList);
-
     /* Обновляем список доступных датчиков*/
     $(document).on('click', '#sensors-list-update', function(){
         coreAPICall('Sensors.getSensors', {getinfo: true}, updateSensorsList);
     });
+    toggleSensorsListAlert('#sensors-in-setup');
+    /* Получаем список доступных датчиков */
+    $('#sensors-list-update').trigger('click');
 
     /* Adding sensors to setup-form*/
     $(document).on('click', '#add-sensors', function(){
         addSensorsToSetup();
+        toggleSensorsListAlert('#sensors-in-setup, #sensor-list-table');
     });
 
     /* Removing sensors from setup-form*/
     $(document).on('click', '.remove-sensor', function(){
         removeSensorFromSetup(this);
+        toggleSensorsListAlert('#sensors-in-setup, #sensor-list-table');
     });
 
     /* Input triggering when touching row */
@@ -101,7 +103,9 @@ function updateSensorsList(data){
                 }
             }
         }
+        toggleSensorsListAlert('#sensor-list-table');
     } else {
+        toggleSensorsListAlert('#sensor-list-table');
         //error
         alert('Ошибка');
     }
@@ -149,4 +153,19 @@ function removeSensorFromSetup(obj){
     $('tr[sensor-id="'+ sensorId +'"]').removeClass('success').data('sensorname',sensorname).show();
 
     console.log('Remove sensor #'+ sensorId +' from setup configuration.');
+}
+
+function toggleSensorsListAlert(selector){
+    var els = $(selector);
+    if(els.length<=0) return;
+    els.each(function(){
+        if($(this).find('tfoot .alert').length>0){
+            var rows = $(this).find('tbody tr:visible');
+            if(rows.length==0){
+                $(this).find('tfoot').show();
+            }else{
+                $(this).find('tfoot').hide();
+            }
+        }
+    });
 }

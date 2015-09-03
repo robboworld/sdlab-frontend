@@ -30,9 +30,11 @@ class DetectionsController extends Controller
 			$experiment = (new Experiment())->load($plot->exp_id);
 			$setup = (new Setup())->load($experiment->setup_id);
 
-			$detections_query = $this->db->prepare('select * from detections where exp_id = :experiment_id and sensor_id = :sensor_id and sensor_val_id = :sensor_val_id');
+			$db = new DB();
 
-			$ordinate_query = $this->db->query('select ordinate.*, setup_conf.name, setup_conf.sensor_id, setup_conf.sensor_val_id from ordinate left join setup_conf on setup_conf.setup_id = '.(int)$setup->id.' AND setup_conf.sensor_id = ordinate.id_sensor_y AND setup_conf.sensor_val_id = ordinate.sensor_val_id_y where id_plot = '.(int)$plot->id.' ', PDO::FETCH_OBJ);
+			$detections_query = $db->prepare('select * from detections where exp_id = :experiment_id and sensor_id = :sensor_id and sensor_val_id = :sensor_val_id');
+
+			$ordinate_query = $db->query('select ordinate.*, setup_conf.name, setup_conf.sensor_id, setup_conf.sensor_val_id from ordinate left join setup_conf on setup_conf.setup_id = '.(int)$setup->id.' AND setup_conf.sensor_id = ordinate.id_sensor_y AND setup_conf.sensor_val_id = ordinate.sensor_val_id_y where id_plot = '.(int)$plot->id.' ', PDO::FETCH_OBJ);
 			//System::dump($ordinate_query);
 			if($ordinate_query)
 			{
@@ -222,6 +224,273 @@ class DetectionsController extends Controller
 		{
 			$this->error = 'Experiment not found';
 		
+			return false;
+		}
+
+		return false;
+	}
+
+
+	/**
+	 * Delete data from detections.
+	 * API method: Detections.delete
+	 * API params: id[]
+	 *
+	 * @param  array $params  Array of parameters
+	 *
+	 * @return array  Result in form array('result' => True) or False on error
+	 */
+	function delete($params)
+	{
+		if(!empty($params['id']))
+		{
+			$ids = array();
+			if(is_array($params['id']))
+			{
+				foreach($params['id'] as $val)
+				{
+					if ((int)$val == 0) continue;
+					$ids[(int)$val] = null;
+				}
+			}
+			else if (is_numeric($params['id']))
+			{
+				if ((int)$params['id'] != 0)
+				{
+					$ids[(int)$val] = null;
+				}
+			}
+			else
+			{
+				$this->error = 'Invalid parameters';
+
+				return false;
+			}
+
+			if (empty($ids))
+			{
+				$this->error = 'Invalid parameters';
+
+				return false;
+			}
+
+			$cnt_ids = count($ids);
+
+			$db = new DB();
+
+			// Check access to experiment
+			if ($this->session()->getUserLevel() != 3)
+			{
+				// Get experiments with sessions identificators for detections ids
+				$current_session = $this->session()->getKey();
+
+				$exp_det_query = $db->prepare(
+						'select d.id, d.exp_id, e.session_key from detections as d '
+						. 'left join experiments as e on e.id = d.exp_id ' 
+						. 'where e.exp_id notnull and d.id in (' . implode(',', array_fill(0, $cnt_ids, '?')) . ')'
+				);
+				$stmt = $db->prepare($exp_det_query);
+				try
+				{
+					$res = $stmt->execute(array_keys($ids));
+					if (!$res)
+					{
+						error_log('PDOError: '.var_export($stmt->errorInfo(),true));  //DEBUG
+
+						$this->error = 'Fatal error';
+						return false;
+					}
+				}
+				catch (PDOException $e)
+				{
+					error_log('PDOException delete(): '.var_export($e->getMessage(),true));  //DEBUG
+
+					$this->error = 'Fatal error';
+					return false;
+				}
+				$ids_exps = (array) $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+				$denied = 0;
+				foreach ($ids_exps as $k => $val)
+				{
+					if ($val['session_key'] != $current_session)
+					{
+						unset($ids_exps[$k]);
+						$denied++;
+					}
+				}
+
+				// Set only available date
+				foreach ($ids_exps as $val)
+				{
+					$ids[(int)$val['id']] = (int)$val['exp_id'];
+				}
+				$ids = array_filter($ids);
+
+				// Denied access to some detections data
+				if ($denied > 0)
+				{
+					$this->error = 'Access denied';
+					//return false;  // But try delete only available
+				}
+			}
+
+			if (empty($ids))
+			{
+				// Use only first error
+				if (empty($this->error))
+				{
+					$this->error = 'Detections not found';
+				}
+				return false;
+			}
+
+			// Update experiment stop
+			$sql_delete_query = 'delete from detections where id in (' . implode(',', array_fill(0, count($ids), '?')) . ')';
+			$stmt = $db->prepare($sql_delete_query);
+			try
+			{
+				$res = $stmt->execute(array_keys($ids));
+				if (!$res)
+				{
+					error_log('PDOError: '.var_export($stmt->errorInfo(),true));  //DEBUG
+
+					$this->error = 'Fatal error';
+					return false;
+				}
+			}
+			catch (PDOException $e)
+			{
+				error_log('PDOException delete(): '.var_export($e->getMessage(),true));  //DEBUG
+
+				$this->error = 'Fatal error';
+				return false;
+			}
+
+			return array('result' => true);
+		}
+		else
+		{
+			$this->error = 'Detections not found';
+
+			return false;
+		}
+
+		return false;
+	}
+
+
+	/**
+	 * Delete data from detections of experiment by datetime.
+	 * API method: Detections.deletebytime
+	 * API params: dt[], exp_id
+	 *
+	 * @param  array $params  Array of parameters
+	 *
+	 * @return array  Result in form array('result' => True) or False on error
+	 */
+	function deletebytime($params)
+	{
+		if(!empty($params['dt']) && !empty($params['exp_id']))
+		{
+			$dts = array();
+
+			$experiment = (new Experiment())->load((int)$params['exp_id']);
+
+			// Check experiment
+			if (!$experiment || empty($experiment->id))
+			{
+				$this->error = 'Experiment not found';
+				return false;
+			}
+
+			// Check access
+			if ($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3)
+			{
+				// Get datetimes
+				if(is_array($params['dt']))
+				{
+					foreach($params['dt'] as $val)
+					{
+						$dt = DateTime::createFromFormat('Y.m.d?H:i:s.u+', $val);
+						$err = DateTime::getLastErrors();
+						if ($dt === false || $err['error_count'] > 0) continue;
+						/*
+						try {
+							$dt = DateTime::createFromFormat('Y.m.d?H:i:s.u+', $val);
+						} catch (Exception $e) {
+							// echo $e->getMessage();
+						}
+						*/
+
+						// Cut from 6 to 3 msec digits
+						$dts[substr($dt->format('Y-m-d\TH:i:s.u'), 0, -3)] = null;  // only 3 digits used for msec in sqlite
+					}
+				}
+				else if (is_string($params['dt']))
+				{
+					$dt = DateTime::createFromFormat('Y.m.d?H:i:s.u+', $params['dt']);
+					$err = DateTime::getLastErrors();
+					if ($dt === false || $err['error_count'] > 0) continue;
+					/*
+					try{
+						$dt = DateTime::createFromFormat('Y.m.d?H:i:s.u+', $params['dt']);
+					} catch (Exception $e) {
+						// echo $e->getMessage();
+					}
+					*/
+
+					// Cut from 6 to 3 msec digits
+					$dts[substr($dt->format('Y-m-d\TH:i:s.u'), 0, -3)] = null;  // only 3 digits used for msec in sqlite
+				}
+				else
+				{
+					$this->error = 'Invalid parameters';
+					return false;
+				}
+
+				if (empty($dts))
+				{
+					$this->error = 'Invalid parameters';
+					return false;
+				}
+
+				$db = new DB();
+
+				// Delete detections
+				$sql_delete_query = 'delete from detections where exp_id = ' . (int)$experiment->id . ' and strftime(\'%Y-%m-%dT%H:%M:%f\', time) in (' . implode(',', array_fill(0, count($dts), '?')) . ')';
+				$stmt = $db->prepare($sql_delete_query);
+				try
+				{
+					$res = $stmt->execute(array_keys($dts));
+					if (!$res)
+					{
+						error_log('PDOError: '.var_export($stmt->errorInfo(),true));  //DEBUG
+
+						$this->error = 'Fatal error';
+						return false;
+					}
+				}
+				catch (PDOException $e)
+				{
+					error_log('PDOException delete(): '.var_export($e->getMessage(),true));  //DEBUG
+
+					$this->error = 'Fatal error';
+					return false;
+				}
+			}
+			else
+			{
+				$this->error = 'Access denied';
+				return false;
+			}
+
+			return array('result' => true);
+		}
+		else
+		{
+			$this->error = 'Invalid parameters';
+
 			return false;
 		}
 

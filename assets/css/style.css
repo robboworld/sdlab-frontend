@@ -212,3 +212,19 @@ h3.exp-title {
 /* Menu */
 #nav-buttons { padding: 0; }
 #nav-buttons input { min-width: 130px; }
+
+/* Journal page */
+.table-detections .detection-num {
+	cursor: pointer;
+}
+.table-detections a.btn-remove-detection,
+.table-detections a.btn-remove-detection:active,
+.table-detections a.btn-remove-detection:focus {
+	padding: 0px;
+	-moz-outline-style: none;
+	outline: none;
+}
+#collapseSensors {
+	background-color: rgba(255,255,255,0.8);
+	padding: 5px;
+}

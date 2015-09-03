@@ -298,7 +298,7 @@ class ExperimentController extends Controller
 	/**
 	 * Action: Delete
 	 * Deleting experiment.
-	 * Deltetes all data related to experiment.
+	 * Deletes all data related to experiment.
 	 */
 	function delete()
 	{
@@ -465,6 +465,8 @@ class ExperimentController extends Controller
 
 				self::setTitle('Журнал '.$experiment->title);
 				self::setContentTitle('Журнал "'.$experiment->title.'"');
+				self::addJs('functions');
+				self::addJs('experiment/journal');
 
 				/*Объект формы*/
 				$this->view->form = new Form('experiment-journal-form');
@@ -668,6 +670,67 @@ class ExperimentController extends Controller
 			$this->view->content->detections = array();
 		}
 	}
+
+
+	/**
+	 * Action: Clean
+	 * Clean detections journal.
+	 * Deletes all detections data related to experiment.
+	 */
+	function clean()
+	{
+		if (!empty($this->id) && is_numeric($this->id))
+		{
+			$experiment = (new Experiment())->load($this->id);
+
+			// Check access to experiment
+			if ($experiment && $experiment->id && ($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
+			{
+				if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'experiment-journal-form')
+				{
+					$db = new DB();
+
+					// Remove detections
+					$delete = $db->prepare('delete from detections where exp_id=:exp_id');
+					$result = $delete->execute(array(':exp_id' => $this->id));
+					if (!$result)
+					{
+						error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
+					}
+
+					if(isset($_GET['destination']) && $_GET['destination'] != $_GET['q'])
+					{
+						System::go(System::clean($_GET['destination'], 'path'));
+					}
+					else
+					{
+						System::go('experiment/journal/'.$this->id);
+					}
+				}
+				else 
+				{
+					// TODO: check return back link from $_GET['destination'] or $_POST['destination']
+
+					System::go('experiment/journal/'.$this->id);
+				}
+
+				// TODO: Show info about errors while clean or about success (need session saved msgs)
+
+				return;
+			}
+			else
+			{
+				// Error: experiment not found or no access
+				System::go('experiment/view');
+			}
+		}
+		else
+		{
+			// Error: incorrect experiment id
+			System::go('experiment/view');
+		}
+	}
+
 
 	/**
 	 * Check if some Setup is active in experiment.

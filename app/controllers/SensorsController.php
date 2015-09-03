@@ -577,7 +577,10 @@ class SensorsController extends Controller
 						// Safe end time
 						// TODO: can dont stop detections by stop at time, and repeat infinitely and stop only by manual
 						//$stopat = System::nulldate();
+
+						// xxx: need add some time to interval for truely detect last values
 						$overflow = (int)$setup->interval; // one interval
+						//$overflow = 0;
 						$stopat = (new DateTime())->modify('+' . ($count * (int)$setup->interval + $overflow) . ' sec')->format('Y-m-d\TH:i:s\Z');
 					}
 					else

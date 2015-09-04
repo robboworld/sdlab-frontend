@@ -570,6 +570,7 @@ class SensorsController extends Controller
 					}
 
 					// Set parameters for backend sensors API
+					$now = new DateTime();
 					// Check Setup mode
 					if ($setup->amount)
 					{
@@ -577,14 +578,17 @@ class SensorsController extends Controller
 						// Safe end time
 						// TODO: can dont stop detections by stop at time, and repeat infinitely and stop only by manual
 						//$stopat = System::nulldate();
-						$overflow = (int)$setup->interval; // one interval
-						$stopat = (new DateTime())->modify('+' . ($count * (int)$setup->interval + $overflow) . ' sec')->format('Y-m-d\TH:i:s\Z');
+
+						// xxx: need add some time to interval for truely detect last values
+						//$overflow = (int)$setup->interval; // one interval
+						$overflow = 1;
+						$stopat = (new DateTime($now->format(DateTime::ATOM)))->modify('+' . ($count * (int)$setup->interval + $overflow) . ' sec')->format('Y-m-d\TH:i:s\Z');
 					}
 					else
 					{
 						// Must be defined count values buffer fo RRD
 						$count = (int) ceil((int)$setup->time_det / ((int)$setup->interval > 0 ? (int)$setup->interval : 1));
-						$stopat = (new DateTime())->modify('+' . (int)$setup->time_det . ' sec')->format('Y-m-d\TH:i:s\Z');
+						$stopat = (new DateTime($now->format(DateTime::ATOM)))->modify('+' . (int)$setup->time_det . ' sec')->format('Y-m-d\TH:i:s\Z');
 					}
 
 					$query_params = array(
@@ -611,7 +615,7 @@ class SensorsController extends Controller
 					$monitor->set('exp_id', (int)$experiment->id);
 					$monitor->set('setup_id', (int)$setup->id);
 					$monitor->set('uuid', (string)$result);
-					$monitor->set('created', System::dateformat('now', 'Y-m-d\TH:i:s\Z'));
+					$monitor->set('created', $now->format('Y-m-d\TH:i:s\Z'));
 
 					$result = $monitor->save();
 					if (!$result)
@@ -828,30 +832,55 @@ class SensorsController extends Controller
 					}
 
 					$step = 1;  // Use first RRA (1: x1, 2: x4, 3: x16)
-					$offset = $step;
+					// xxx: need add some time after stop for truely detect last values?
+					//$offset = $step;
+					$offset = 0;
 
-					$start = is_null($mon->info->Created) ? $mon->created : $mon->info->Created;
+					$start_str = is_null($mon->info->Created) ? $mon->created : $mon->info->Created;
+					$stopdt = null;
+					$stop_str = '';
 					if (is_null($mon->info->Last))
 					{
 						if (is_null($mon->info->StopAt))
 						{
-							$stop = (new DateTime('now'))->format('Y-m-d\TH:i:s\Z');
+							$stopdt = new DateTime('now');
 						}
 						else
 						{
-							$stop = (new DateTime(System::cutdatemsec($mon->info->StopAt)))->modify('+' . $offset . ' sec')->format('Y-m-d\TH:i:s\Z');
+							$stopdt = new DateTime(System::cutdatemsec($mon->info->StopAt));
+							$stopdt->modify('+' . $offset . ' sec');
 						}
 					}
 					else
 					{
-						$stop = (new DateTime(System::cutdatemsec($mon->info->Last)))->modify('+' . $offset . ' sec')->format('Y-m-d\TH:i:s\Z');
+						if (is_null($mon->info->StopAt))
+						{
+							$stopdt = new DateTime(System::cutdatemsec($mon->info->Last));
+							$stopdt->modify('+' . $offset . ' sec');
+						}
+						else
+						{
+							$lastdt = new DateTime(System::cutdatemsec($mon->info->Last));
+							$stopdt = new DateTime(System::cutdatemsec($mon->info->StopAt));
+
+							if ($lastdt >= $stopdt)
+							{
+								$stopdt->modify('+' . $offset . ' sec');
+							}
+							else
+							{
+								$stopdt = new DateTime(System::cutdatemsec($mon->info->Last));
+								$stopdt->modify('+' . $offset . ' sec');
+							}
+						}
 					}
+					$stop_str = $stopdt->format('Y-m-d\TH:i:s\Z');
 
 					// Prepare parameters for backend sensors API method
 					$query_params = array(
 							'UUID'  => $mon->uuid,
-							'Start' => $start,
-							'End'   => $stop,
+							'Start' => $start_str,
+							'End'   => $stop_str,
 							'Step'  => System::nano($step)
 					);
 
@@ -877,6 +906,12 @@ class SensorsController extends Controller
 							for ($i = 0; $i < $cnt_sensors; $i++)
 							{
 								if (!isset($d->Readings[$i]))
+								{
+									continue;
+								}
+
+								// Skip after dates
+								if ((new DateTime(System::cutdatemsec($d->Time))) > $stopdt)
 								{
 									continue;
 								}

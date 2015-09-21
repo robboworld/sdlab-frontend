@@ -51,7 +51,7 @@
 					//zoomRange: [data[0].data[0][0], data[0].data[data.length-1][0]],
 					show: true,
 					mode: 'time',
-					timeformat: "%Y-%m-%d %H:%m:%S",
+					timeformat: "%Y-%m-%d %H:%M:%S",
 					minTickSize: [1, 'second'],
 					timezone: null
 				},

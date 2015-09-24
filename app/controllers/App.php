@@ -3,9 +3,10 @@
 class App
 {
 	private $controller;
-	function __construct()
+
+	public function __construct()
 	{
-		$this->config = include('app/config/config.php');
+		$this->config = self::config();
 		$query_array = $this->router();
 
 		if($query_array[0]!= '')
@@ -64,7 +65,7 @@ class App
 		self::execute();
 	}
 
-	static function router($item = null)
+	public static function router($item = null)
 	{
 
 		if(!empty($_GET['q']))
@@ -126,9 +127,9 @@ class App
 		}
 	}
 
-	static function config()
+	public static function config()
 	{
-		$config = include('app/config/config.php');
+		$config = include(APP . '/config/config.php');
 		return $config;
 	}
 }

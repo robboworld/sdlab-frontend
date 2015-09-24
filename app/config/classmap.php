@@ -1,8 +1,8 @@
 <?
 
 /**
- * Карта классов
- * Массив с парами ИмяКласса => путь/к/ФайлуКласса
+ * Classmap
+ * Array with pairs ClassName => path/to/ClassFile
  */
 
 return array(
@@ -26,5 +26,6 @@ return array(
 	'Setup' => MODELS.'/Setup.php',
 	'Monitor' => MODELS.'/Monitor.php',
 	'Plot' => MODELS.'/Plot.php',
-	'JSONSocket' => CONTROLLERS.'/helpers/JSONSocket.php'
+	'JSONSocket' => CONTROLLERS.'/helpers/JSONSocket.php',
+	'Language' => CONTROLLERS.'/helpers/Language.php'
 );

@@ -5,6 +5,7 @@ define('CONTROLLERS', APP.'/controllers');
 define('MODELS', APP.'/models');
 define('VIEWS', APP.'/views');
 define('DEFAULT_LAYOUT', VIEWS.'/layout.tpl.php');
+define('LIBRARIES', APP.'/libraries');
 //define('DBFILE', '/data/newlab.db');
 define('DBFILE', APP.'/db/newlab.db');
 

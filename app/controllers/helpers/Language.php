@@ -15,38 +15,44 @@ require_once LIBRARIES . '/php-i18n/i18n.class.php';
 
 class Language extends i18n
 {
-	protected static $i18n;
+	protected static $i18n = array();
 
 	/**
 	 * Get language object instance
 	 *
-	 * @param string $default  Default language
+	 * @param string $fallbackLang  This is the language which is used when there is no language file for all other user languages. It has the lowest priority.
+	 * @param string $forcedLang    Forced language is the language which is used first. It has the highest priority. Set to null if not use it.
+	 * @param string $prefix        The class name of the compiled class that contains the translated texts. Defaults to 'L'.
+	 * @param string $save          If need to save language configuration for user as default language. Boolean or string 'auto'(save only from GET or if $forcedLang set). Defaults to 'auto'.
 	 * 
 	 * @return mixed Language object or False on error
 	 */
-	public static function getInstance($fallbackLang = 'en', $forcedLang = null, $prefix = null, $save = true)
+	public static function getInstance($fallbackLang = 'en', $forcedLang = null, $prefix = null, $save = 'auto')
 	{
-		if (!empty($i18n))
+		// Check if already get instance with the save parameters
+		$id = md5('' . $fallbackLang . forcedLang . $prefix);
+		if (isset(self::$i18n[$id]))
 		{
-			return $i18n;
+			return self::$i18n[$id];
 		}
 
-		self::$i18n = new Language(APP . '/lang/lang_{LANGUAGE}.ini', APP . '/langcache/', $fallbackLang);
+		// New instance
+		self::$i18n[$id] = new Language(APP . '/lang/lang_{LANGUAGE}.ini', APP . '/langcache/', $fallbackLang);
 
 		if ($prefix != null)
 		{
-			self::$i18n->setPrefix($prefix);
+			self::$i18n[$id]->setPrefix($prefix);
 		}
 
 		if ($forcedLang != null)
 		{
-			self::$i18n->setForcedLang($forcedLang);
+			self::$i18n[$id]->setForcedLang($forcedLang);
 		}
 
 		try
 		{
 			// Load all lang files and translations
-			self::$i18n->init();
+			self::$i18n[$id]->init();
 		}
 		catch (Exception $e)
 		{
@@ -54,12 +60,21 @@ class Language extends i18n
 			return false;
 		}
 
-		if ($save)
+		if ($save === 'auto')
 		{
-			self::$i18n->saveUserLang();
+			// Save language config for user only on GET request or force initiated
+			$method = self::$i18n[$id]->getAppliedLangFrom();
+			if (/*$method == 'POST' ||*/ $method == 'GET' || $method == 'force')
+			{
+				self::$i18n[$id]->saveUserLang();
+			}
+		}
+		else if ($save)
+		{
+			self::$i18n[$id]->saveUserLang();
 		}
 
-		return self::$i18n;
+		return self::$i18n[$id];
 	}
 
 
@@ -82,28 +97,43 @@ class Language extends i18n
 		// Highest priority: forced language
 		if ($this->forcedLang != NULL)
 		{
-			$userLangs[] = $this->forcedLang;
+			$userLangs['force'] = $this->forcedLang;
 		}
+
+		// TODO: get lang from POST parameter
+		/*
+		// 2nd highest priority: POST parameter 'lang'
+		if (isset($_POST['lang']) && is_string($_POST['lang']))
+		{
+			$userLangs['POST'] = $_POST['lang'];
+		}
+		*/
 
 		// 2nd highest priority: GET parameter 'lang'
 		if (isset($_GET['lang']) && is_string($_GET['lang']))
 		{
-			$userLangs[] = $_GET['lang'];
+			$userLangs['GET'] = $_GET['lang'];
 		}
+
+		// 3rd priority: COOKIE parameter 'lang'?
+		if (isset($_COOKIE["lang"]))
+		{
+			$userLangs['COOKIE'] = $_COOKIE["lang"];
+		}
+
 		/*
-		// TODO: get lang from cookie sdlab.lang
-		// 3rd highest priority: SESSION parameter 'lang'
+		// 4th highest priority: SESSION parameter 'lang'
 		if (isset($_SESSION['lang']) && is_string($_SESSION['lang']))
 		{
-			$userLangs[] = $_SESSION['lang'];
+			$userLangs['SESSION'] = $_SESSION['lang'];
 		}
 		*/
 
 		// Lowest priority: fallback
-		$userLangs[] = $this->fallbackLang;
+		$userLangs['default'] = $this->fallbackLang;
 
 		// remove duplicate elements
-		$userLangs = array_unique($userLangs);
+		//$userLangs = array_unique($userLangs);
 
 		foreach ($userLangs as $key => $value)
 		{
@@ -121,42 +151,14 @@ class Language extends i18n
 	 */
 	public function saveUserLang()
 	{
-		$userLangs = array();
-
-		// Highest priority: forced language
-		if ($this->forcedLang != NULL)
-		{
-			$userLangs[] = $this->forcedLang;
-		}
-
-		// 2nd highest priority: GET parameter 'lang'
-		if (isset($_GET['lang']) && is_string($_GET['lang']))
-		{
-			$userLangs[] = $_GET['lang'];
-		}
-
-		// Lowest priority: fallback
-		$userLangs[] = $this->fallbackLang;
-
-		// remove duplicate elements
-		$userLangs = array_unique($userLangs);
-
-		foreach ($userLangs as $key => $value)
-		{
-			$userLangs[$key] = preg_replace('/[^a-zA-Z0-9_-]/', '', $value); // only allow a-z, A-Z and 0-9
-			if (strlen($userLangs[$key]) === 0)
-			{
-				unset($userLangs[$key]);
-			}
-		}
-		if(empty($userLangs[$key]))
+		$appliedLang = $this->getAppliedLang();
+		if ($appliedLang == null)
 		{
 			return false;
 		}
 
-		// TODO: save lang to cookie sdlab.lang
-		// set cookie sdlab.lang = $userLangs[0]
-
-		return true;
+		// TODO: infinite lang cookie?
+		//return setcookie('lang', $appliedLang, time() - 42000, '/', null, null, true);
+		return setcookie('lang', $appliedLang, time() + 60*60*24*30, '/', null, null, true);
 	}
 }

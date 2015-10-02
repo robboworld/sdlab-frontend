@@ -77,6 +77,7 @@ class i18n {
     protected $userLangs = array();
 
     protected $appliedLang = NULL;
+    protected $appliedLangFrom = NULL;
     protected $langFilePath = NULL;
     protected $cacheFilePath = NULL;
     protected $isInitialized = false;
@@ -121,9 +122,11 @@ class i18n {
 
         // search for language file
         $this->appliedLang = NULL;
+        $this->appliedLangFrom = NULL;
         foreach ($this->userLangs as $priority => $langcode) {
             $this->langFilePath = str_replace('{LANGUAGE}', $langcode, $this->filePath);
             if (file_exists($this->langFilePath)) {
+                $this->appliedLangFrom = $priority;
                 $this->appliedLang = $langcode;
                 break;
             }
@@ -133,7 +136,9 @@ class i18n {
         }
 
         // search for cache file
-        $this->cacheFilePath = $this->cachePath . '/php_i18n_' . md5_file(__FILE__) . '_' . $this->appliedLang . '.cache.php';
+        // xxx: added prefix related cache filename for ability of operation with multiple language simultaneously
+        //      (use many lang classes at ones: L::greeting, UL::greeting, etc.)
+        $this->cacheFilePath = $this->cachePath . '/php_i18n_' . md5_file(__FILE__) . '_' . $this->prefix . '_' . $this->appliedLang . '.cache.php';
 
         // if no cache file exists or if it is older than the language file create a new one
         if (!file_exists($this->cacheFilePath) || filemtime($this->cacheFilePath) < filemtime($this->langFilePath)) {
@@ -174,6 +179,15 @@ class i18n {
 
     public function getAppliedLang() {
         return $this->appliedLang;
+    }
+
+    /**
+     * Source of applied language (GET, COOKIE, etc.)
+     * 
+     * @return string
+     */
+    public function getAppliedLangFrom() {
+        return $this->appliedLangFrom;
     }
 
     public function getCachePath() {

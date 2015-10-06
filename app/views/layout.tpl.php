@@ -27,6 +27,10 @@
 				<? print Menu::render($this->view->main_menu, $this->app->getUserLevel()); ?>
 			</ul>
 
+			<? if (is_object($this->app->lang)) :
+				echo $this->app->lang->render();
+			endif; ?>
+
 			<? if(is_object($this->session())): ?>
 				<div class="pull-right text-right col-md-5">
 					<div class="btn-group ">

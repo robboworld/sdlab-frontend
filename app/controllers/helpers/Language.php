@@ -161,4 +161,88 @@ class Language extends i18n
 		//return setcookie('lang', $appliedLang, time() - 42000, '/', null, null, true);
 		return setcookie('lang', $appliedLang, time() + 60*60*24*30, '/', null, null, true);
 	}
+
+
+	/**
+	 * Get list of available languages
+	 *
+	 * @return array  Array of langcodes of available languages
+	 */
+	public function getLanguages()
+	{
+		// Search for language files
+		@set_time_limit(ini_get('max_execution_time'));
+
+		$arr = array();
+		$path = dirname($this->filePath);
+		$fname = basename($this->filePath);
+		$filter = str_replace(array('_', '.', '{LANGUAGE}'), array('\_', '\.' ,'[a-zA-Z\-\_]{2,5}'), $fname);
+
+		// Read the source directory
+		if (!($handle = @opendir($path)))
+		{
+			return $arr;
+		}
+
+		while (($file = readdir($handle)) !== false)
+		{
+			if ($file != '.' && $file != '..')
+			{
+				// Compute the fullpath
+				$fullpath = $path . '/' . $file;
+
+				// Compute the isDir flag
+				if (!(is_file($fullpath) && preg_match("/$filter/", $file)))
+				{
+					continue;
+				}
+
+				// Filename is requested
+				$filter2 = str_replace(array('_', '{LANGUAGE}'), array('\_','([a-zA-Z\-\_]{2,5})'), $fname);
+				preg_match("/$filter2/", $file, $matches);
+				if (isset($matches[1]) && (strlen($matches[1]) > 0))
+				{
+					$arr[] = $matches[1];
+				}
+			}
+		}
+
+		closedir($handle);
+
+		return $arr;
+	}
+
+
+	/**
+	 * Render language switcher
+	 *
+	 * @param  string  Active i18n langcode (example: en, ru, en_gb, and etc.)
+	 *
+	 * @return string  Html
+	 */
+	public function render($active = null)
+	{
+		if ($active === null)
+		{
+			$active = $this->getAppliedLang();
+		}
+
+		$html = '';
+
+		$langs = $this->getLanguages();
+		if (count($langs))
+		{
+			$imgpath = 'assets/images/lang';
+			$html .= '<div class="navbar-text col-md-2 col-sm-2 col-xs-2 lang-bar">';
+			foreach ($langs as $lang)
+			{
+				$html .= '<a href="#" class="btn btn-link btn-xs' . (($active === $lang) ? ' active' : '') . '">'
+							. '<img width="18" class="" src="' . $imgpath . '/' . $lang . '.gif">'
+							. '<span class="hidden-xs">' . strtoupper($lang) . '</span>'
+						. '</a>';
+			}
+			$html .= '</div>';
+		}
+		return $html;
+	}
 }

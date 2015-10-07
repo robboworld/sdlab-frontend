@@ -85,7 +85,7 @@
 				<div class="col-md-12">
 					<div class="ordinate-item">
 						<select name="ordinate-sensor-id[]" class="form-control">
-							<option> - Выбрать датчик -</option>
+							<option> - Выбрать датчик - </option>
 						</select>
 						Выражение: <input id="ordinate-scale" class="form-control" type="text" value="" placeholder="Выражение">
 					</div>

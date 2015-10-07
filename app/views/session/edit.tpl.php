@@ -51,7 +51,7 @@
 			<tr>
 				<td><label>#ID</label></td>
 				<td><label>Дата начала / Дата окончания</label></td>
-				<td><label>Название экссперимента</label></td>
+				<td><label>Название эксперимента</label></td>
 				<td><label>Установка</label></td>
 			</tr>
 		</thead>

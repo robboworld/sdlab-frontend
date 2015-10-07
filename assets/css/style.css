@@ -104,10 +104,17 @@ blink, .blink {
 	padding-top: 15px;
 	padding-bottom: 15px;
 }
+#navigation ul.lang-bar li a {
+	padding-left: 5px;
+	padding-right: 5px;
+}
+#navigation ul.lang-bar li a span {
+	vertical-align: middle;
+	padding-left: 5px;
+}
 
 
 
-/* Update Style 05.08.15 */
 /* universal class */
 .ln-hgt-16px { height: 16px; line-height: 14px; }
 .bg-default { background-color: #EEE; }

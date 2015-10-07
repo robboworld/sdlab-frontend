@@ -30,7 +30,7 @@ class Language extends i18n
 	public static function getInstance($fallbackLang = 'en', $forcedLang = null, $prefix = null, $save = 'auto')
 	{
 		// Check if already get instance with the save parameters
-		$id = md5('' . $fallbackLang . forcedLang . $prefix);
+		$id = md5('' . $fallbackLang . $forcedLang . $prefix);
 		if (isset(self::$i18n[$id]))
 		{
 			return self::$i18n[$id];
@@ -233,15 +233,16 @@ class Language extends i18n
 		if (count($langs))
 		{
 			$imgpath = 'assets/images/lang';
-			$html .= '<div class="navbar-text col-md-2 col-sm-2 col-xs-2 lang-bar">';
+			$html .= '<ul class="nav navbar-nav lang-bar">';
 			foreach ($langs as $lang)
 			{
-				$html .= '<a href="#" class="btn btn-link btn-xs' . (($active === $lang) ? ' active' : '') . '">'
+				$link = '?q=page/view';
+				$html .= '<li ' . (($active === $lang) ? 'class="active"' : '') . '><a href="' . $link . '&lang=' . strtolower($lang) . '" class="btn btn-link btn-xs">'
 							. '<img width="18" class="" src="' . $imgpath . '/' . $lang . '.gif">'
 							. '<span class="hidden-xs">' . strtoupper($lang) . '</span>'
-						. '</a>';
+						. '</a></li>';
 			}
-			$html .= '</div>';
+			$html .= '</ul>';
 		}
 		return $html;
 	}

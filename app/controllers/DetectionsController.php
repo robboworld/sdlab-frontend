@@ -71,7 +71,7 @@ class DetectionsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Графика не существует.';
+			$this->error = L::ERROR_GRAPH_NOT_EXIST;
 		}
 	}
 
@@ -97,7 +97,7 @@ class DetectionsController extends Controller
 				// Check access to experiment
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 
 					return false;
 				}
@@ -215,14 +215,14 @@ class DetectionsController extends Controller
 			}
 			else
 			{
-				$this->error = 'Experiment not found';
+				$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 				return false;
 			}
 		}
 		else
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 		
 			return false;
 		}
@@ -262,14 +262,14 @@ class DetectionsController extends Controller
 			}
 			else
 			{
-				$this->error = 'Invalid parameters';
+				$this->error = L::ERROR_INVALID_PARAMETERS;
 
 				return false;
 			}
 
 			if (empty($ids))
 			{
-				$this->error = 'Invalid parameters';
+				$this->error = L::ERROR_INVALID_PARAMETERS;
 
 				return false;
 			}
@@ -297,7 +297,7 @@ class DetectionsController extends Controller
 					{
 						error_log('PDOError: '.var_export($stmt->errorInfo(),true));  //DEBUG
 
-						$this->error = 'Fatal error';
+						$this->error = L::FATAL_ERROR;
 						return false;
 					}
 				}
@@ -305,7 +305,7 @@ class DetectionsController extends Controller
 				{
 					error_log('PDOException delete(): '.var_export($e->getMessage(),true));  //DEBUG
 
-					$this->error = 'Fatal error';
+					$this->error = L::FATAL_ERROR;
 					return false;
 				}
 				$ids_exps = (array) $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -330,7 +330,7 @@ class DetectionsController extends Controller
 				// Denied access to some detections data
 				if ($denied > 0)
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 					//return false;  // But try delete only available
 				}
 			}
@@ -340,7 +340,7 @@ class DetectionsController extends Controller
 				// Use only first error
 				if (empty($this->error))
 				{
-					$this->error = 'Detections not found';
+					$this->error = L::ERROR_DETECTIONS_NOT_FOUND;
 				}
 				return false;
 			}
@@ -355,7 +355,7 @@ class DetectionsController extends Controller
 				{
 					error_log('PDOError: '.var_export($stmt->errorInfo(),true));  //DEBUG
 
-					$this->error = 'Fatal error';
+					$this->error = L::FATAL_ERROR;
 					return false;
 				}
 			}
@@ -363,7 +363,7 @@ class DetectionsController extends Controller
 			{
 				error_log('PDOException delete(): '.var_export($e->getMessage(),true));  //DEBUG
 
-				$this->error = 'Fatal error';
+				$this->error = L::FATAL_ERROR;
 				return false;
 			}
 
@@ -371,7 +371,7 @@ class DetectionsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Detections not found';
+			$this->error = L::ERROR_DETECTIONS_NOT_FOUND;
 
 			return false;
 		}
@@ -400,7 +400,7 @@ class DetectionsController extends Controller
 			// Check experiment
 			if (!$experiment || empty($experiment->id))
 			{
-				$this->error = 'Experiment not found';
+				$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 				return false;
 			}
 
@@ -445,13 +445,13 @@ class DetectionsController extends Controller
 				}
 				else
 				{
-					$this->error = 'Invalid parameters';
+					$this->error = L::ERROR_INVALID_PARAMETERS;
 					return false;
 				}
 
 				if (empty($dts))
 				{
-					$this->error = 'Invalid parameters';
+					$this->error = L::ERROR_INVALID_PARAMETERS;
 					return false;
 				}
 
@@ -467,7 +467,7 @@ class DetectionsController extends Controller
 					{
 						error_log('PDOError: '.var_export($stmt->errorInfo(),true));  //DEBUG
 
-						$this->error = 'Fatal error';
+						$this->error = L::FATAL_ERROR;
 						return false;
 					}
 				}
@@ -475,13 +475,13 @@ class DetectionsController extends Controller
 				{
 					error_log('PDOException delete(): '.var_export($e->getMessage(),true));  //DEBUG
 
-					$this->error = 'Fatal error';
+					$this->error = L::FATAL_ERROR;
 					return false;
 				}
 			}
 			else
 			{
-				$this->error = 'Access denied';
+				$this->error = L::ACCESS_DENIED;
 				return false;
 			}
 
@@ -489,7 +489,7 @@ class DetectionsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Invalid parameters';
+			$this->error = L::ERROR_INVALID_PARAMETERS;
 
 			return false;
 		}

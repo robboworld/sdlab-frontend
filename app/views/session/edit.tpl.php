@@ -11,12 +11,12 @@
 	<form class="row" action="?<? print $_SERVER['QUERY_STRING'];?>" method="post">
 		<input type="hidden" name="form-id" value="edit-session-form">
 		<div class="form-group col-md-6">
-			<label>Участники</label>
-			<input type="text" class="form-control" name="session_name" placeholder="ФИО" value="<? print $this->session()->name;?>" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>>
+			<label><? echo L::MEMBER; ?></label>
+			<input type="text" class="form-control" name="session_name" placeholder="<? echo L::FULL_NAME; ?>" value="<? print $this->session()->name;?>" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>>
 		</div>
 		<div class="form-group col-md-3">
 			<label>Название работы</label>
-			<input type="text" class="form-control" name="session_title" placeholder="Название" value="<? print $this->session()->title;?>" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>>
+			<input type="text" class="form-control" name="session_title" placeholder="<? echo L::TITLE; ?>" value="<? print $this->session()->title;?>" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>>
 		</div>
 		<div class="form-group col-md-3">
 			<label>Срок хранения(дней)</label>
@@ -24,13 +24,13 @@
 		</div>
 
 		<div class="form-group col-md-12">
-			<label>Комментарий</label>
-			<textarea class="text-area form-control" maxlength="2000" name="session_comments" placeholder="Комментарий"><?print $this->session()->comments;?></textarea>
+			<label><? echo L::COMMENT; ?></label>
+			<textarea class="text-area form-control" maxlength="2000" name="session_comments" placeholder="<? echo L::COMMENT; ?>"><?print $this->session()->comments;?></textarea>
 		</div>
 
 		<div class="col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4 text-center">
 			<div class="btn-group" style="float:none;">
-				<input type="submit" class="form-control btn btn-success" value="Сохранить">
+				<input type="submit" class="form-control btn btn-success" value="<? echo L::SAVE; ?>">
 			</div>
 		</div>
 	</form>
@@ -50,9 +50,9 @@
 		<thead>
 			<tr>
 				<td><label>#ID</label></td>
-				<td><label>Дата начала / Дата окончания</label></td>
-				<td><label>Название эксперимента</label></td>
-				<td><label>Установка</label></td>
+				<td><label><? echo L::experiment_DATE_START; ?> / <? echo L::experiment_DATE_END; ?></label></td>
+				<td><label><? echo L::experiment_NAME; ?></label></td>
+				<td><label><? echo L::SETUP; ?></label></td>
 			</tr>
 		</thead>
 		<tbody>
@@ -69,7 +69,7 @@
 	<? endif; ?>
 	<div class="col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4 text-center">
 		<div class="btn-group" style="float: none;">
-			<a class="btn btn-primary" href="?q=experiment">Новый эксперимент</a>
+			<a class="btn btn-primary" href="?q=experiment"><? echo L::experiment_NEW_EXPERIMENT; ?></a>
 		</div>
 	</div>
 

@@ -36,7 +36,7 @@
 					<!--
 					<label class="btn btn-default">
 						<input type="radio" name="setup-type" data-id="setup-type-date" value="setup-type-date">
-						Завершение
+						<? echo L::FINISHING; ?>
 					</label>
 
 					-->
@@ -73,12 +73,12 @@
 				<div id="setup-type-date" class="setup-type well">
 					<div class="row">
 						<div class="col-md-4">
-							Завершение
+							<? echo L::FINISHING; ?>
 							<small>{нужно добавить поле в бд}</small>
 						</div>
 						<div class="col-md-8 form-inline">
-							<input type="text" class="form-control" placeholder="Дата" size="13">&nbsp;
-							<input type="text" class="form-control" placeholder="Время" size="12">
+							<input type="text" class="form-control" placeholder="<? echo L::DATE; ?>" size="13">&nbsp;
+							<input type="text" class="form-control" placeholder="<? echo L::TIME; ?>" size="12">
 							<br><small>{подключить jquery.datepicker & jquery.timepicker}</small>
 						</div>
 					</div>
@@ -154,7 +154,7 @@
 											}
 										}
 									?>"/></td>
-									<td class="text-right"><a class="btn btn-sm btn-danger remove-sensor">Удалить</a></td>
+									<td class="text-right"><a class="btn btn-sm btn-danger remove-sensor"><? echo L::REMOVE; ?></a></td>
 								</tr>
 							<? endforeach; ?>
 						<? endif; ?>
@@ -178,7 +178,7 @@
 					<thead>
 						<tr>
 							<th></th>
-							<th>Наименование датчика</th>
+							<th>ID</th>
 							<th>Название физ. вел.</th>
 							<th>Обозначение физ. вел.</th>
 							<th>Название ед. изм.</th>
@@ -219,7 +219,7 @@
 		<div class="btn-group" style="float: none;">
 			<a href="/?q=experiment/view" class="col-md-6 btn-default btn width-auto form-control">Отменить</a>
 		<? if($this->view->form->id == 'edit-setup-form') : ?>
-			<a href="/?q=setup/create" class="btn btn-primary width-auto form-control">Создать</a>
+			<a href="/?q=setup/create" class="btn btn-primary width-auto form-control"><? echo L::CREATE; ?></a>
 		<? endif; ?>
 			<input type="submit" class="btn btn-success width-auto form-control" value="<? print $this->view->form->submit->value; ?>" disabled="disabled" />
 		</div>

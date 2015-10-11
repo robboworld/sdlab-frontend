@@ -104,7 +104,7 @@
 							<? print ++$i; ?>
 						</td>
 						<td>
-							<a href="?q=experiment/graph/<?php print (int)$plot->exp_id;?>/<?php print (int)$plot->id;?>">График #<?php print (int)$plot->id;?></a>
+							<a href="?q=experiment/graph/<?php print (int)$plot->exp_id;?>/<?php print (int)$plot->id;?>"><?php echo L::GRAPH . ' #' . (int)$plot->id;?></a>
 						</td>
 					</tr>
 				<?php endforeach; ?>
@@ -156,6 +156,6 @@
 				</li>
 			<? endforeach; ?>
 		</ul>
-		<button type="button" id="graph-refesh" class="btn btn-primary">Обновить</button>
+		<button type="button" id="graph-refesh" class="btn btn-primary"><? echo L::REFRESH; ?></button>
 	</div>
 </div>

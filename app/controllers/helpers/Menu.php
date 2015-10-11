@@ -38,7 +38,7 @@ class Menu
 	static function get()
 	{
 		$menu['page/view'] = array(
-			'title' => 'Система',
+			'title' => L::SYSTEM,
 			'icon' => 'glyphicon glyphicon-home',
 			'user_level' => 0
 		);
@@ -50,27 +50,27 @@ class Menu
 		);
 		*/
 		$menu['experiment/view'] = array(
-			'title' => 'Эксперименты',
+			'title' => L::EXPERIMENTS,
 			'icon' => 'glyphicon glyphicon-list',
 			'user_level' => 1
 		);
 
 		/*
 		$menu['page/view/journal'] = array(
-			'title' => 'Журнал',
+			'title' => L::JOURNAL,
 			'icon' => '',
 			'user_level' => 1
 		);
 
 		$menu['page/view/graphs'] = array(
-			'title' => 'Графики',
+			'title' => L::GRAPHS,
 			'icon' => '',
 			'user_level' => 1
 		);
 		*/
 
 		$menu['page/view/help'] = array(
-			'title' => 'Помощь',
+			'title' => L::HELP,
 			'icon' => 'glyphicon glyphicon-info-sign',
 			'user_level' => 0
 		);

@@ -16,7 +16,7 @@ $(document).ready(function(){
 </div>
 <!--
 <div class="col-md-3">
-	{Группа}
+	{GROUP}
 </div>
 -->
 
@@ -73,7 +73,7 @@ $(document).ready(function(){
 			</span>
 		</div>
 		-->
-		<a href="#" class="btn btn-default">Добавить</a>
+		<a href="#" class="btn btn-default"><? echo L::ADD; ?></a>
 	</form>
 </div>
 
@@ -86,11 +86,11 @@ $(document).ready(function(){
 <div class="col-md-12">
 	<div class="row">
 		<div class="pull-right">
-			<a href="#" class="btn btn-success">Сохранить</a>
-			<a href="#" class="btn btn-default">Закрыть</a>
+			<a href="#" class="btn btn-success"><? echo L::SAVE; ?></a>
+			<a href="#" class="btn btn-default"><? echo L::CLOSE; ?></a>
 		</div>
 		<div class="col-md-3">
-			<input type="checkbox" checked> В отчет
+			<input type="checkbox" checked> <? echo L::INCLUDE_TO_REPORT; ?>
 		</div>
 	</div>
 </div>

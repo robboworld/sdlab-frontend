@@ -179,7 +179,7 @@ class SensorsController extends Controller
 	{
 		if (!is_array($params)) 
 		{
-			$this->error = 'Error';
+			$this->error = L::ERROR;
 
 			return false;
 		}
@@ -217,7 +217,7 @@ class SensorsController extends Controller
 
 		if (empty($result))
 		{
-			$this->error = 'Error';
+			$this->error = L::ERROR;
 
 			return false;
 		}
@@ -244,7 +244,7 @@ class SensorsController extends Controller
 				// Check access to experiment
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 
 					return false;
 				}
@@ -257,7 +257,7 @@ class SensorsController extends Controller
 					$setup = (new Setup())->load($experiment->setup_id);
 					if (!$setup)
 					{
-						$this->error = 'Setup not found';
+						$this->error = L::ERROR_SETUP_NOT_FOUND;
 
 						return false;
 					}
@@ -276,7 +276,7 @@ class SensorsController extends Controller
 						// Access only if current experiment is master of Setup
 						if ($setup->master_exp_id != $experiment->id)
 						{
-							$this->error = 'Access denied';
+							$this->error = L::ACCESS_DENIED;
 
 							return false;
 						}
@@ -422,11 +422,11 @@ class SensorsController extends Controller
 			{
 				if (empty($experiment->id))
 				{
-					$this->error = 'Experiment not found';
+					$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 				}
 				else
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 				}
 
 				return false;
@@ -434,7 +434,7 @@ class SensorsController extends Controller
 		}
 		else 
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 			return false;
 		}
@@ -462,7 +462,7 @@ class SensorsController extends Controller
 				// Check access to experiment
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 
 					return false;
 				}
@@ -475,7 +475,7 @@ class SensorsController extends Controller
 					$setup = (new Setup())->load($experiment->setup_id);
 					if (!$setup)
 					{
-						$this->error = 'Setup not found';
+						$this->error = L::ERROR_SETUP_NOT_FOUND;
 
 						return false;
 					}
@@ -492,7 +492,7 @@ class SensorsController extends Controller
 					// Check access to control Setup
 					if ($setup->master_exp_id != $experiment->id)
 					{
-						$this->error = 'Access denied';
+						$this->error = L::ACCESS_DENIED;
 					
 						return false;
 					}
@@ -656,11 +656,11 @@ class SensorsController extends Controller
 			{
 				if (empty($experiment->id))
 				{
-					$this->error = 'Experiment not found';
+					$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 				}
 				else
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 				}
 
 				return false;
@@ -668,7 +668,7 @@ class SensorsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 			return false;
 		}
@@ -696,7 +696,7 @@ class SensorsController extends Controller
 				// Check access to experiment
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 	
 					return false;
 				}
@@ -705,7 +705,7 @@ class SensorsController extends Controller
 				$setup = (new Setup())->load($experiment->setup_id);
 				if (!$setup)
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 				
 					return false;
 				}
@@ -721,7 +721,7 @@ class SensorsController extends Controller
 				// Check access to control Setup
 				if ($setup->master_exp_id != $experiment->id)
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 				
 					return false;
 				}
@@ -1035,11 +1035,11 @@ class SensorsController extends Controller
 			{
 				if (empty($experiment->id))
 				{
-					$this->error = 'Experiment not found';
+					$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 				}
 				else
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 				}
 
 				return false;
@@ -1047,7 +1047,7 @@ class SensorsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 			return false;
 		}
@@ -1101,7 +1101,7 @@ class SensorsController extends Controller
 				// Check access to experiment
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 
 					return false;
 				}
@@ -1110,7 +1110,7 @@ class SensorsController extends Controller
 				$setup = (new Setup())->load($experiment->setup_id);
 				if (!$setup)
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 
 					return false;
 				}
@@ -1268,7 +1268,7 @@ class SensorsController extends Controller
 						}
 						else
 						{
-							$setup_stopat_text = 'Неизвестно';
+							$setup_stopat_text = L::TIME_UNKNOWN;
 						}
 					}
 					else
@@ -1310,7 +1310,7 @@ class SensorsController extends Controller
 						}
 						else
 						{
-							$setup_stopat_text = 'Неизвестно';
+							$setup_stopat_text = L::TIME_UNKNOWN;
 						}
 					}
 				}
@@ -1335,11 +1335,11 @@ class SensorsController extends Controller
 			{
 				if (empty($experiment->id))
 				{
-					$this->error = 'Experiment not found';
+					$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 				}
 				else
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 				}
 
 				return false;
@@ -1347,7 +1347,7 @@ class SensorsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 			return false;
 		}

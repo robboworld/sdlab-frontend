@@ -50,6 +50,30 @@ class Controller
 		}
 	}
 
+	private function genJsLang()
+	{
+		$script_lang = '';
+
+		// Generate script language declarations.
+		if (count(Language::script()))
+		{
+			$script_lang .= '<script type="text/javascript">';
+			$script_lang .=     '(function() {';
+			$script_lang .=         'var strings = ' . json_encode(Language::script()) . ';';
+			$script_lang .=         'if (typeof SDLab == \'undefined\') {';
+			$script_lang .=             'SDLab = {};';
+			$script_lang .=             'SDLab.Language = strings;';
+			$script_lang .=         '}';
+			$script_lang .=         'else {';
+			$script_lang .=             'SDLab.Language.load(strings);';
+			$script_lang .=         '}';
+			$script_lang .=     '})();';
+			$script_lang .= '</script>';
+		}
+
+		return $script_lang;
+	}
+
 	protected function addJs($filename)
 	{
 		if(is_string($filename))

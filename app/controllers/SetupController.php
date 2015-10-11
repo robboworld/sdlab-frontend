@@ -27,7 +27,7 @@ class SetupController extends Controller
 		if(isset($_GET['master']) && is_numeric($_GET['master']))
 		{
 			$this->view->form = new Form('create-setup-form');
-			$this->view->form->submit->value = 'Создать';
+			$this->view->form->submit->value = L::CREATE;
 
 
 			if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'create-setup-form')
@@ -125,7 +125,7 @@ class SetupController extends Controller
 		if(!is_null($this->id) && !empty($this->id))
 		{
 			$this->view->form = new Form('edit-setup-form');
-			$this->view->form->submit->value = 'Сохранить';
+			$this->view->form->submit->value = L::SAVE;
 
 			if($setup = (new Setup())->load($this->id))
 			{

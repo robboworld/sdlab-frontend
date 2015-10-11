@@ -25,11 +25,11 @@ class ExperimentController extends Controller
 	 */
 	function create()
 	{
-		self::setTitle('Создание эксперимента');
-		self::setContentTitle('Создание эксперимента');
+		self::setTitle(L::experiment_TITLE_CREATION);
+		self::setContentTitle(L::experiment_TITLE_CREATION);
 
 		$this->view->form = new Form('create-experiment-form');
-		$this->view->form->submit->value = 'Создать эксперимент';
+		$this->view->form->submit->value = L::experiment_CREATE_EXPERIMENT;
 
 		/* Установки как список опций для формы*/
 		$this->view->form->setups = SetupController::loadSetups();
@@ -193,7 +193,7 @@ class ExperimentController extends Controller
 			// All experiments
 			$this->view->content->list = self::experimentsList();
 			self::setViewTemplate('view.all');
-			self::setTitle('Все эксперименты');
+			self::setTitle(L::experiment_TITLE_ALL);
 
 			self::addJs('functions');
 			self::addJs('experiment/view.all');
@@ -214,12 +214,12 @@ class ExperimentController extends Controller
 			if($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3)
 			{
 				self::setViewTemplate('create');
-				self::setTitle('Редактирование '.$experiment->title);
-				self::setContentTitle('Редактирование "'.$experiment->title.'"');
+				self::setTitle(L::TITLE_EDIT_OF($experiment->title));
+				self::setContentTitle(L::TITLE_EDIT_OF_2($experiment->title));
 
 				/*Объект формы*/
 				$this->view->form = new Form('edit-experiment-form');
-				$this->view->form->submit->value = 'Сохранить';
+				$this->view->form->submit->value = L::SAVE;
 				$this->view->form->experiment = $experiment;
 
 				/* Установки как список опций для формы*/
@@ -470,7 +470,7 @@ class ExperimentController extends Controller
 
 				/*Объект формы*/
 				$this->view->form = new Form('experiment-journal-form');
-				$this->view->form->submit->value = 'Обновить';
+				$this->view->form->submit->value = L::REFRESH;
 				$this->view->form->experiment = $experiment;
 
 
@@ -748,7 +748,7 @@ class ExperimentController extends Controller
 		// Check id 
 		if(!isset($params['experiment']) && empty($params['experiment']))
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 			return false;
 		}
 
@@ -756,14 +756,14 @@ class ExperimentController extends Controller
 		$experiment = (new Experiment())->load((int)$params['experiment']);
 		if(!$experiment || !($experiment->id))
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 			return false;
 		}
 
 		// Check access to experiment
 		if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 		{
-			$this->error = 'Access denied';
+			$this->error = L::ACCESS_DENIED;
 			return false;
 		}
 
@@ -779,7 +779,7 @@ class ExperimentController extends Controller
 		{
 			error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
 
-			$this->error = 'Error';
+			$this->error = L::ERROR;
 			return false;
 		}
 

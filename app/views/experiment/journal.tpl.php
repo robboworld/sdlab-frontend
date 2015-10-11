@@ -12,15 +12,15 @@
 		<h3><? print htmlspecialchars($this->view->content->title, ENT_QUOTES, 'UTF-8'); ?></h3>
 		<p>
 			<button type="button" id="cleanDetections" class="btn btn-danger">
-				<span class="glyphicon glyphicon-trash"></span> Очистить
+				<span class="glyphicon glyphicon-trash"></span> <? echo L::CLEAN; ?>
 			</button>
 		</p>
-		<!-- <input type="checkbox"> Включить в отчет -->
+		<!-- <input type="checkbox"> <? echo L::INCLUDE_TO_REPORT; ?> -->
 		<table class="table-detections table table-striped table-bordered">
 			<thead>
 				<tr>
 					<td>№</td>
-					<td>Время</td>
+					<td><? echo L::TIME; ?></td>
 					<? foreach ($this->view->content->displayed_sensors as $skey => $sensor) :?>
 					<td><? print htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?><br/>
 						<small><? echo htmlspecialchars($sensor->value_name, ENT_QUOTES, 'UTF-8') . ', ' . htmlspecialchars($sensor->si_notation, ENT_QUOTES, 'UTF-8'); ?></small><br/>
@@ -45,7 +45,7 @@
 						{
 							print ($row[$skey]->error !== 'NaN') ? (float)$row[$skey]->detection : '';
 						}
-					 ?></td>
+					?></td>
 					<? endforeach; ?>
 				</tr>
 			<? endforeach; ?>
@@ -67,7 +67,7 @@
 					</li>
 				<? endforeach; ?>
 			</ul>
-			<input type="submit" class="btn btn-primary" value="Обновить" />
+			<input type="submit" class="btn btn-primary" value="<? echo L::REFRESH; ?>" />
 		</div>
 	</div>
 </div>

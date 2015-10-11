@@ -64,3 +64,19 @@ function Graph(data) {
         return max;
     };
 }
+
+// Only define the SDLab namespace if not defined.
+SDLab = window.SDLab || {};
+
+SDLab.Language = {
+    strings: {},
+    '_': function(key, def) {
+        return typeof this.strings[key.toUpperCase()] !== 'undefined' ? this.strings[key.toUpperCase()] : def;
+    },
+    load: function(object) {
+        for (var key in object) {
+            this.strings[key.toUpperCase()] = object[key];
+        }
+        return this;
+    }
+};

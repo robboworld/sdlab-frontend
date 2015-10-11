@@ -5,7 +5,7 @@
 		<div class="form-group">
 			<input type="hidden" name="session_new" value="true">
 			<label for="session_title" class="col-sm-4 control-label">
-				Название
+				<? echo L::TITLE; ?>
 			</label>
 			<div class="col-sm-8 ">
 				<input type="text" name="session_title" class="form-control" value="<? print (isset($_POST['session_title']) ? htmlspecialchars($_POST['session_title'], ENT_QUOTES, 'UTF-8') : '');?>">
@@ -32,7 +32,7 @@
 	<h3>Восстановить сессию</h3>
 	<form method="post" class="form-inline">
 		<input type="text" name="session_key" class="form-control" placeholder="0000" required="true">
-		<input type="submit" class="form-control btn btn-success" value="Восстановить">
+		<input type="submit" class="form-control btn btn-success" value="<? echo L::RESTORE; ?>">
 	</form>
 </div>
 -->

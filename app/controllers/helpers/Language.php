@@ -18,6 +18,13 @@ class Language extends i18n
 	protected static $i18n = array();
 
 	/**
+	 * javascript strings
+	 *
+	 * @var    array
+	 */
+	protected static $strings = array();
+
+	/**
 	 * Get language object instance
 	 *
 	 * @param string $fallbackLang  This is the language which is used when there is no language file for all other user languages. It has the lowest priority.
@@ -245,5 +252,56 @@ class Language extends i18n
 			$html .= '</ul>';
 		}
 		return $html;
+	}
+
+
+	/**
+	 * Translate a string into the current language and stores it in the JavaScript language store.
+	 *
+	 * @param   string   $string                The text key.
+	 * @param   boolean  $jsSafe                Ensure the output is JavaScript safe.
+	 * @param   boolean  $interpretBackSlashes  Interpret \t and \n.
+	 *
+	 * @return  string
+	 */
+	public static function script($string = null, $jsSafe = false, $interpretBackSlashes = true, $prefix = 'L')
+	{
+		if (is_array($jsSafe))
+		{
+			if (array_key_exists('interpretBackSlashes', $jsSafe))
+			{
+				$interpretBackSlashes = (boolean) $jsSafe['interpretBackSlashes'];
+			}
+
+			if (array_key_exists('jsSafe', $jsSafe))
+			{
+				$jsSafe = (boolean) $jsSafe['jsSafe'];
+			}
+			else
+			{
+				$jsSafe = false;
+			}
+		}
+
+		// Add the string to the array if not null.
+		if ($string !== null)
+		{
+			// Normalize the key and translate the string.
+			$translated = $prefix::$string;
+
+			if ($jsSafe)
+			{
+				// Javascript filter
+				$translated = addslashes($translated);
+			}
+			elseif ($interpretBackSlashes)
+			{
+				// Interpret \n and \t characters
+				$translated = str_replace(array('\\\\', '\t', '\n'), array("\\", "\t", "\n"), $translated);
+			}
+			self::$strings[strtoupper($string)] = $translated;
+		}
+
+		return self::$strings;
 	}
 }

@@ -45,7 +45,7 @@ class ApiController extends Controller
 		else
 		{
 			$api_error = array(
-				'error' => 'Method not exist.'
+				'error' => L::ERROR_METHOD_NOT_EXIST
 			);
 			$this->json_error = json_encode($api_error);
 		}

@@ -27,7 +27,7 @@ class PageController extends Controller
 		self::addJs('functions');
 
 		self::setTitle('Система');
-		self::setContentTitle('ScratchDuino.Лаборатория');
+		self::setContentTitle(L::SDLAB_TITLE);
 		self::setViewTemplate($page);
 
 	}

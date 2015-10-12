@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<title><? print htmlspecialchars($this->view->title, ENT_QUOTES, 'UTF-8');
-		echo (isset($this->app->config['lab']['page_suffix']) && $this->app->config['lab']['title_suffix']) ? (' - ' . $this->app->config['lab']['title_suffix']) : '';?></title>
+		echo (isset($this->app->config['lab']['page_suffix']) && $this->app->config['lab']['page_suffix']) ? (' - ' . $this->app->config['lab']['page_suffix']) : '';?></title>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<script src="assets/js/lib/jquery-1.11.1.min.js"></script>
@@ -36,11 +36,11 @@
 			<? if(is_object($this->session())): ?>
 				<div class="pull-right text-right col-md-5">
 					<div class="btn-group ">
-						<a href="?q=session/edit" id="session-name" class="btn btn-sm btn-info navbar-btn" title="Редактировать сессию">
+						<a href="?q=session/edit" id="session-name" class="btn btn-sm btn-info navbar-btn" title="<? echo L::session_EDIT; ?>">
 							<? print htmlspecialchars($this->session()->name, ENT_QUOTES, 'UTF-8'); ?>
 						</a>
 						<a href="?q=session/destroy" class="btn btn-sm btn-default navbar-btn"><span class="glyphicon glyphicon-log-out">&nbsp;</span><span class="hidden-xs"><? echo L::LOGOFF; ?></span></a>
-						<a href="?q=session/create" class="btn btn-sm btn-default navbar-btn"><span class="glyphicon glyphicon-plus">&nbsp;</span><span class="hidden-xs">Новая сессия</span></a>
+						<a href="?q=session/create" class="btn btn-sm btn-default navbar-btn"><span class="glyphicon glyphicon-plus">&nbsp;</span><span class="hidden-xs"><? echo L::session_NEW_SESSION; ?></span></a>
 					</div>
 
 				</div>
@@ -49,10 +49,10 @@
 				<div class="col-md-5 col-sm-6 col-xs-6 pull-right">
 					<form id="nav-buttons" class="navbar-form" action="?q=session/create<? if(isset($_GET['q'])) : ?>&destination=<? print $_GET['q']; endif; ?>" method="post">
 						<div class="input-group input-group-sm">
-							<input type="text" name="session_key" placeholder="Ключ сессии (123456)" title="тестовый ключ - 123456" class="form-control">
+							<input type="text" name="session_key" placeholder="<? echo L::session_KEY_EXAMPLE; ?>" title="<? echo L::session_KEY_EXAMPLE2; ?>" class="form-control">
 							<span class="input-group-btn">
 								<button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-log-in">&nbsp;</span><span class="hidden-xs"><? echo L::RESTORE; ?></span></button>
-								<a href="?q=session/create" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-plus">&nbsp;</span><span class="hidden-xs">Новая сессия</span></a>
+								<a href="?q=session/create" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-plus">&nbsp;</span><span class="hidden-xs"><? echo L::session_NEW_SESSION; ?></span></a>
 							</span>
 						</div>
 					</form>

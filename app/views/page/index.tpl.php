@@ -19,7 +19,7 @@
 <!--
 <div class="col-md-6">
 	<div class="well">
-		<span class="pull-right label label-warning"><? echo L::TIME_REMAIN; ?> 2 дн. 5:45</span>
+		<span class="pull-right label label-warning"><? echo L::TIME_REMAIN; ?> 2 d. 5:45</span>
 		<h3 >
 			<span class="label label-danger">
 				<span class="glyphicon glyphicon-exclamation-sign"></span> <? echo L::experiment_ACTIVE_DETECTION; ?>

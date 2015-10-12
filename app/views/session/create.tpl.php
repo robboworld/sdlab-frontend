@@ -13,7 +13,7 @@
 		</div>
 		<div class="form-group">
 			<label for="session_username" class="col-sm-4 control-label">
-				ФИО
+				<? echo L::FULL_NAME; ?>
 			</label>
 			<div class="col-sm-8 ">
 				<input type="text" name="session_name" class="form-control" value="<? print (isset($_POST['session_name']) ? htmlspecialchars($_POST['session_name'], ENT_QUOTES, 'UTF-8') : '');?>">
@@ -21,7 +21,7 @@
 		</div>
 		<div class="form-group">
 			<div class="col-md-6 col-md-offset-4 col-sm-6 col-sm-offset-4">
-				<input type="submit" class="form-control btn-primary" value="Начать сессию">
+				<input type="submit" class="form-control btn-primary" value="<? echo L::session_START_SESSION; ?>">
 			</div>
 		</div>
 
@@ -29,7 +29,7 @@
 </div>
 <!--
 <div class="col-md-6">
-	<h3>Восстановить сессию</h3>
+	<h3><? echo L::session_RESTORE; ?></h3>
 	<form method="post" class="form-inline">
 		<input type="text" name="session_key" class="form-control" placeholder="0000" required="true">
 		<input type="submit" class="form-control btn btn-success" value="<? echo L::RESTORE; ?>">

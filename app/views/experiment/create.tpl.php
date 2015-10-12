@@ -23,7 +23,7 @@
 		</div>
 		<div class="form-group col-md-5">
 			<select class="form-control" name="setup_id">
-				<option value=""> - Выбрать установку - </option>
+				<option value=""><? echo L::setup_SELECT_OPTION; ?></option>
 				<? foreach ($this->view->form->setups as $setup): ?>
 					<option value="<? print (int)$setup->id; ?>" <? if ($setup->id == $this->view->form->experiment->setup_id) print 'selected'?>><? print htmlspecialchars($setup->title, ENT_QUOTES, 'UTF-8'); ?></option>
 				<? endforeach; ?>
@@ -46,7 +46,7 @@
 		</div>
 		<div class="col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4 text-center">
 			<? if($this->view->form->id == 'edit-experiment-form') : ?>
-				<a href="?q=experiment/view/<?print (int)$this->view->form->experiment->id; ?>" class="btn btn-default">Отмена</a>
+				<a href="?q=experiment/view/<?print (int)$this->view->form->experiment->id; ?>" class="btn btn-default"><? echo L::CANCEL; ?></a>
 			<? endif;?>
 			<input type="submit" class="btn btn-success" value="<?print $this->view->form->submit->value;?>"/>
 		</div>

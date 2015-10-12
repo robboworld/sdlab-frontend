@@ -13,7 +13,7 @@ class Form
 	{
 		$this->id = $id;
 		$this->submit = new stdClass();
-		$this->submit->value = 'Отправить';
+		$this->submit->value = L::SEND;
 	}
 
 

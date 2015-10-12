@@ -85,7 +85,7 @@
 		</a>
 	</div>
 	<div class="col-md-12">
-		<h3>Графики для "<? print htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8'); ?>"</h3>
+		<h3><? echo L::graph_TITLE_GRAPHS_FOR_2(htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8')); ?></h3>
 	</div>
 </div>
 <div class="row" style="display:none;">
@@ -94,7 +94,7 @@
 			<thead>
 				<tr>
 					<td><label>#</label></td>
-					<td><label>Название графика</label></td>
+					<td><label><? echo L::graph_NAME; ?></label></td>
 				</tr>
 			</thead>
 			<tbody>
@@ -114,7 +114,7 @@
 				<tr>
 					<td colspan="2">
 						<div class="alert alert-info">
-						Нет сохраненных конфигураций графиков для отображения. Добавьте новый график.
+						<? echo L::graph_MSG_NO_SAVED_GRAPHS; ?>
 						</div>
 					</td>
 				</tr>
@@ -123,13 +123,13 @@
 		</table>
 	</div>
 	<div class="col-md-4">
-		<a href="?q=experiment/graph/<?php print (int)$this->view->content->experiment->id;?>/add" class="btn btn-primary">Добавить график</a>
+		<a href="?q=experiment/graph/<?php print (int)$this->view->content->experiment->id;?>/add" class="btn btn-primary"><? echo L::graph_ADD; ?></a>
 	</div>
 </div>
 <hr style="display:none;" />
 <div class="row">
 	<div class="col-md-12">
-		<h3>График всех измерений по времени</h3>
+		<h3><? echo L::graph_TITLE_ALL_DETECTIONS_BY_TIME; ?></h3>
 	</div>
 
 	<div class="col-md-9">
@@ -139,10 +139,10 @@
 		</div>
 	</div>
 	<div class="col-md-3">
-		<h4>Датчики</h4>
+		<h4><? echo L::SENSORS; ?></h4>
 
 		<? if (empty($this->view->content->available_sensors)) : ?>
-		<div>Нет датчиков</div>
+		<div><? echo L::graph_NO_SENSORS; ?></div>
 		<? endif; ?>
 		<ul class="nav available-sensors">
 			<? foreach ($this->view->content->available_sensors as $sensor) :?>

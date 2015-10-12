@@ -24,52 +24,52 @@ $(document).ready(function(){
 	<br>
 	<form>
 		<div class="form-group">
-			<input type="text" placeholder="Название графика" class="form-control" value="Температура с 5.04.2014 по 7.04.2014">
+			<input type="text" placeholder="<? echo L::graph_NAME; ?>" class="form-control" value="Температура с 5.04.2014 по 7.04.2014">
 		</div>
 
 		<div class="form-group form-inline">
 			<span>
-				Абсцисса: <input type="text" placeholder="Название графика" class="form-control" value="t">
+				<? echo L::graph_ABSCISSA; ?>: <input type="text" placeholder="<? echo L::graph_NAME; ?>" class="form-control" value="t">
 			</span>
 			<span>
-				Масштаб: <input type="text" placeholder="Масштаб" class="form-control" value="1" size="7">
+				<? echo L::graph_SCALE; ?>: <input type="text" placeholder="<? echo L::graph_SCALE; ?>" class="form-control" value="1" size="7">
 			</span>
 		</div>
 
 		<div class="form-group form-inline row">
 			<span class="col-md-3">
-				<input type="text" placeholder="Название графика" class="form-control" value="T1(t)" size="20">
+				<input type="text" placeholder="<? echo L::graph_NAME; ?>" class="form-control" value="T1(t)" size="20">
 			</span>
 			<span class="col-md-3">
-				Выражение: <input type="text" placeholder="Масштаб" class="form-control" value="T1" size="15">
+				<? echo L::graph_EXPRESSION; ?>: <input type="text" placeholder="<? echo L::graph_SCALE; ?>" class="form-control" value="T1" size="15">
 			</span>
 			<span class="col-md-3">
 				<select class="form-control">
-					<option style="color: rgb(175,216,248);">Синий</option>
-					<option>Цвет</option>
-					<option>Красный</option>
+					<option style="color: rgb(175,216,248);"><? echo L::graph_COLOR_BLUE; ?></option>
+					<option><? echo L::graph_COLOR; ?></option>
+					<option><? echo L::graph_COLOR_RED; ?></option>
 				</select>
 			</span>
 			<span class="col-md-3">
-				Масштаб: <input type="text" placeholder="Масштаб" class="form-control" value="1" size="7">
+				<? echo L::graph_SCALE; ?>: <input type="text" placeholder="<? echo L::graph_SCALE; ?>" class="form-control" value="1" size="7">
 			</span>
 		</div>
 		<!--
 		<div class="form-group form-inline">
 			<span class="col-md-3">
-				<input type="text" placeholder="Название графика" class="form-control" value="F(U(t), l(t))" size="20">
+				<input type="text" placeholder="<? echo L::graph_NAME; ?>" class="form-control" value="F(U(t), l(t))" size="20">
 			</span>
 			<span class="col-md-3">
-				Выражение: <input type="text" placeholder="Масштаб" class="form-control" value="{Выражение}" size="15">
+				<? echo L::graph_EXPRESSION; ?>: <input type="text" placeholder="<? echo L::graph_SCALE; ?>" class="form-control" value="{Expression}" size="15">
 			</span>
 			<span class="col-md-3">
 				<select class="form-control">
-					<option>Цвет</option>
-					<option>Красный</option>
+					<option><? echo L::graph_COLOR; ?></option>
+					<option><? echo L::graph_COLOR_RED; ?></option>
 				</select>
 			</span>
 			<span class="col-md-3">
-				Масштаб: <input type="text" placeholder="Масштаб" class="form-control" value="1" size="7">
+				<? echo L::graph_SCALE; ?>: <input type="text" placeholder="<? echo L::graph_SCALE; ?>" class="form-control" value="1" size="7">
 			</span>
 		</div>
 		-->

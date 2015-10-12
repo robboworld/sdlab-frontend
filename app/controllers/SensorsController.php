@@ -400,14 +400,14 @@ class SensorsController extends Controller
 						}
 						else
 						{
-							$this->error = 'Empty response';
+							$this->error = L::setup_ERROR_EMPTY_RESPONSE;
 
 							return false;
 						}
 					}
 					else
 					{
-						$this->error = 'Series not started';
+						$this->error = L::setup_ERROR_SERIES_NOT_STARTED;
 
 						return false;
 					}
@@ -483,7 +483,7 @@ class SensorsController extends Controller
 					// Check active state
 					if($setup->flag)
 					{
-						$this->error = 'Setup already active';
+						$this->error = L::setup_ACTIVE_ALREADY;
 
 						return false;
 					}
@@ -605,7 +605,7 @@ class SensorsController extends Controller
 					// Try get uuid of created monitor
 					if (empty($result))
 					{
-						$this->error = 'Monitoring not started';
+						$this->error = L::setup_ERROR_MONITORING_NOT_STARTED;
 
 						return false;
 					}
@@ -697,7 +697,7 @@ class SensorsController extends Controller
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
 					$this->error = L::ACCESS_DENIED;
-	
+
 					return false;
 				}
 
@@ -706,14 +706,14 @@ class SensorsController extends Controller
 				if (!$setup)
 				{
 					$this->error = L::ERROR_SETUP_NOT_FOUND;
-				
+
 					return false;
 				}
 
 				// Check active state
 // 				if(!$setup->flag)
 // 				{
-// 					$this->error = 'Setup not runned';
+// 					$this->error = L::setup_ERROR_SETUP_NOT_RUNNED;
 				
 // 					return false;
 // 				}
@@ -722,7 +722,7 @@ class SensorsController extends Controller
 				if ($setup->master_exp_id != $experiment->id)
 				{
 					$this->error = L::ACCESS_DENIED;
-				
+
 					return false;
 				}
 
@@ -794,7 +794,7 @@ class SensorsController extends Controller
 						}
 						else
 						{
-							//$this->error = 'Monitoring not started';
+							//$this->error = L::setup_ERROR_MONITORING_NOT_STARTED;
 
 							//TODO: add other error checking, because error operation on socket returns false too!
 
@@ -911,7 +911,8 @@ class SensorsController extends Controller
 								}
 
 								// Skip after dates
-								if ((new DateTime(System::cutdatemsec($d->Time))) > $stopdt)
+								$d_time = new DateTime(System::cutdatemsec($d->Time));
+								if ($d_time > $stopdt)
 								{
 									continue;
 								}
@@ -1051,7 +1052,7 @@ class SensorsController extends Controller
 
 			return false;
 		}
-	
+
 		return false;
 	}
 

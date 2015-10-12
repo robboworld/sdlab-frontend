@@ -51,7 +51,7 @@ class System
 	static function secToTime($sec)
 	{
 		$obj = Form::formTimeObject($sec);
-		return $obj->d.' д. '.$obj->h.' ч. '.$obj->m.' м. '.$obj->s.' с.';
+		return $obj->d . ' ' . L::DAYS_SHORT2 . ' ' . $obj->h . ' ' . L::HOURS_SHORT2 . ' ' . $obj->m . ' ' . L::MINUTES_SHORT2 . ' ' . $obj->s . ' '. L::SECONDS_SHORT2;
 	}
 
 	static function nulldate()

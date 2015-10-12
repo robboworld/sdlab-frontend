@@ -232,13 +232,13 @@ if($setup_exists)
 					<div class="">
 						<? echo L::SETUP; ?>: <b><? print htmlspecialchars($this->view->content->setup->title, ENT_QUOTES, 'UTF-8'); ?></b>
 						<? if($this->view->content->setup->userCanEdit($this->session())) :?>
-							<a href="/?q=setup/edit/<? print $this->view->content->setup->id; ?>" title="Редактировать установку" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
+							<a href="/?q=setup/edit/<? print $this->view->content->setup->id; ?>" title="<? echo L::setup_EDIT; ?>" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
 						<? endif; ?>
 					</div>
 					<div class="setup-status">
 						<? if ($setup_active) : ?>
 						<div id="setup_status_active" class="col-md-2">
-							<span class="label label-danger"><i class="glyphicon glyphicon-exclamation-sign" style="display:none;">&nbsp;</i>Активна</span>
+							<span class="label label-danger"><i class="glyphicon glyphicon-exclamation-sign" style="display:none;">&nbsp;</i><? echo L::setup_ACTIVE; ?></span>
 						</div>
 						<? endif; ?>
 						<? if ($ownSetup) : ?>
@@ -254,7 +254,7 @@ if($setup_exists)
 					<div class="mrg-top-5px">
 						<div class="col-xs-12 col-sm-6 col-md-4">
 							<div class="mrg-bot-5px">
-								<div class="special-label">Число измерений: <span id="setup_amount_cnt" class="badge"><? print $amount; ?></span></div>
+								<div class="special-label"><? echo L::setup_DETECTIONS_COUNT; ?>: <span id="setup_amount_cnt" class="badge"><? print $amount; ?></span></div>
 							</div>
 							<div class="mrg-bot-5px">
 								<div class="special-label"><? echo L::DONE; ?>: <span id="setup_done_cnt" class="badge"><? echo $done_cnt; ?></span></div>
@@ -262,7 +262,7 @@ if($setup_exists)
 						</div>
 						<div class="col-xs-12 col-sm-6 col-md-4">
 							<div class="mrg-bot-5px">
-								<div class="special-label">Интервал измерений: <span id="setup_interval" class="badge"><? print $this->view->content->setup->interval; ?></span></div>
+								<div class="special-label"><? echo L::setup_DETECTIONS_PERIOD; ?>: <span id="setup_interval" class="badge"><? print $this->view->content->setup->interval; ?></span></div>
 							</div>
 							<div class="mrg-bot-5px">
 								<div class="special-label"><? echo L::TIME_REMAIN; ?>: <span id="setup_remain_cnt" class="badge"><?php echo $remain_cnt_text; ?></span></div>
@@ -270,7 +270,7 @@ if($setup_exists)
 						</div>
 						<div class="col-xs-12 col-sm-6 col-md-4">
 							<div class="mrg-bot-5px">
-								<div class="special-label">Продолжительность: <span id="setup_time_det" class="badge"><? print System::secToTime($this->view->content->setup->time()); ?></span></div>
+								<div class="special-label"><? echo L::setup_DURATION; ?>: <span id="setup_time_det" class="badge"><? print System::secToTime($this->view->content->setup->time()); ?></span></div>
 							</div>
 							<div class="mrg-bot-5px" id="setup_stopat_parent" title="<?php echo ($setup_active ? $stopat_title_1 : $stopat_title_0);?>" data-title-0="<?php echo $stopat_title_0;?>" data-title-1="<?php echo $stopat_title_1;?>">
 								<div class="special-label"><? echo L::FINISHING; ?>: <span id="setup_stopat" class="badge <? echo $setup_stopat_class;?>"><? echo $setup_stopat_text;?></span></div>
@@ -293,10 +293,10 @@ if($setup_exists)
 				<td colspan="2">
 					<div>
 						<? echo L::experiment_ERROR_SETUP_NOT_SELECTED . ' '
-							. L::experiment_YOU_MUST_SELECT_OR_CREATE(array(
+							. L::experiment_YOU_MUST_SELECT_OR_CREATE(
 									'<a href="?q=experiment/edit/' . (int) $this->view->content->experiment->id . '">' . L::experiment_TO_SELECT_SETUP . '</a>',
 									'<a href="?q=setup/create&master=' . (int) $this->view->content->experiment->id . '">' . L::experiment_TO_CREATE_NEW_SETUP . '</a>'
-							)); ?>
+							); ?>
 					</div>
 				</td>
 			</tr>

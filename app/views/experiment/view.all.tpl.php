@@ -19,7 +19,7 @@ $show_action = true;
 			<tr>
 				<? if($this->session()->getUserLevel() == 3) :?>
 				<td>
-					<label>Название сессии</label>
+					<label><? echo L::session_NAME; ?></label>
 				</td>
 				<? endif; ?>
 				<td>
@@ -87,7 +87,7 @@ $show_action = true;
 		<div class="row">
 			<? if($this->session()->getUserLevel() == 3) :?>
 			<div class="col-md-4 text-left">
-				<a href="javascript:void(0)" id="sensors-rescan" class="btn btn-primary">Обновить список датчиков</a>
+				<a href="javascript:void(0)" id="sensors-rescan" class="btn btn-primary"><? echo L::sensor_REFRESH_LIST; ?></a>
 			</div>
 			<? endif; ?>
 		</div>

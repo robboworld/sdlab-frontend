@@ -44,7 +44,7 @@ class Menu
 		);
 		/*
 		$this->menu['sensors'] = array(
-			'title' => 'Датчики',
+			'title' => L::SENSORS,
 			'glyphicon' => '',
 			'user_level' => 1
 		);

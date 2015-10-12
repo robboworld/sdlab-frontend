@@ -48,8 +48,8 @@ class SessionController extends Controller
 				}
 			}
 		}
-		self::setTitle('Новая сессия');
-		self::setContentTitle('Новая сессия');
+		self::setTitle(L::session_NEW_SESSION);
+		self::setContentTitle(L::session_NEW_SESSION);
 	}
 
 	function edit()
@@ -87,7 +87,7 @@ class SessionController extends Controller
 			Form::redirect();
 		}
 
-		self::setTitle('Редактирование сессии');
+		self::setTitle(L::session_TITLE_EDIT);
 
 		/* загружаем эксперименты доступные в сессии*/
 		$experiments_in_session = ExperimentController::loadExperiments($this->session()->getKey());

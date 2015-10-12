@@ -10,7 +10,7 @@ define('LIBRARIES', APP.'/libraries');
 define('DBFILE', APP.'/db/newlab.db');
 
 
-/* Class Autoload*/
+/* Class Autoload */
 function __autoload($classname) {
 
 	$classmap = include('config/classmap.php');

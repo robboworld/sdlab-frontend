@@ -54,8 +54,8 @@
 	</div>
 
 	<div class="col-md-3">
-		<h3>Датчики
-			<a class="btn btn-link btn-sm" id="collapseSensorsControl" role="button" data-toggle="collapse" href="#collapseSensors" aria-expanded="true" aria-controls="collapseSensors" title="Показать/спрятать фильтр">
+		<h3><? echo L::SENSORS; ?>
+			<a class="btn btn-link btn-sm" id="collapseSensorsControl" role="button" data-toggle="collapse" href="#collapseSensors" aria-expanded="true" aria-controls="collapseSensors" title="<? echo L::graph_FILTER_SHOW_HIDE; ?>">
 				<span class="glyphicon glyphicon-chevron-down"></span>
 			</a>
 		</h3>

@@ -463,8 +463,8 @@ class ExperimentController extends Controller
 			if($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3)
 			{
 
-				self::setTitle('Журнал '.$experiment->title);
-				self::setContentTitle('Журнал "'.$experiment->title.'"');
+				self::setTitle(L::journal_TITLE_JOURNAL_OF($experiment->title));
+				self::setContentTitle(L::journal_TITLE_JOURNAL_OF_2($experiment->title));
 				self::addJs('functions');
 				self::addJs('experiment/journal');
 
@@ -556,7 +556,7 @@ class ExperimentController extends Controller
 			// View/Edit graph
 
 			self::setViewTemplate('graphsingle');
-			self::setTitle('График для '.$experiment->title);
+			self::setTitle(L::graph_TITLE_GRAPH_FOR($experiment->title));
 			self::addJs('lib/jquery.flot');
 			self::addJs('lib/jquery.flot.time.min');
 			self::addJs('lib/jquery.flot.navigate');
@@ -586,7 +586,7 @@ class ExperimentController extends Controller
 				// Edit graph
 
 				$this->view->form = new Form('plot-edit-form');
-				$this->view->form->submit->value = 'Сохранить график';
+				$this->view->form->submit->value = L::graph_SAVE;
 
 				if(isset($_POST['form-id']) && $_POST['form-id'] === 'plot-edit-form')
 				{
@@ -611,15 +611,15 @@ class ExperimentController extends Controller
 			// Add new graph
 
 			self::setViewTemplate('graphsingle');
-			self::setContentTitle('Добавление графика для "'.$experiment->title.'"');
-			self::setTitle('Добавление графика для '.$experiment->title);
+			self::setTitle(L::graph_TITLE_ADD_GRAPH_FOR($experiment->title));
+			self::setContentTitle(L::graph_TITLE_ADD_GRAPH_FOR_2($experiment->title));
 		}
 		else
 		{
 			// List graphs
 
-			//self::setContentTitle('Графики для "'.$experiment->title.'"');
-			self::setTitle('Графики для '.$experiment->title);
+			self::setTitle(L::graph_TITLE_GRAPHS_FOR($experiment->title));
+			//self::setContentTitle(L::graph_TITLE_GRAPHS_FOR_2($experiment->title));
 			self::addJs('lib/jquery.flot');
 			self::addJs('lib/jquery.flot.time.min');
 			self::addJs('lib/jquery.flot.navigate');

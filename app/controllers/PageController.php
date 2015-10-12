@@ -26,7 +26,7 @@ class PageController extends Controller
 
 		self::addJs('functions');
 
-		self::setTitle('Система');
+		self::setTitle(L::SYSTEM);
 		self::setContentTitle(L::SDLAB_TITLE);
 		self::setViewTemplate($page);
 

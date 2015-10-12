@@ -1,9 +1,9 @@
 <div class="col-md-offset-1 col-md-6">
-	<h3>Редактирование сессии</h3>
+	<h3><? echo L::session_TITLE_EDIT; ?></h3>
 </div>
 <div class="col-md-4 pull-right">
 	<h3>
-		Ключ сессии:
+		<? echo L::session_KEY; ?>:
 		<span class="text-danger"><? print $this->session()->getKey(); ?></span>
 	</h3>
 </div>
@@ -15,12 +15,12 @@
 			<input type="text" class="form-control" name="session_name" placeholder="<? echo L::FULL_NAME; ?>" value="<? print $this->session()->name;?>" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>>
 		</div>
 		<div class="form-group col-md-3">
-			<label>Название работы</label>
+			<label><? echo L::session_WORK_NAME; ?></label>
 			<input type="text" class="form-control" name="session_title" placeholder="<? echo L::TITLE; ?>" value="<? print $this->session()->title;?>" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>>
 		</div>
 		<div class="form-group col-md-3">
-			<label>Срок хранения(дней)</label>
-			<input type="text" class="form-control" name="session_expiry" placeholder="Срок хранения" value="<? print $this->session()->expiry;?>" size="3" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>>
+			<label><? echo L::session_EXPIRES_TIME_DAYS; ?></label>
+			<input type="text" class="form-control" name="session_expiry" placeholder="<? echo L::session_EXPIRES_TIME; ?>" value="<? print $this->session()->expiry;?>" size="3" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>>
 		</div>
 
 		<div class="form-group col-md-12">
@@ -43,7 +43,7 @@
 */
 ?>
 <div class="col-md-offset-1 col-md-10">
-	<h3>Эксперименты в этой сессии</h3>
+	<h3><? echo L::session_EXPERIMENTS_IN_SESSION; ?></h3>
 
 	<? if($this->view->experiments_in_session) : ?>
 	<table class="table">

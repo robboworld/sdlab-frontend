@@ -17,8 +17,8 @@ class SetupController extends Controller
 	function create()
 	{
 		/*todo: создание разрешить только админу*/
-		self::setTitle('Создание установки');
-		self::setContentTitle('Создание установки');
+		self::setTitle(L::setup_TITLE_CREATION);
+		self::setContentTitle(L::setup_TITLE_CREATION);
 		self::addJs('functions');
 		self::addJs('setup/edit');
 		self::addCss('setup');
@@ -116,8 +116,8 @@ class SetupController extends Controller
 	function edit()
 	{
 		self::setViewTemplate('create');
-		self::setTitle('Редактирование установки');
-		self::setContentTitle('Редактирование установки');
+		self::setTitle(L::setup_TITLE_EDIT);
+		self::setContentTitle(L::setup_TITLE_EDIT);
 		self::addJs('functions');
 		self::addJs('setup/edit');
 		self::addCss('setup');

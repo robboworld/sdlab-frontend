@@ -6,7 +6,7 @@
 	<div class="col-md-4 pull-right">
 		<h3>{FULL_NAME} {GROUP}</h3>
 	</div>
-	<h3>Графики <a href="?q=page/view/experiment">{Experiment name}</a></h3>
+	<h3><? echo L::graph_TITLE_GRAPHS_FOR_2('<a href="?q=page/view/experiment">{Experiment name}</a>'); ?></h3>
 
 </div>
 <div class="col-md-8">

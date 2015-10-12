@@ -8,17 +8,17 @@
 	<div class="col-md-offset-1 col-md-10">
 		<input type="hidden" name="form-id" value="<? print $this->view->form->id; ?>">
 		<div class="form-group setup-title">
-			<input class="form-control" name="setup_title" type="text" required="required" placeholder="Название установки" value="<? print htmlspecialchars($this->view->form->setup->title, ENT_QUOTES, 'UTF-8'); ?>"/>
+			<input class="form-control" name="setup_title" type="text" required="required" placeholder="<? echo L::setup_NAME; ?>" value="<? print htmlspecialchars($this->view->form->setup->title, ENT_QUOTES, 'UTF-8'); ?>"/>
 		</div>
 		<? 
 		// Check if active
 		if($this->view->form->setup->flag) : ?>
 		<div class="row form-group">
 			<div class="col-md-4">
-				Текущее состояние
+				<? echo L::setup_CURRENT_STATUS; ?>
 			</div>
 			<div class="col-md-8 form-inline">
-				<span class="label label-danger">ПРОВОДЯТСЯ ИЗМЕРЕНИЯ!</span>
+				<span class="label label-danger"><? echo L::setup_STATUS_IN_PROCESS; ?></span>
 			</div>
 		</div>
 		<? endif; ?>
@@ -27,11 +27,11 @@
 				<div class="btn-group btn-group-justified">
 					<label class="btn btn-default <?if(!empty($this->view->form->setup->time_det)) print 'active';?>">
 						<input type="radio" name="setup-type" data-id="setup-type-length" value="setup-type-length" <?if(!empty($this->view->form->setup->time_det)) print 'checked="checked"';?>>
-						Продолжительность
+						<? echo L::setup_DURATION; ?>
 					</label>
 					<label class="btn btn-default <?if(!empty($this->view->form->setup->amount)) print 'active';?>">
 						<input type="radio" name="setup-type" data-id="setup-type-amount" value="setup-type-amount" <?if(!empty($this->view->form->setup->amount)) print 'checked="checked"';?>>
-						Число измерений
+						<? echo L::setup_DETECTIONS_COUNT; ?>
 					</label>
 					<!--
 					<label class="btn btn-default">
@@ -42,26 +42,26 @@
 					-->
 				</div>
 				<div class="alert alert-warning" id="setup-type-alert">
-					Нужно выбрать тип измерений
+					<? echo L::setup_MSG_SELECT_DETECTION_MODE; ?>
 				</div>
 				<div id="setup-type-length" class="setup-type well">
 					<div class="row form-group">
 						<div class="col-xs-12 col-md-6 col-sm-5 setup-label-long">
-							Продолжительность измерений
+							<? echo L::setup_DURATION_DETECTIONS; ?>
 						</div>
 						<div class="col-xs-12 col-md-6 col-sm-7 form-inline">
 							<? $time_det = Form::formTimeObject($this->view->form->setup->time_det) ;?>
-							<input type="text" name="time_det_day" class="form-control" size="1" placeholder="0" value="<? print $time_det->d; ?>"> дн.
-							<input type="text" name="time_det_hour" class="form-control" size="1" placeholder="0" value="<? print $time_det->h; ?>"> ч.
-							<input type="text" name="time_det_min" class="form-control" size="1" placeholder="1" value="<? print $time_det->m; ?>"> мин.
-							<input type="text" name="time_det_sec" class="form-control" size="1" placeholder="1" value="<? print $time_det->s; ?>"> сек.
+							<input type="text" name="time_det_day" class="form-control" size="1" placeholder="0" value="<? print $time_det->d; ?>"> <? echo L::DAYS_SHORT; ?>
+							<input type="text" name="time_det_hour" class="form-control" size="1" placeholder="0" value="<? print $time_det->h; ?>"> <? echo L::HOURS_SHORT2; ?>
+							<input type="text" name="time_det_min" class="form-control" size="1" placeholder="1" value="<? print $time_det->m; ?>"> <? echo L::MINUTES_SHORT; ?>
+							<input type="text" name="time_det_sec" class="form-control" size="1" placeholder="1" value="<? print $time_det->s; ?>"> <? echo L::SECONDS_SHORT; ?>
 						</div>
 					</div>
 				</div>
 				<div id="setup-type-amount" class="setup-type well">
 					<div class="row form-group">
 						<div class="col-xs-6 col-md-6 col-sm-6 setup-label">
-							Число измерений
+							<? echo L::setup_DETECTIONS_COUNT; ?>
 						</div>
 						<div class="col-xs-6 col-md-6 col-sm-6 form-inline">
 							<input type="text" name="amount" class="form-control" size="10" placeholder="1" value="<? print $this->view->form->setup->amount; ?>">
@@ -74,12 +74,12 @@
 					<div class="row">
 						<div class="col-md-4">
 							<? echo L::FINISHING; ?>
-							<small>{нужно добавить поле в бд}</small>
+							<small>{todo: add field to db}</small>
 						</div>
 						<div class="col-md-8 form-inline">
 							<input type="text" class="form-control" placeholder="<? echo L::DATE; ?>" size="13">&nbsp;
 							<input type="text" class="form-control" placeholder="<? echo L::TIME; ?>" size="12">
-							<br><small>{подключить jquery.datepicker & jquery.timepicker}</small>
+							<br><small>{todo: add jquery.datepicker & jquery.timepicker}</small>
 						</div>
 					</div>
 				</div>
@@ -87,14 +87,14 @@
 				<div class="well">
 					<div class="row form-group">
 						<div class="col-xs-6 col-md-6 col-sm-6 setup-label">
-							Интервал измерений
+							<? echo L::setup_DETECTIONS_PERIOD; ?>
 						</div>
 						<div class="col-xs-6 col-md-6 col-sm-6 form-inline">
 							<!--
-							<input type="text" class="form-control" size="4" placeholder="0"> дн.
-							<input type="text" class="form-control" size="4" placeholder="0"> час.
+							<input type="text" class="form-control" size="4" placeholder="0"> <? echo L::DAYS_SHORT; ?>
+							<input type="text" class="form-control" size="4" placeholder="0"> <? echo L::HOURS_SHORT2; ?>
 							-->
-							<input type="text" name="interval" class="form-control" required="required" size="10" placeholder="10" value="<? print $this->view->form->setup->interval; ?>"> сек.
+							<input type="text" name="interval" class="form-control" required="required" size="10" placeholder="10" value="<? print $this->view->form->setup->interval; ?>"> <? echo L::SECONDS_SHORT; ?>
 						</div>
 					</div>
 					<?
@@ -102,7 +102,7 @@
 					?>
 					<div class="row form-group" style="display:none;">
 						<div class="col-xs-6 col-md-6 col-sm-6 setup-label mrg-top-m5px">
-							Число повторных измерений<br>(при обнаружении ошибок)
+							<? echo L::setup_DETECTIONS_COUNT_REP; ?>
 						</div>
 						<div class="col-xs-6 col-md-6 col-sm-6 form-inline">
 							<input type="text" name="number_error" class="form-control" size="10" placeholder="0" value="<? print $this->view->form->setup->number_error; ?>">
@@ -110,10 +110,10 @@
 					</div>
 					<div class="row form-group" style="display:none;">
 						<div class="col-xs-6 col-md-6 col-sm-6 setup-label">
-							Интервал повторных измерений
+							<? echo L::setup_DETECTIONS_PERIOD_REP; ?>
 						</div>
 						<div class="col-xs-6 col-md-6 col-sm-6 form-inline">
-							<input type="text" name="period_repeated_det" class="form-control" size="10" placeholder="0" value="<? print $this->view->form->setup->period_repeated_det; ?>"> сек.
+							<input type="text" name="period_repeated_det" class="form-control" size="10" placeholder="0" value="<? print $this->view->form->setup->period_repeated_det; ?>"> <? echo L::SECONDS_SHORT; ?>
 						</div>
 					</div>
 				</div>
@@ -122,13 +122,13 @@
 		</div>
 		<div class="row">
 			<div class="col-md-12">
-				<h4>Датчики в установке:</h4>
+				<h4><? echo L::setup_SENSORS_IN_SETUP; ?>:</h4>
 				<table class="table table-responsive" id="sensors-in-setup">
 					<thead>
 						<tr>
 							<th>ID</th>
-							<th>Название физ. вел.</th>
-							<th>Имя датчика</th>
+							<th><? echo L::sensor_VALUE_NAME; ?></th>
+							<th><? echo L::sensor_NAME; ?></th>
 							<th></th>
 						</tr>
 					</thead>
@@ -141,7 +141,7 @@
 										<input type="hidden" name="sensors[<? print $sensor->id; ?>][<? echo (int)$sensor->sensor_val_id; ?>][val_id]" value="<? print (int)$sensor->sensor_val_id; ?>"/>
 									</td>
 									<td><? print htmlspecialchars($sensor->value_name, ENT_QUOTES, 'UTF-8'); ?></td>
-									<td class="sensor-setup-name"><input type="text" placeholder="Имя датчика" name="sensors[<? print $sensor->id; ?>][<? echo (int)$sensor->sensor_val_id; ?>][name]" class="form-control" required="required" value="<? 
+									<td class="sensor-setup-name"><input type="text" placeholder="<? echo L::sensor_NAME; ?>" name="sensors[<? print $sensor->id; ?>][<? echo (int)$sensor->sensor_val_id; ?>][name]" class="form-control" required="required" value="<? 
 										if (isset($sensor->name) && mb_strlen($sensor->name,'utf-8')>0)
 										{
 											echo htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8');
@@ -164,7 +164,7 @@
 							<td colspan="4">
 								<div class="alert alert-info">
 									<span class="glyphicon glyphicon-info-sign"></span>
-									<span>В установке нет датчиков. Выберите нужные датчики из списка ниже и нажмите "Добавить выбранные".</span>
+									<span><? echo L::setup_MSG_NO_SENSORS_IN_SETUP; ?></span>
 								</div>
 							</td>
 						</tr>
@@ -173,18 +173,18 @@
 
 				<hr />
 
-				<h4>Доступные датчики:</h4>
+				<h4><? echo L::setup_AVAILABLE_SENSORS; ?>:</h4>
 				<table class="table table-responsive" id="sensor-list-table">
 					<thead>
 						<tr>
 							<th></th>
 							<th>ID</th>
-							<th>Название физ. вел.</th>
-							<th>Обозначение физ. вел.</th>
-							<th>Название ед. изм.</th>
-							<th>Нижний предел изм.</th>
-							<th>Верхний предел изм.</th>
-							<th>Погрешность</th>
+							<th><? echo L::sensor_VALUE_NAME; ?></th>
+							<th><? echo L::sensor_VALUE_SI_NOTATION; ?></th>
+							<th><? echo L::sensor_VALUE_SI_NAME; ?></th>
+							<th><? echo L::sensor_VALUE_MIN_RANGE; ?></th>
+							<th><? echo L::sensor_VALUE_MAX_RANGE; ?></th>
+							<th><? echo L::sensor_VALUE_ERROR; ?></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -195,7 +195,7 @@
 							<td colspan="8">
 								<div class="alert alert-info">
 									<span class="glyphicon glyphicon-info-sign"></span>
-									<span>Доступных датчиков нет.<!-- Подсоедините датчики к плате и нажмите "Обновите список доступных датчиков".--></span>
+									<span><? echo L::setup_MSG_NO_AVAILABLE_SENSORS; ?></span>
 								</div>
 							</td>
 						</tr>
@@ -204,10 +204,10 @@
 
 				<div class="row sensor-block">
 					<div class="mrg-bot-5px col-xs-12 col-sm-6 col-md-6">
-						<a class="btn btn-default form-control" id="add-sensors"><span class="glyphicon glyphicon-arrow-up"></span>Добавить выбранные</a>
+						<a class="btn btn-default form-control" id="add-sensors"><span class="glyphicon glyphicon-arrow-up"></span><? echo L::setup_ADD_SELECTED_SENSORS; ?></a>
 					</div>
 					<div class="mrg-bot-5px col-xs-12 col-sm-6 col-md-6">
-						<a class="btn btn-default form-control" id="sensors-list-update"><span class="glyphicon glyphicon-refresh"></span>Обновить список доступных датчиков</a>
+						<a class="btn btn-default form-control" id="sensors-list-update"><span class="glyphicon glyphicon-refresh"></span><? echo L::setup_REFRESH_AVAILABLE_SENSORS_LIST; ?></a>
 					</div>
 				</div>
 			</div>
@@ -217,7 +217,7 @@
 <div class="row mrg-top-20px">
 	<div class="col-md-offset-1 col-md-10 text-center">
 		<div class="btn-group" style="float: none;">
-			<a href="/?q=experiment/view" class="col-md-6 btn-default btn width-auto form-control">Отменить</a>
+			<a href="/?q=experiment/view" class="col-md-6 btn-default btn width-auto form-control"><? echo L::CANCEL; ?></a>
 		<? if($this->view->form->id == 'edit-setup-form') : ?>
 			<a href="/?q=setup/create" class="btn btn-primary width-auto form-control"><? echo L::CREATE; ?></a>
 		<? endif; ?>

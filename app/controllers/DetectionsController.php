@@ -167,7 +167,7 @@ class DetectionsController extends Controller
 				{
 					$data = new stdClass();
 					// TODO: add to label name of sensor from setup_info (but unknown setup id for each detection, setup can be changed)
-					$data->label         = empty($sensor->value_name) ? L::sensor_UNKNOWN : $sensor->value_name ;
+					$data->label         = empty($sensor->value_name) ? L::sensor_UNKNOWN : constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name));
 					$data->sensor_id     = $sensor->sensor_id;
 					$data->sensor_val_id = $sensor->sensor_val_id;
 					$data->color         = ++$i;

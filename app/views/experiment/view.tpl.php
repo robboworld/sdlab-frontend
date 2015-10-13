@@ -326,7 +326,8 @@ if($setup_exists)
 								<h3 class="sensor-value"><? echo L::PLEASE_WAIT; ?></h3>
 								<small class="sensor-value-name"><?
 									echo ((!empty($sensor->si_notation)) ? 
-										$sensor->si_notation . ' (' . $sensor->si_name . ')' : '');
+											constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation))
+											. ' (' . constant('L::sensor_VALUE_SI_NAME_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_name)) . ')' : '');
 								?></small>
 							</div>
 						</div>

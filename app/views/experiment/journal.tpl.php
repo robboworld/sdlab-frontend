@@ -23,7 +23,8 @@
 					<td><? echo L::TIME; ?></td>
 					<? foreach ($this->view->content->displayed_sensors as $skey => $sensor) :?>
 					<td><? print htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?><br/>
-						<small><? echo htmlspecialchars($sensor->value_name, ENT_QUOTES, 'UTF-8') . ', ' . htmlspecialchars($sensor->si_notation, ENT_QUOTES, 'UTF-8'); ?></small><br/>
+						<small><? echo htmlspecialchars(constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8')
+								. ', ' . htmlspecialchars(constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)), ENT_QUOTES, 'UTF-8'); ?></small><br/>
 						<small class="muted">(id: <? print htmlspecialchars($skey, ENT_QUOTES, 'UTF-8'); ?>)</small>
 					</td>
 					<? endforeach; ?>

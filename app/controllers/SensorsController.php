@@ -71,7 +71,7 @@ class SensorsController extends Controller
 				$known[$key] = $item;
 			}
 
-			// Prepare insert query
+			// Prepare insert query for new sensors
 			$insert = $db->prepare('insert into sensors (sensor_id, sensor_val_id, sensor_name, value_name, si_notation, si_name, max_range, min_range, error, resolution)' .
 					' values (:sensor_id, :sensor_val_id, :sensor_name, :value_name, :si_notation, :si_name, :max_range, :min_range, :error, :resolution)');
 
@@ -129,9 +129,27 @@ class SensorsController extends Controller
 
 					foreach ($sensor->{'Values'} as $value)
 					{
-						$value->value_name  = System::getValsTranslate($value->{'Name'});
-						$value->si_notation = System::getValsTranslate($value->{'Name'}, 'si_notation');
-						$value->si_name     = System::getValsTranslate($value->{'Name'}, 'si_name');
+						$value_name = System::getValsTranslate($value->{'Name'});
+						if (($value_name !== false) && (strlen($value_name) > 0))
+						{
+							$value->value_name  =   constant('L::sensor_VALUE_NAME_' . strtoupper($value_name));
+
+							$field = System::getValsTranslate($value->{'Name'}, 'si_notation');
+							$value->si_notation = (($field !== false) && (strlen($field) > 0)) ? 
+													constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($field)) :
+													false;
+
+							$field = System::getValsTranslate($value->{'Name'}, 'si_name');
+							$value->si_name     = (($field !== false) && (strlen($field) > 0)) ?
+													constant('L::sensor_VALUE_SI_NAME_' . strtoupper($value_name) . '_' . strtoupper($field)) :
+													false;
+						}
+						else
+						{
+							$value->value_name  = false;
+							$value->si_notation = false;
+							$value->si_name     = false;
+						}
 					}
 				}
 			}

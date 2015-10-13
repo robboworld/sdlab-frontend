@@ -149,8 +149,8 @@
 				<li>
 					<label class="chechbox"><input type="checkbox" <?/* if (array_key_exists($sensor->sensor_id, $this->view->content->displayed_sensors)) print 'checked';*/?> checked name="show-sensor[]" value="<? 
 						print htmlspecialchars($sensor->sensor_id . '#' . (int)$sensor->sensor_val_id, ENT_QUOTES, 'UTF-8'); ?>"/>&nbsp;<? 
-						print htmlspecialchars($sensor->value_name, ENT_QUOTES, 'UTF-8') . ','
-							. htmlspecialchars($sensor->si_notation, ENT_QUOTES, 'UTF-8')
+						print htmlspecialchars(constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8') . ','
+							. htmlspecialchars(constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)), ENT_QUOTES, 'UTF-8')
 							. ' ('  . htmlspecialchars($sensor->sensor_id. '#' . (int)$sensor->sensor_val_id, ENT_QUOTES, 'UTF-8') . ')';
 						?></label>
 				</li>

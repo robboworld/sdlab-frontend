@@ -140,7 +140,7 @@
 										<input type="hidden" name="sensors[<? print $sensor->id; ?>][<? echo (int)$sensor->sensor_val_id; ?>][id]" value="<? print $sensor->id; ?>"/>
 										<input type="hidden" name="sensors[<? print $sensor->id; ?>][<? echo (int)$sensor->sensor_val_id; ?>][val_id]" value="<? print (int)$sensor->sensor_val_id; ?>"/>
 									</td>
-									<td><? print htmlspecialchars($sensor->value_name, ENT_QUOTES, 'UTF-8'); ?></td>
+									<td><? print htmlspecialchars(constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8'); ?></td>
 									<td class="sensor-setup-name"><input type="text" placeholder="<? echo L::sensor_NAME; ?>" name="sensors[<? print $sensor->id; ?>][<? echo (int)$sensor->sensor_val_id; ?>][name]" class="form-control" required="required" value="<? 
 										if (isset($sensor->name) && mb_strlen($sensor->name,'utf-8')>0)
 										{
@@ -150,7 +150,7 @@
 										{
 											if (isset($sensor->value_name) && mb_strlen($sensor->value_name,'utf-8')>0)
 											{
-												echo htmlspecialchars($sensor->value_name, ENT_QUOTES, 'UTF-8');
+												echo htmlspecialchars(constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8');
 											}
 										}
 									?>"/></td>

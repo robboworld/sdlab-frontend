@@ -59,7 +59,7 @@
 			<? foreach ($this->view->experiments_in_session as $item) : ?>
 			<tr>
 				<td>#<? print $item->id?></td>
-				<td><? print System::dateformat('@'.$item->DateStart_exp);?> / <? if(!empty($item->DateEnd_exp)) print System::dateformat($item->DateEnd_exp);?></td>
+				<td><? print System::dateformat('@'.$item->DateStart_exp);?> / <? if(!empty($item->DateEnd_exp)) print System::dateformat('@'.$item->DateEnd_exp);?></td>
 				<td><a href="?q=experiment/view/<? print $item->id?>"><? print $item->title?></a></td>
 				<td><? print (new Setup())->load($item->setup_id)->title; ?></td>
 			</tr>

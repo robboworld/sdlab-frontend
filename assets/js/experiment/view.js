@@ -151,21 +151,21 @@ function updateSensorsValues(ids, onalways){
 }
 
 function getExperimentStrob(experiment_id){
-    $('#experiment-strob').attr('disabled', true).text('Выполняется...');
+    $('#experiment-strob').attr('disabled', true).text(SDLab.Language._('RUNNING_'));
     coreAPICall('Sensors.experimentStrob', {
         experiment: experiment_id
     }, function(data){
         //console.log('Sensors.experimentStrob'+experiment_id);console.log(data);
         if(data.result == true){
-            $('#experiment-strob').attr('disabled', false).text('Строб');
+            $('#experiment-strob').attr('disabled', false).text(SDLab.Language._('STROBE'));
         }else{
-            $('#experiment-strob').attr('disabled', false).text('Строб: Не выполнено').addClass('btn-warning');
+            $('#experiment-strob').attr('disabled', false).text(SDLab.Language._('STROBE') + ': ' + SDLab.Language._('ERROR_NOT_COMPLETED')).addClass('btn-warning');
         }
     })
 }
 
 function experimentAction(act, experiment_id){
-    $('#experiment-action').attr('disabled', 'disabled').addClass('disabled').text('Выполняется...');
+    $('#experiment-action').attr('disabled', 'disabled').addClass('disabled').text(SDLab.Language._('RUNNING_'));
     coreAPICall('Sensors.experiment'+(act ? 'Start' : 'Stop'), {
         experiment: experiment_id
     }, function(data){
@@ -176,12 +176,12 @@ function experimentAction(act, experiment_id){
                 location.reload();
             }else{
                 $('#experiment-action').attr('disabled', false).removeClass('disabled').text($('#experiment-action').data('text-'+(act?'0':'1'))).addClass('btn-warning').data('experiment-state',(act ? 0 : 1));
-                alert($('#experiment-action').data('text-'+(act?'0':'1'))+': Не выполнено');
+                alert($('#experiment-action').data('text-'+(act?'0':'1'))+': '+SDLab.Language._('ERROR_NOT_COMPLETED'));
             }
         } else if (typeof data.error !== 'undefined'){
             //error
             $('#experiment-action').attr('disabled', false).removeClass('disabled').text($('#experiment-action').data('text-'+(act?'0':'1'))).addClass('btn-warning').data('experiment-state',(act ? 0 : 1));
-            alert($('#experiment-action').data('text-'+(act?'0':'1'))+': Не выполнено: '+data.error);
+            alert($('#experiment-action').data('text-'+(act?'0':'1'))+': '+SDLab.Language._('ERROR_NOT_COMPLETED')+': '+data.error);
         }
     })
 }
@@ -247,7 +247,7 @@ function showExpStateUndefined() {
                 <td colspan="2">\
                     <div class="alert alert-warning alert-dismissible" role="alert">\
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>\
-                        <div>Внимание! Параметры эксперимента изменились. Пожалуйста, <a href="#">обновите страницу</a>.<div>\
+                        <div>'+SDLab.Language._('experiment.ERROR_CONFIGURATION_ORPHANED')+'<div>\
                     </div>\
                 </td>\
             </tr>\

@@ -22,6 +22,10 @@ class SetupController extends Controller
 		self::addJs('functions');
 		self::addJs('setup/edit');
 		self::addCss('setup');
+		// Add language translates for scripts
+		Language::script(array(
+				'ERROR', 'sensor_NAME', 'REMOVE'  // setup/edit
+		));
 
 		/* Необходимо указание мастер-эксперимента */
 		if(isset($_GET['master']) && is_numeric($_GET['master']))
@@ -121,6 +125,10 @@ class SetupController extends Controller
 		self::addJs('functions');
 		self::addJs('setup/edit');
 		self::addCss('setup');
+		// Add language translates for scripts
+		Language::script(array(
+				'ERROR', 'sensor_NAME', 'REMOVE'  // setup/edit
+		));
 
 		if(!is_null($this->id) && !empty($this->id))
 		{

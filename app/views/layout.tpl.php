@@ -12,10 +12,13 @@
 	<link rel="stylesheet" href="assets/css/style.css">
 	<script src="assets/bootstrap/js/bootstrap.min.js"></script>
 	<? print $this->collectJs(); ?>
+
 	<? print $this->collectCss(); ?>
+
 	<? print $this->genJsLang(); ?>
+
 </head>
-<body >
+<body>
 	<div class="container" id="navigation">
 		<div class="navbar navbar-fixed-top navbar-inverse">
 			<div class="navbar-text">

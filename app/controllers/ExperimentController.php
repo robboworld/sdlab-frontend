@@ -115,6 +115,12 @@ class ExperimentController extends Controller
 			self::addJs('functions');
 			self::addJs('class/Sensor');
 			self::addJs('experiment/view');
+			// Add language translates for scripts
+			Language::script(array(
+					'GRAPH', 'INFO',  // class/Sensor
+					'RUNNING_', 'STROBE', 'ERROR_NOT_COMPLETED', 'experiment_ERROR_CONFIGURATION_ORPHANED'  // experiment/view
+			));
+
 			$experiment = (new Experiment())->load($this->id);
 			if($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3)
 			{
@@ -197,6 +203,10 @@ class ExperimentController extends Controller
 
 			self::addJs('functions');
 			self::addJs('experiment/view.all');
+			// Add language translates for scripts
+			Language::script(array(
+					'journal_QUESTION_REMOVE_EXPERIMENT_WITH_1', 'journal_QUESTION_REMOVE_EXPERIMENT_WITH_JS_N', 'ERROR'  // experiment/view.all
+			));
 
 			//View all available experiments in this session
 		}
@@ -467,6 +477,10 @@ class ExperimentController extends Controller
 				self::setContentTitle(L::journal_TITLE_JOURNAL_OF_2($experiment->title));
 				self::addJs('functions');
 				self::addJs('experiment/journal');
+				// Add language translates for scripts
+				Language::script(array(
+						'journal_QUESTION_CLEAN_JOURNAL', 'ERROR'  // experiment/journal
+				));
 
 				/*Объект формы*/
 				$this->view->form = new Form('experiment-journal-form');
@@ -562,7 +576,10 @@ class ExperimentController extends Controller
 			self::addJs('lib/jquery.flot.navigate');
 			self::addJs('functions');
 			self::addJs('chart');
-
+			// Add language translates for scripts
+			Language::script(array(
+					'sensor_VALUE_NAME_TEMPERATURE'  // chart
+			));
 
 			$plot_id = (int)App::router(3);
 			if (empty($plot_id))
@@ -625,6 +642,10 @@ class ExperimentController extends Controller
 			self::addJs('lib/jquery.flot.navigate');
 			self::addJs('functions');
 			self::addJs('chart');
+			// Add language translates for scripts
+			Language::script(array(
+					'sensor_VALUE_NAME_TEMPERATURE'  // chart
+			));
 
 			$db = new DB();
 			$query = 'select * from plots where exp_id = '.(int)$experiment->id;

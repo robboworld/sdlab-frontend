@@ -15,8 +15,8 @@ function Sensor(options){
                 </div>\
                 <div class="panel-body">\
                     <div class="btn-group btn-group-justified">\
-                        <a class="btn btn-sm btn-default show-graph" href="#"><span class="glyphicon glyphicon-stats"> График</span></a>\
-                        <a class="btn btn-sm btn-default show-info active" href="#">Инфо</a>\
+                        <a class="btn btn-sm btn-default show-graph" href="#"><span class="glyphicon glyphicon-stats"> '+ SDLab.Language._('GRAPH') +'</span></a>\
+                        <a class="btn btn-sm btn-default show-info active" href="#">'+ SDLab.Language._('INFO') +'</a>\
                     </div>\
                     <div class="widget-pane info active ">\
                         <div class="label label-info">'+ this.value +' ' + this.letter + '</div>\

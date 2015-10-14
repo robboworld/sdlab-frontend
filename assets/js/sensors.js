@@ -54,7 +54,7 @@ $(document).ready(function(){
 
     /*Вопрос при переходе на другую страницу.
     $(document).on('click', 'a:not([href*="#"])', function(e){
-        if(!confirm('Leave this page?')){
+        if(!confirm(SDLab.Language._('QUESTION_LEAVE_PAGE'))){
             e.preventDefault();
         }
     });

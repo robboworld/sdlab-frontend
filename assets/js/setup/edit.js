@@ -107,7 +107,7 @@ function updateSensorsList(data){
     } else {
         toggleSensorsListAlert('#sensor-list-table');
         //error
-        alert('Ошибка');
+        alert(SDLab.Language._('ERROR'));
     }
 }
 
@@ -130,8 +130,8 @@ function addSensorsToSetup(){
                     <input type="hidden" name="sensors['+sid+']['+idx+'][val_id]" value="' + idx + '"/>\
                 </td>\
                 <td>' + $(this).find('.sensor-setup-valname').first().text() + '</td>\
-                <td class="sensor-setup-name"><input type="text" placeholder="Имя датчика" name="sensors['+sid+']['+idx+'][name]" class="form-control" required="true"/></td>\
-                <td class="text-right"><a class="btn btn-sm btn-danger remove-sensor">Удалить</a></td>\
+                <td class="sensor-setup-name"><input type="text" placeholder="'+SDLab.Language._('sensor.NAME')+'" name="sensors['+sid+']['+idx+'][name]" class="form-control" required="true"/></td>\
+                <td class="text-right"><a class="btn btn-sm btn-danger remove-sensor">'+SDLab.Language._('REMOVE')+'</a></td>\
             </tr>'
         );
         row.find('input[type=text][name$="[name]"]').val(sensorname);

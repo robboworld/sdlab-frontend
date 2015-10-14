@@ -1,6 +1,6 @@
 $(document).ready(function(){
 	$('#cleanDetections').click(function(){
-		if(confirm('Вы уверены, что хотите очистить журнал?')){
+		if(confirm(SDLab.Language._('journal_QUESTION_CLEAN_JOURNAL'))){
 			var form = $('#journalForm').get(0);
 			form.setAttribute('action', '?q=experiment/clean/'+form.exp_id.value);
 			form.submit();
@@ -29,10 +29,10 @@ $(document).ready(function(){
 
 function deleteDetection(data, st, xhr) {
 	if(typeof data.error !== 'undefined'){
-		alert('Ошибка');
+		alert(SDLab.Language._('ERROR'));
 	} else if ((typeof data.result !== 'undefined') && (data.result == true)) {
 		 $(xhr.detections_row).remove();
 	} else {
-		alert('Ошибка');
+		alert(SDLab.Language._('ERROR'));
 	}
 }

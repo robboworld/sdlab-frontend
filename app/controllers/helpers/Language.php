@@ -15,6 +15,11 @@ require_once LIBRARIES . '/php-i18n/i18n.class.php';
 
 class Language extends i18n
 {
+	/**
+	 * i18n translation classes instances
+	 *
+	 * @var    array
+	 */
 	protected static $i18n = array();
 
 	/**
@@ -22,7 +27,7 @@ class Language extends i18n
 	 *
 	 * @var    array
 	 */
-	protected static $strings = array();
+	protected static $jstrings = array();
 
 	/**
 	 * Get language object instance
@@ -258,14 +263,16 @@ class Language extends i18n
 	/**
 	 * Translate a string into the current language and stores it in the JavaScript language store.
 	 *
-	 * @param   string   $string                The text key.
-	 * @param   boolean  $jsSafe                Ensure the output is JavaScript safe.
-	 * @param   boolean  $interpretBackSlashes  Interpret \t and \n.
+	 * @param   string|array   $string                The text key or array of text keys.
+	 * @param   boolean        $jsSafe                Ensure the output is JavaScript safe.
+	 * @param   boolean        $interpretBackSlashes  Interpret \t and \n.
+	 * @param   string         $prefix                The class name of the compiled i18n class that contains the translated texts. Defaults to 'L'.
 	 *
 	 * @return  string
 	 */
 	public static function script($string = null, $jsSafe = false, $interpretBackSlashes = true, $prefix = 'L')
 	{
+		// If method call with parameters array
 		if (is_array($jsSafe))
 		{
 			if (array_key_exists('interpretBackSlashes', $jsSafe))
@@ -281,27 +288,45 @@ class Language extends i18n
 			{
 				$jsSafe = false;
 			}
+
+			if (array_key_exists('prefix', $jsSafe))
+			{
+				$prefix = (string) $jsSafe['prefix'];
+			}
+			else
+			{
+				$prefix = 'L';
+			}
 		}
 
 		// Add the string to the array if not null.
 		if ($string !== null)
 		{
-			// Normalize the key and translate the string.
-			$translated = $prefix::$string;
+			// May be array of keys
+			if (!is_array($string))
+			{
+				$string = array($string);
+			}
 
-			if ($jsSafe)
+			foreach ($string as $str)
 			{
-				// Javascript filter
-				$translated = addslashes($translated);
+				// Normalize the key and translate the string.
+				$translated = constant($prefix . '::' . $str);
+	
+				if ($jsSafe)
+				{
+					// Javascript filter
+					$translated = addslashes($translated);
+				}
+				elseif ($interpretBackSlashes)
+				{
+					// Interpret \n and \t characters
+					$translated = str_replace(array('\\\\', '\t', '\n'), array("\\", "\t", "\n"), $translated);
+				}
+				self::$jstrings[$str] = $translated;
 			}
-			elseif ($interpretBackSlashes)
-			{
-				// Interpret \n and \t characters
-				$translated = str_replace(array('\\\\', '\t', '\n'), array("\\", "\t", "\n"), $translated);
-			}
-			self::$strings[strtoupper($string)] = $translated;
 		}
 
-		return self::$strings;
+		return self::$jstrings;
 	}
 }

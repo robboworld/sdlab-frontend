@@ -16,6 +16,13 @@ class SensorsController extends Controller
 		$this->addJs('chart');
 		$this->addJs('Sensor');
 		$this->addJs('sensors');
+		// Add language translates for scripts
+		Language::script(array(
+				'sensor_VALUE_NAME_TEMPERATURE',  // chart
+				'GRAPH', 'INFO'            // Sensor
+				                           // - sensors
+		));
+
 		$this->addCss('sensors');
 		//$this->view->content->sensors_list = $this->sensorList($this->getSensors()->Values);
 		$this->view->content->sensors_list = 'test inc';

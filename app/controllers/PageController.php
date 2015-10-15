@@ -29,9 +29,5 @@ class PageController extends Controller
 		self::setTitle(L::SYSTEM);
 		self::setContentTitle(L::SDLAB_TITLE);
 		self::setViewTemplate($page);
-
 	}
-
-
 }
-

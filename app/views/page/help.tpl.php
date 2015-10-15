@@ -1,5 +1,8 @@
-<h3>Справка</h3>
+<h3><? echo L::HELP_CAPTION; ?></h3>
 <p>
-	Для входа в тестовый режим редактировния используйте ключ <code>123456</code> или создайте новую сессию.
-	Большинство страниц-макетов доступны только при активной сессии.
+	<?php echo L::HELP_TEXT; ?>
+
+	<?php if (isset($this->app->config['lab']['admin_key'])) :
+		echo '<br/>' . L::HELP_TEXT_ADMIN($this->app->config['lab']['admin_key']);
+	endif; ?>
 </p>

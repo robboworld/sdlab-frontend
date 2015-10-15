@@ -2,7 +2,7 @@
 
 /**
  * Class DB
- * сразу подключаемся к файлу базы sqlite
+ * Connection to sqlite database
  */
 class DB extends PDO
 {

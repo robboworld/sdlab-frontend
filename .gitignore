@@ -1,4 +1,6 @@
 /app/db
+/app/langcache/*
+!/app/langcache/README.md
 
 ### Eclipse
 /.settings

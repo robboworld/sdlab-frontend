@@ -13,9 +13,9 @@ $(document).ready(function(){
                     if (data.result){
                         var msg;
                         if (data.items.length <= 1){
-                            msg = 'В эксперименте в данный момент активна установка, всё равно удалить?';
+                            msg = SDLab.Language._('journal_QUESTION_REMOVE_EXPERIMENT_WITH_1');
                         } else {
-                            msg = 'В эксперименте в данный момент активно несколько установок ('+data.items.length+'), всё равно удалить?';
+                            msg = SDLab.Language.format('journal_QUESTION_REMOVE_EXPERIMENT_WITH_JS_N', data.items.length);
                         }
 
                         if (confirm(msg) && typeof xhr.activator !== 'undefined'){
@@ -25,7 +25,7 @@ $(document).ready(function(){
                         experimentDelete($(xhr.activator).data('experiment'), 0);
                     }
                 } else {
-                    alert('Ошибка');
+                    alert(SDLab.Language._('ERROR'));
                 }
             });
             rq.activator = this;
@@ -63,7 +63,7 @@ function showRescanResults(data) {
             );
         }
     } else {
-        alert('Ошибка');
+        alert(SDLab.Language._('ERROR'));
     }
 }
 

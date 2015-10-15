@@ -36,7 +36,7 @@ function testFlot(placeholder)
 
     var data = [
         {
-            label: "Температура",
+            label: SDLab.Language._('sensor_VALUE_NAME_TEMPERATURE'),
             color: 1,
             data: [
                 [(new Date("2014-04-05 17:00").getTime()), 21.3],

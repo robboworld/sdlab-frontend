@@ -16,13 +16,20 @@ class SensorsController extends Controller
 		$this->addJs('chart');
 		$this->addJs('Sensor');
 		$this->addJs('sensors');
+		// Add language translates for scripts
+		Language::script(array(
+				'sensor_VALUE_NAME_TEMPERATURE',  // chart
+				'GRAPH', 'INFO'            // Sensor
+				                           // - sensors
+		));
+
 		$this->addCss('sensors');
 		//$this->view->content->sensors_list = $this->sensorList($this->getSensors()->Values);
 		$this->view->content->sensors_list = 'test inc';
 		$this->view->template = 'index';
 
  		//$this->view->content = $this->renderTemplate('index');
-		// todo: удалить всё лишнее в этом контроллере, заточить только под использование через API
+		// TODO: Remove all unnessesary in this controller, use only for API calls
 	}
 
 
@@ -71,7 +78,7 @@ class SensorsController extends Controller
 				$known[$key] = $item;
 			}
 
-			// Prepare insert query
+			// Prepare insert query for new sensors
 			$insert = $db->prepare('insert into sensors (sensor_id, sensor_val_id, sensor_name, value_name, si_notation, si_name, max_range, min_range, error, resolution)' .
 					' values (:sensor_id, :sensor_val_id, :sensor_name, :value_name, :si_notation, :si_name, :max_range, :min_range, :error, :resolution)');
 
@@ -129,14 +136,32 @@ class SensorsController extends Controller
 
 					foreach ($sensor->{'Values'} as $value)
 					{
-						$value->value_name  = System::getValsTranslate($value->{'Name'});
-						$value->si_notation = System::getValsTranslate($value->{'Name'}, 'si_notation');
-						$value->si_name     = System::getValsTranslate($value->{'Name'}, 'si_name');
+						$value_name = System::getValsTranslate($value->{'Name'});
+						if (($value_name !== false) && (strlen($value_name) > 0))
+						{
+							$value->value_name  =   constant('L::sensor_VALUE_NAME_' . strtoupper($value_name));
+
+							$field = System::getValsTranslate($value->{'Name'}, 'si_notation');
+							$value->si_notation = (($field !== false) && (strlen($field) > 0)) ? 
+													constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($field)) :
+													false;
+
+							$field = System::getValsTranslate($value->{'Name'}, 'si_name');
+							$value->si_name     = (($field !== false) && (strlen($field) > 0)) ?
+													constant('L::sensor_VALUE_SI_NAME_' . strtoupper($value_name) . '_' . strtoupper($field)) :
+													false;
+						}
+						else
+						{
+							$value->value_name  = false;
+							$value->si_notation = false;
+							$value->si_name     = false;
+						}
 					}
 				}
 			}
 
-			return $result; //лишнее вложение в массиве
+			return $result;
 		}
 		else
 		{
@@ -179,7 +204,7 @@ class SensorsController extends Controller
 	{
 		if (!is_array($params)) 
 		{
-			$this->error = 'Error';
+			$this->error = L::ERROR;
 
 			return false;
 		}
@@ -217,7 +242,7 @@ class SensorsController extends Controller
 
 		if (empty($result))
 		{
-			$this->error = 'Error';
+			$this->error = L::ERROR;
 
 			return false;
 		}
@@ -244,12 +269,12 @@ class SensorsController extends Controller
 				// Check access to experiment
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 
 					return false;
 				}
 
-				/* получаем датчики для эксперимента */
+				// Get sensors for experiment
 				$sensors = SetupController::getSensors($experiment->setup_id, true);
 				if(!empty($sensors))
 				{
@@ -257,7 +282,7 @@ class SensorsController extends Controller
 					$setup = (new Setup())->load($experiment->setup_id);
 					if (!$setup)
 					{
-						$this->error = 'Setup not found';
+						$this->error = L::ERROR_SETUP_NOT_FOUND;
 
 						return false;
 					}
@@ -276,13 +301,13 @@ class SensorsController extends Controller
 						// Access only if current experiment is master of Setup
 						if ($setup->master_exp_id != $experiment->id)
 						{
-							$this->error = 'Access denied';
+							$this->error = L::ACCESS_DENIED;
 
 							return false;
 						}
 					}
 
-					/* формируем список сенсоров для метода апи датчиков*/
+					// Prepare sensors list for API method
 					$params_array = array();
 					foreach($sensors as $sensor)
 					{
@@ -292,24 +317,24 @@ class SensorsController extends Controller
 						);
 					}
 
-					/* формируем массив параметров для метода апи датчиков*/
+					// Prepare array of parameters for API method
 					$query_params = array(
 						'Values' => $params_array,
 						'Period' => System::nano(1),
 						'Count'  => 1
 					);
 
-					/* отправляем запрос на создание серии из одного измерения */
+					// Send request for start series consists of one detection
 					$socket = new JSONSocket($this->config['socket']['path']);
 					$respond = $socket->call('Lab.StartSeries', (object) $query_params);
 
-					/* если апи возвращает true то пытаемся получить результаты*/
+					// If returned true try get results
 					if($respond)
 					{
-						/* Ждем 2 секунды для получения результатов*/
+						// Wait for results
 						sleep(2);
 
-						/* новый сокет для получения результатов*/
+						// For results need new socket
 						unset($socket);
 						$socket = new JSONSocket($this->config['socket']['path']);
 
@@ -400,14 +425,14 @@ class SensorsController extends Controller
 						}
 						else
 						{
-							$this->error = 'Empty response';
+							$this->error = L::setup_ERROR_EMPTY_RESPONSE;
 
 							return false;
 						}
 					}
 					else
 					{
-						$this->error = 'Series not started';
+						$this->error = L::setup_ERROR_SERIES_NOT_STARTED;
 
 						return false;
 					}
@@ -422,11 +447,11 @@ class SensorsController extends Controller
 			{
 				if (empty($experiment->id))
 				{
-					$this->error = 'Experiment not found';
+					$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 				}
 				else
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 				}
 
 				return false;
@@ -434,7 +459,7 @@ class SensorsController extends Controller
 		}
 		else 
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 			return false;
 		}
@@ -462,7 +487,7 @@ class SensorsController extends Controller
 				// Check access to experiment
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 
 					return false;
 				}
@@ -475,7 +500,7 @@ class SensorsController extends Controller
 					$setup = (new Setup())->load($experiment->setup_id);
 					if (!$setup)
 					{
-						$this->error = 'Setup not found';
+						$this->error = L::ERROR_SETUP_NOT_FOUND;
 
 						return false;
 					}
@@ -483,7 +508,7 @@ class SensorsController extends Controller
 					// Check active state
 					if($setup->flag)
 					{
-						$this->error = 'Setup already active';
+						$this->error = L::setup_ACTIVE_ALREADY;
 
 						return false;
 					}
@@ -492,7 +517,7 @@ class SensorsController extends Controller
 					// Check access to control Setup
 					if ($setup->master_exp_id != $experiment->id)
 					{
-						$this->error = 'Access denied';
+						$this->error = L::ACCESS_DENIED;
 					
 						return false;
 					}
@@ -605,7 +630,7 @@ class SensorsController extends Controller
 					// Try get uuid of created monitor
 					if (empty($result))
 					{
-						$this->error = 'Monitoring not started';
+						$this->error = L::setup_ERROR_MONITORING_NOT_STARTED;
 
 						return false;
 					}
@@ -656,11 +681,11 @@ class SensorsController extends Controller
 			{
 				if (empty($experiment->id))
 				{
-					$this->error = 'Experiment not found';
+					$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 				}
 				else
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 				}
 
 				return false;
@@ -668,7 +693,7 @@ class SensorsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 			return false;
 		}
@@ -696,8 +721,8 @@ class SensorsController extends Controller
 				// Check access to experiment
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
-					$this->error = 'Access denied';
-	
+					$this->error = L::ACCESS_DENIED;
+
 					return false;
 				}
 
@@ -705,15 +730,15 @@ class SensorsController extends Controller
 				$setup = (new Setup())->load($experiment->setup_id);
 				if (!$setup)
 				{
-					$this->error = 'Setup not found';
-				
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
+
 					return false;
 				}
 
 				// Check active state
 // 				if(!$setup->flag)
 // 				{
-// 					$this->error = 'Setup not runned';
+// 					$this->error = L::setup_ERROR_SETUP_NOT_RUNNED;
 				
 // 					return false;
 // 				}
@@ -721,8 +746,8 @@ class SensorsController extends Controller
 				// Check access to control Setup
 				if ($setup->master_exp_id != $experiment->id)
 				{
-					$this->error = 'Access denied';
-				
+					$this->error = L::ACCESS_DENIED;
+
 					return false;
 				}
 
@@ -794,7 +819,7 @@ class SensorsController extends Controller
 						}
 						else
 						{
-							//$this->error = 'Monitoring not started';
+							//$this->error = L::setup_ERROR_MONITORING_NOT_STARTED;
 
 							//TODO: add other error checking, because error operation on socket returns false too!
 
@@ -911,7 +936,8 @@ class SensorsController extends Controller
 								}
 
 								// Skip after dates
-								if ((new DateTime(System::cutdatemsec($d->Time))) > $stopdt)
+								$d_time = new DateTime(System::cutdatemsec($d->Time));
+								if ($d_time > $stopdt)
 								{
 									continue;
 								}
@@ -1035,11 +1061,11 @@ class SensorsController extends Controller
 			{
 				if (empty($experiment->id))
 				{
-					$this->error = 'Experiment not found';
+					$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 				}
 				else
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 				}
 
 				return false;
@@ -1047,11 +1073,11 @@ class SensorsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 			return false;
 		}
-	
+
 		return false;
 	}
 
@@ -1101,7 +1127,7 @@ class SensorsController extends Controller
 				// Check access to experiment
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 
 					return false;
 				}
@@ -1110,7 +1136,7 @@ class SensorsController extends Controller
 				$setup = (new Setup())->load($experiment->setup_id);
 				if (!$setup)
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 
 					return false;
 				}
@@ -1268,7 +1294,7 @@ class SensorsController extends Controller
 						}
 						else
 						{
-							$setup_stopat_text = 'Неизвестно';
+							$setup_stopat_text = L::TIME_UNKNOWN;
 						}
 					}
 					else
@@ -1310,7 +1336,7 @@ class SensorsController extends Controller
 						}
 						else
 						{
-							$setup_stopat_text = 'Неизвестно';
+							$setup_stopat_text = L::TIME_UNKNOWN;
 						}
 					}
 				}
@@ -1335,11 +1361,11 @@ class SensorsController extends Controller
 			{
 				if (empty($experiment->id))
 				{
-					$this->error = 'Experiment not found';
+					$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 				}
 				else
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 				}
 
 				return false;
@@ -1347,7 +1373,7 @@ class SensorsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 			return false;
 		}

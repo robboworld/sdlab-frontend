@@ -138,7 +138,7 @@ class Setup extends Model
 	 */
 	function userCanCreate($session)
 	{
-		/*Админ может создавать установки.*/
+		// Admin can create setups
 		if($session->getUserLevel() == 3)
 		{
 			return true;

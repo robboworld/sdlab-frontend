@@ -1,10 +1,10 @@
 <?
 
-
-/** class System
- * Статичные системные функции
+/** 
+ * class System
+ * 
+ * Static system methods
  */
-
 class System
 {
 	static function dump($var)
@@ -51,7 +51,7 @@ class System
 	static function secToTime($sec)
 	{
 		$obj = Form::formTimeObject($sec);
-		return $obj->d.' д. '.$obj->h.' ч. '.$obj->m.' м. '.$obj->s.' с.';
+		return $obj->d . ' ' . L::DAYS_SHORT2 . ' ' . $obj->h . ' ' . L::HOURS_SHORT2 . ' ' . $obj->m . ' ' . L::MINUTES_SHORT2 . ' ' . $obj->s . ' '. L::SECONDS_SHORT2;
 	}
 
 	static function nulldate()
@@ -65,56 +65,57 @@ class System
 	}
 
 	/**
-	 * Mapping for sensor values names with translate
+	 * Mapping for sensor values names with translate to lang key suffixes
 	 * 
-	 * @param string $name  Sensor type name
-	 * @param string $key   Sensor field name
+	 * @param string $name   Sensor type name
+	 * @param string $field  Sensor field name
 	 * 
 	 * @return string  Text string for field name or False on error/not found
 	 */
-	static function getValsTranslate($name, $key = '')
+	static function getValsTranslate($name, $field = '')
 	{
-		// TODO: Move to separate transtations INI files (some php-i18n), or to db translation tables, get from sensors on eng, then translate
+		// TODO: create special dictionary of available sensors with characteristics in db or get from backend (modify API request Lab.ListSensors)
 
+		// Mapped values used as parts of language key names for translation to other languages (default as EN language)
 		static $cat = array(
 				//sensor_name
 				'temperature' => array(
-						'value_name'    => 'температура',
-						'si_name'       => 'кельвин',
-						'si_notation'   => 'К'
+						'value_name'    => 'temperature',
+						'si_name'       => 'kelvin',
+						'si_notation'   => 'K'
 				),
 				'pressure' => array(
-						'value_name'    => 'давление',
-						'si_name'       => 'паскаль',
-						'si_notation'   => 'Па'
+						'value_name'    => 'pressure',
+						'si_name'       => 'pascal',
+						'si_notation'   => 'Pa'
 				),
 				'angle' => array(
-						'value_name'    => 'угол',
-						'si_name'       => 'радиан',
-						'si_notation'   => 'рад'
+						'value_name'    => 'angle',
+						'si_name'       => 'radian',
+						'si_notation'   => 'rad'
 				),
 				'humidity' => array(
-						'value_name'    => 'относительная влажность',
-						'si_name'       => 'процент',
-						'si_notation'   => '%'
+						'value_name'    => 'humidity',
+						'si_name'       => 'percent',
+						'si_notation'   => 'percent'  // xxx: as "%" in translates, because cannt use symbol in lang key-constant
 				),
 				'illuminance' => array(
-						'value_name'    => 'освещённость',
-						'si_name'       => 'люкс',
-						'si_notation'   => 'лк'
+						'value_name'    => 'illuminance',
+						'si_name'       => 'lux',
+						'si_notation'   => 'lx'
 				)
 		);
 
-		if (is_string($key) && isset($cat[$name]))
+		if (is_string($field) && isset($cat[$name]))
 		{
-			if (empty($key))
+			if (empty($field))
 			{
 				return $cat[$name]['value_name'];
 			}
 
-			if (isset($cat[$name][$key]))
+			if (isset($cat[$name][$field]))
 			{
-				return $cat[$name][$key];
+				return $cat[$name][$field];
 			}
 		}
 

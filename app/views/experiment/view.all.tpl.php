@@ -5,11 +5,11 @@ $show_action = true;
 <div class="col-md-12">
 	<div class="row">
 		<div class="col-md-6">
-			<h1>Все эксперименты</h1>
+			<h1><? echo L::experiment_TITLE_ALL; ?></h1>
 		</div>
 	</div>
 	<div>
-		<a href="?q=experiment" class="btn btn-primary"><span class="glyphicon glyphicon-plus">&nbsp;</span>Новый эксперимент</a>
+		<a href="?q=experiment" class="btn btn-primary"><span class="glyphicon glyphicon-plus">&nbsp;</span><? echo L::experiment_NEW_EXPERIMENT; ?></a>
 	</div>
 	<form id="sdform" method="post" action="?<? print $_SERVER['QUERY_STRING']?>" >
 		<input type="hidden" name="force" value="0"/>
@@ -19,21 +19,21 @@ $show_action = true;
 			<tr>
 				<? if($this->session()->getUserLevel() == 3) :?>
 				<td>
-					<label>Название сессии</label>
+					<label><? echo L::session_NAME; ?></label>
 				</td>
 				<? endif; ?>
 				<td>
-					<label>Название эксперимента</label>
+					<label><? echo L::experiment_NAME; ?></label>
 				</td>
 				<td>
-					Дата начала
+					<? echo L::experiment_DATE_START; ?>
 				</td>
 				<td>
-					Дата завершения
+					<? echo L::experiment_DATE_END; ?>
 				</td>
 				<? /*if($this->session()->getUserLevel() == 3) :*/?>
 				<td class="text-right">
-					Действие
+					<? echo L::ACTION; ?>
 				</td>
 				<? /*endif;*/ ?>
 			</tr>
@@ -87,7 +87,7 @@ $show_action = true;
 		<div class="row">
 			<? if($this->session()->getUserLevel() == 3) :?>
 			<div class="col-md-4 text-left">
-				<a href="javascript:void(0)" id="sensors-rescan" class="btn btn-primary">Обновить список датчиков</a>
+				<a href="javascript:void(0)" id="sensors-rescan" class="btn btn-primary"><? echo L::sensor_REFRESH_LIST; ?></a>
 			</div>
 			<? endif; ?>
 		</div>

@@ -7,6 +7,10 @@ class App
 	public function __construct()
 	{
 		$this->config = self::config();
+
+		// Get language
+		$this->lang = Language::getInstance($this->config['lab']['lang']);
+
 		$query_array = $this->router();
 
 		if($query_array[0]!= '')

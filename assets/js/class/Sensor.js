@@ -5,7 +5,7 @@ function Sensor(options){
     this.letter = options.letter;
     this.widgetActive = false;
 
-    /* Создание виджета объекта */
+    // Create sensor widget
     this.createWidget = function(holder){
         var output =
             '<div class="col-lg-4" id="'+ this.id +'">\
@@ -30,7 +30,8 @@ function Sensor(options){
         this.widgetActive = true;
     }
 
-    /* Создание виджета объекта todo: delete */
+    // Create sensor widget (test)
+    // TODO: delete test create
     this.testCreateWidget = function(holder){
         var output =
             '<div class="col-md-3" id="'+ this.id +'">\
@@ -49,9 +50,9 @@ function Sensor(options){
         this.widgetActive = true;
     }
 
-    /* удаление виджета объекта */
+    // Remove sensor widget
     this.destroyWidget = function(){
-        $('#'+this.id).remove(); //todo: более детальную проверку на удаление виджета
+        $('#'+this.id).remove(); // TODO: create check for removing widget
         this.widgetActive = false;
     }
 }

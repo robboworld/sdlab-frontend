@@ -16,7 +16,7 @@ class SetupController extends Controller
 
 	function create()
 	{
-		/*todo: создание разрешить только админу*/
+		// TODO: Access to creation only for admin?
 		self::setTitle(L::setup_TITLE_CREATION);
 		self::setContentTitle(L::setup_TITLE_CREATION);
 		self::addJs('functions');
@@ -27,7 +27,7 @@ class SetupController extends Controller
 				'ERROR', 'sensor_NAME', 'REMOVE'  // setup/edit
 		));
 
-		/* Необходимо указание мастер-эксперимента */
+		// Need master experiment id
 		if(isset($_GET['master']) && is_numeric($_GET['master']))
 		{
 			$this->view->form = new Form('create-setup-form');
@@ -57,7 +57,7 @@ class SetupController extends Controller
 							$setup->set('time_det', Form::DHMStoSec(array((int)$_POST['time_det_day'],(int)$_POST['time_det_hour'],(int)$_POST['time_det_min'],(int)$_POST['time_det_sec'])));
 						}
 
-						/* Общие поля для всех типов измерений */
+						// Common fields for all kinds of detections
 						$interval = isset($_POST['interval']) ? (int)$_POST['interval'] : 0;
 						$interval = $interval > 0 ? $interval : null;
 						$setup->set('interval', htmlspecialchars($interval));
@@ -72,21 +72,21 @@ class SetupController extends Controller
 								if($setup->save() && !empty($setup->id))
 								{
 									$this->id = $setup->id;
-									/* Если указан мастер-эксперимент то присваиваем ему текущую установку*/
+									// If is set experiment-master then assign to it current setup
 									if(isset($master_exp))
 									{
 										$master_exp->set('setup_id', $setup->id);
 										$master_exp->save();
 									}
 
-									/* Setup sensors*/
+									// Setup sensors
 									if(isset($_POST['sensors']) && !empty($_POST['sensors']) && is_array($_POST['sensors']))
 									{
 										self::resetSensors();
 										self::setSensors($_POST['sensors']);
 									}
 
-									/* Перенаправляем на мастер-эксперимент */
+									// Redirect to master experiment
 									System::go('experiment/view/'.$master_exp->id);
 								}
 							}
@@ -137,7 +137,7 @@ class SetupController extends Controller
 
 			if($setup = (new Setup())->load($this->id))
 			{
-				/* если пользователь не может редактировать, то отправляем на страницу экспериментов*/
+				// If no access to edit redirect to experiments page
 				if($setup->userCanEdit($this->session()))
 				{
 					$this->view->form->setup = $setup;
@@ -160,14 +160,14 @@ class SetupController extends Controller
 							$setup->set('amount', null);
 						}
 
-						/* Общие поля для всех типов измерений */
+						// Common fields for all kinds of detections
 						$interval = isset($_POST['interval']) ? (int)$_POST['interval'] : 0;
 						$interval = $interval > 0 ? $interval : 10;
 						$setup->set('interval', htmlspecialchars($interval));
 						$setup->set('number_error', htmlspecialchars(isset($_POST['number_error']) ? (int)$_POST['number_error'] : 0));
 						$setup->set('period_repeated_det', htmlspecialchars(isset($_POST['period_repeated_det']) ? (int)$_POST['period_repeated_det'] : 0));
 
-						/* Setup sensors*/
+						// Setup sensors
 						if(isset($_POST['sensors']) && !empty($_POST['sensors']) && is_array($_POST['sensors']))
 						{
 							self::resetSensors();
@@ -226,12 +226,15 @@ class SetupController extends Controller
 
 
 	/**
-	 * @param $id
+	 * Get sensors in setup
+	 * 
+	 * @param  $id  The id of setup
+	 * 
 	 * @return array|bool
 	 */
 	static function getSensors($id, $getinfo = false)
 	{
-		/*todo: переопрашивать датчики на наличие отключенных */
+		// TODO: Rescan sensors for connect status
 		if(is_numeric($id))
 		{
 			$db = new DB();

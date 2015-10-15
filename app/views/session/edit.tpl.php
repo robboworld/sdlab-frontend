@@ -45,7 +45,7 @@
 <div class="col-md-offset-1 col-md-10">
 	<h3><? echo L::session_EXPERIMENTS_IN_SESSION; ?></h3>
 
-	<? if($this->view->experiments_in_session) : ?>
+	<? if(isset($this->view->experiments_in_session) && !empty($this->view->experiments_in_session)) : ?>
 	<table class="table">
 		<thead>
 			<tr>

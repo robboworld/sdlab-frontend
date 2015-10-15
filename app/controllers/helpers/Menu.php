@@ -32,8 +32,12 @@ class Menu
 	}
 
 	/**
+	 * Stub for static menu.
+	 * 
+	 * todo: refactor, create dinamic stored in database menu
+	 * 
 	 * @return mixed
-	 * Заглушка для статического меню, в дальнейшем возможно стоит переработать.
+	 * 
 	 */
 	static function get()
 	{

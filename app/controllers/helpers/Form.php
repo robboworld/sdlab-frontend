@@ -2,7 +2,7 @@
 
 /**
  * Class Form
- * хелпер для работы с формами
+ * Forms helper
  */
 class Form
 {
@@ -59,12 +59,12 @@ class Form
 	{
 		$times = array();
 
-		// считать нули в значениях
+		// Zeroes counter
 		$count_zero = true;
 
-		// количество секунд в году не учитывает високосный год
-		// поэтому функция считает что в году 365 дней
-		// секунд в минуте|часе|сутках|году
+		// Number of seconds in year not use leap years specific
+		// method use 365 days in the year
+		// seconds in a minute|hour|day|year
 		$periods = array(60, 3600, 86400);
 
 		for ($i = 2; $i >= 0; $i--)

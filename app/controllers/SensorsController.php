@@ -29,7 +29,7 @@ class SensorsController extends Controller
 		$this->view->template = 'index';
 
  		//$this->view->content = $this->renderTemplate('index');
-		// todo: удалить всё лишнее в этом контроллере, заточить только под использование через API
+		// TODO: Remove all unnessesary in this controller, use only for API calls
 	}
 
 
@@ -161,7 +161,7 @@ class SensorsController extends Controller
 				}
 			}
 
-			return $result; //лишнее вложение в массиве
+			return $result;
 		}
 		else
 		{
@@ -274,7 +274,7 @@ class SensorsController extends Controller
 					return false;
 				}
 
-				/* получаем датчики для эксперимента */
+				// Get sensors for experiment
 				$sensors = SetupController::getSensors($experiment->setup_id, true);
 				if(!empty($sensors))
 				{
@@ -307,7 +307,7 @@ class SensorsController extends Controller
 						}
 					}
 
-					/* формируем список сенсоров для метода апи датчиков*/
+					// Prepare sensors list for API method
 					$params_array = array();
 					foreach($sensors as $sensor)
 					{
@@ -317,24 +317,24 @@ class SensorsController extends Controller
 						);
 					}
 
-					/* формируем массив параметров для метода апи датчиков*/
+					// Prepare array of parameters for API method
 					$query_params = array(
 						'Values' => $params_array,
 						'Period' => System::nano(1),
 						'Count'  => 1
 					);
 
-					/* отправляем запрос на создание серии из одного измерения */
+					// Send request for start series consists of one detection
 					$socket = new JSONSocket($this->config['socket']['path']);
 					$respond = $socket->call('Lab.StartSeries', (object) $query_params);
 
-					/* если апи возвращает true то пытаемся получить результаты*/
+					// If returned true try get results
 					if($respond)
 					{
-						/* Ждем 2 секунды для получения результатов*/
+						// Wait for results
 						sleep(2);
 
-						/* новый сокет для получения результатов*/
+						// For results need new socket
 						unset($socket);
 						$socket = new JSONSocket($this->config['socket']['path']);
 

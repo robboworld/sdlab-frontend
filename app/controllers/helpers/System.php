@@ -1,10 +1,10 @@
 <?
 
-
-/** class System
- * Статичные системные функции
+/** 
+ * class System
+ * 
+ * Static system methods
  */
-
 class System
 {
 	static function dump($var)

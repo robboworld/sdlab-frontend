@@ -39,7 +39,7 @@
 							<a href="javascript:void(0);" class="btn-remove-detection btn btn-xs text-danger pull-left" style="display: none;"><span class="glyphicon glyphicon-remove"></span></a>
 						</div>
 					</td>
-					<td><? print htmlspecialchars($time, ENT_QUOTES, 'UTF-8'); ?></td>
+					<td><? print htmlspecialchars(System::datemsecformat($time, System::DATETIME_FORMAT1NANO, 'now'), ENT_QUOTES, 'UTF-8'); ?></td>
 					<? foreach ($this->view->content->displayed_sensors as $skey => $sensor) :?>
 					<td><? 
 						if (isset($row[$skey]))

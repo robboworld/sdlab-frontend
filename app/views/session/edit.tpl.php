@@ -12,15 +12,15 @@
 		<input type="hidden" name="form-id" value="edit-session-form">
 		<div class="form-group col-md-6">
 			<label><? echo L::MEMBER; ?></label>
-			<input type="text" class="form-control" name="session_name" placeholder="<? echo L::FULL_NAME; ?>" value="<? print $this->session()->name;?>" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>>
+			<input type="text" class="form-control" name="session_name" placeholder="<? echo L::FULL_NAME; ?>" value="<? print $this->session()->name;?>" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>/>
 		</div>
 		<div class="form-group col-md-3">
 			<label><? echo L::session_WORK_NAME; ?></label>
-			<input type="text" class="form-control" name="session_title" placeholder="<? echo L::TITLE; ?>" value="<? print $this->session()->title;?>" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>>
+			<input type="text" class="form-control" name="session_title" placeholder="<? echo L::TITLE; ?>" value="<? print $this->session()->title;?>" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>/>
 		</div>
 		<div class="form-group col-md-3">
 			<label><? echo L::session_EXPIRES_TIME_DAYS; ?></label>
-			<input type="text" class="form-control" name="session_expiry" placeholder="<? echo L::session_EXPIRES_TIME; ?>" value="<? print $this->session()->expiry;?>" size="3" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>>
+			<input type="text" class="form-control" name="session_expiry" placeholder="<? echo L::session_EXPIRES_TIME; ?>" value="<? print $this->session()->expiry;?>" size="3" <? if($this->session()->getUserLevel() >1 ) print "disabled";?>/>
 		</div>
 
 		<div class="form-group col-md-12">
@@ -30,7 +30,7 @@
 
 		<div class="col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4 text-center">
 			<div class="btn-group" style="float:none;">
-				<input type="submit" class="form-control btn btn-success" value="<? echo L::SAVE; ?>">
+				<input type="submit" class="form-control btn btn-success" value="<? echo L::SAVE; ?>"/>
 			</div>
 		</div>
 	</form>
@@ -59,7 +59,7 @@
 			<? foreach ($this->view->experiments_in_session as $item) : ?>
 			<tr>
 				<td>#<? print $item->id?></td>
-				<td><? print System::dateformat('@'.$item->DateStart_exp);?> / <? if(!empty($item->DateEnd_exp)) print System::dateformat('@'.$item->DateEnd_exp);?></td>
+				<td><? print System::dateformat('@'.$item->DateStart_exp, System::DATETIME_FORMAT2, 'now');?> / <? if(!empty($item->DateEnd_exp)) print System::dateformat('@'.$item->DateEnd_exp, System::DATETIME_FORMAT2, 'now');?></td>
 				<td><a href="?q=experiment/view/<? print $item->id?>"><? print $item->title?></a></td>
 				<td><? print (new Setup())->load($item->setup_id)->title; ?></td>
 			</tr>

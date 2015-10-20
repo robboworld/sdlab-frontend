@@ -22,10 +22,10 @@
 	<div class="container" id="navigation">
 		<div class="navbar navbar-fixed-top navbar-inverse">
 			<div class="navbar-text">
-				<span class="text-center">
+				<div class="text-center" title="<? print (new DateTime())->format(System::DATETIME_FORMAT1); ?>">
 					<span class="glyphicon glyphicon-time"></span>
-						<? print date('H:i')?>
-				</span>
+						<? print (new DateTime())->format('H:i'); ?>
+				</div>
 			</div>
 
 			<ul class="nav navbar-nav">

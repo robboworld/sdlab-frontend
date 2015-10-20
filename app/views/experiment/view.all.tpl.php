@@ -40,8 +40,7 @@ $show_action = true;
 			</thead>
 			<tbody>
 			<? foreach($this->view->content->list as $item) :?>
-				<tr class="row-experiment 
-					<?
+				<tr class="row-experiment <?
 						if(empty($item->DateEnd_exp) && !empty($item->DateStart_exp))
 						{
 							print 'warning';
@@ -65,12 +64,12 @@ $show_action = true;
 						</a>
 					</td>
 					<td>
-						<? if(!empty($item->DateStart_exp)) print System::dateformat('@'.$item->DateStart_exp); ?>
+						<? if(!empty($item->DateStart_exp)) print System::dateformat('@'.$item->DateStart_exp, System::DATETIME_FORMAT2, 'now'); ?>
 					</td>
 					<td>
-						<? if(!empty($item->DateEnd_exp)) print System::dateformat('@'.$item->DateEnd_exp); ?>
+						<? if(!empty($item->DateEnd_exp)) print System::dateformat('@'.$item->DateEnd_exp, System::DATETIME_FORMAT2, 'now'); ?>
 					</td>
-					
+
 					<td class="text-right">
 						<a href="/?q=experiment/edit/<? print $item->id; ?>" class="btn btn-sm btn-default btn-info"><span class="glyphicon glyphicon-pencil"></span></a>
 						<? if($this->session()->getUserLevel() == 3) :?>

@@ -45,8 +45,10 @@ class ExperimentController extends Controller
 			$experiment->set('setup_id', $setup_id);
 			$experiment->set('comments', htmlspecialchars(isset($_POST['experiment_comments']) ? $_POST['experiment_comments'] : ''));
 
-			//$experiment->set('DateStart_exp', (new DateTime($_POST['experiment_date_start']))->format(DateTime::ISO8601));
-			//$experiment->set('DateEnd_exp', (new DateTime($_POST['experiment_date_end']))->format(DateTime::ISO8601));
+			// Get dates
+			// Get local date and use UNIX timestamp (UTC)
+			//$experiment->set('DateStart_exp', (new DateTime($_POST['experiment_date_start']))->format('U'));
+			//$experiment->set('DateEnd_exp', (new DateTime($_POST['experiment_date_end']))->format('U'));
 
 
 			if(empty($experiment->title))
@@ -503,7 +505,7 @@ class ExperimentController extends Controller
 				// TODO: may be move all journal operations to separate controller/model
 				$db = new DB();
 
-				$query = 'select id, exp_id, strftime(\'%Y.%m.%d %H:%M:%f\', time) as time, sensor_id, sensor_val_id, detection, error from detections where exp_id = '.(int)$experiment->id . ' order by strftime(\'%s\', time)';
+				$query = 'select id, exp_id, strftime(\'%Y-%m-%dT%H:%M:%fZ\', time) as time, sensor_id, sensor_val_id, detection, error from detections where exp_id = '.(int)$experiment->id . ' order by strftime(\'%s\', time),strftime(\'%f\', time)';
 				$detections = $db->query($query, PDO::FETCH_OBJ);
 
 				// Prepare output depends on sensors in setup
@@ -531,7 +533,7 @@ class ExperimentController extends Controller
 					$this->view->content->displayed_sensors = $available_sensors;
 				}
 
-				// Array of values grouped by timestamps
+				// Array of values grouped by timestamps (UTC datetime!)
 				$journal = array();
 				foreach($detections as $row)
 				{

@@ -13,7 +13,6 @@ $(document).ready(function(){
 		.on('hide.bs.collapse', function(){
 			$('#collapseSensorsControl .glyphicon').removeClass('glyphicon-chevron-up glyphicon-chevron-down').addClass('glyphicon-chevron-up');
 		});
-		
 
 	$('.btn-remove-detection').click(function(){
 		var form = $('#journalForm').get(0);

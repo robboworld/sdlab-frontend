@@ -7,6 +7,15 @@
  */
 class System
 {
+	/**
+	 * Used datetime formats
+	 */
+	const DATETIME_RFC3339_UTC     = 'Y-m-d\TH:i:s\Z';
+	const DATETIME_RFC3339NANO_UTC = 'Y-m-d\TH:i:s.u\Z';
+	const DATETIME_FORMAT1         = 'Y.m.d H:i:s';
+	const DATETIME_FORMAT1NANO     = 'Y.m.d H:i:s.u';
+	const DATETIME_FORMAT2         = 'd.m.Y H:i:s';
+
 	static function dump($var)
 	{
 		print('<pre>');
@@ -14,9 +23,24 @@ class System
 		print('</pre>');
 	}
 
-	static function dateformat($string, $format = 'd.m.Y H:i:s')
+	static function dateformat($string, $format = 'd.m.Y H:i:s', $timezone = null)
 	{
-		return (new DateTime($string))->format($format);
+		$dt = new DateTime($string);
+
+		if ($timezone !== null)
+		{
+			if ($timezone === 'now')
+			{
+				$tz = (new DateTime())->getTimezone();
+			}
+			else
+			{
+				$tz = (new DateTime())->setTimezone(new DateTimeZone($timezone))->getTimezone();
+			}
+			$dt->setTimezone($tz);
+		}
+
+		return $dt->format($format);
 	}
 
 	/**
@@ -59,9 +83,110 @@ class System
 		return "0001-01-01T00:00:00Z";
 	}
 
+	/**
+	 * Cut nanoseconds part in datetime strings formatted as:
+	 * YYYY-MM-DDThh:mm:ss.nnnnnnnnnZ
+	 * YYYY-MM-DDThh:mm:ss.nnnnnnnnn+hh:mm
+	 * YYYY-MM-DDThh:mm:ss.nnnnnnnnn-hh:mm
+	 * 
+	 * Subformat ss.nnnnnnnnn can have one to 9 digits following the decimal point. 
+	 * 
+	 * Example:
+	 * 2001-10-16T16:25:49.280505475+03:00 -> 2001-10-16T16:25:49+03:00
+	 * 2001-10-16T16:25:49.280505475Z      -> 2001-10-16T16:25:49Z
+	 * 
+	 * @param  string  $string
+	 * 
+	 * @return string
+	 */
 	static function cutdatemsec($string)
 	{
-		return (string) preg_replace('/\.\d+Z/i', 'Z', $string);
+		return (string) preg_replace('/\.\d+(Z|(\+|\-).*)/i', '${1}', $string);
+	}
+
+	/**
+	 * Get nanoseconds part of datetime string formatted as:
+	 * YYYY-MM-DDThh:mm:ss.nnnnnnnnnZ
+	 * YYYY-MM-DDThh:mm:ss.nnnnnnnnn+hh:mm
+	 * YYYY-MM-DDThh:mm:ss.nnnnnnnnn-hh:mm
+	 *
+	 * Subformat ss.nnnnnnnnn can have 1 to 9 digits following the decimal point.
+	 *
+	 * Example returns:
+	 * 2001-10-16T16:25:49.280505475+03:00 -> 280505475
+	 * 2001-10-16T16:25:49.280505475Z      -> 280505475
+	 * 2001-10-16T16:25:49Z                -> 0
+	 *
+	 * @param  string  $string
+	 *
+	 * @return string|integer  Number of second parts (nanoseconds)
+	 */
+	static function getdatemsec($string)
+	{
+		$i = preg_match('/\.(\d+)(Z|(\+|\-).*)/i', $string, $mathes);
+		if ($i && isset($mathes[1]))
+		{
+			return $mathes[1];
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Convert datetime string with nanoseconds from local time to UTC
+	 * Input datetime string must have formats:
+	 * YYYY-MM-DDThh:mm:ss.nnnnnnnnnZ
+	 * YYYY-MM-DDThh:mm:ss.nnnnnnnnn+hh:mm
+	 * YYYY-MM-DDThh:mm:ss.nnnnnnnnn-hh:mm
+	 *
+	 * Subformat ss.nnnnnnnnn can have 1 to 9 digits following the decimal point.
+	 *
+	 * Example returns:
+	 * 2001-10-16T16:25:49.280505475+03:00 -> 2001-10-16T13:25:49.280505475Z
+	 * 2001-10-16T16:25:49.280505475Z      -> 2001-10-16T16:25:49.280505475Z
+	 * 2001-10-16T16:25:49Z                -> 2001-10-16T16:25:49Z
+	 *
+	 * @param  string  $string
+	 *
+	 * @return string
+	 */
+	static function convertDatetimeToUTC($string)
+	{
+		$nsec = static::getdatemsec($string);
+		$dt = new DateTime(static::cutdatemsec($string));
+		$dt->setTimezone(new DateTimeZone('UTC'));
+
+		return $dt->format('Y-m-d\TH:i:s') . (($nsec != 0) ?  ('.' . $nsec) : '') . 'Z';
+	}
+
+	/**
+	 * Convert datetime string with nanoseconds from UTC to local time
+	 * @see System::convertDatetimeToUTC
+	 *
+	 * @param  string  $string
+	 * @param  string  $timezone  Timezone name or 'now' for current TZ or null, if use from time string
+	 *
+	 * @return string
+	 */
+	static function datemsecformat($string, $format = 'd.m.Y H:i:s.u', $timezone = null)
+	{
+		$nsec = static::getdatemsec($string);
+		$dt = new DateTime(static::cutdatemsec($string));
+
+		if ($timezone !== null)
+		{
+			if ($timezone === 'now')
+			{
+				$tz = (new DateTime())->getTimezone();
+			}
+			else
+			{
+				$tz = (new DateTime())->setTimezone(new DateTimeZone($timezone))->getTimezone();
+			}
+			$dt->setTimezone($tz);
+		}
+
+		return $dt->format(preg_replace('`(?<!\\\\)u`', $nsec, $format));
 	}
 
 	/**

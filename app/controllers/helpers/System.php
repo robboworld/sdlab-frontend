@@ -15,6 +15,14 @@ class System
 	const DATETIME_FORMAT1         = 'Y.m.d H:i:s';
 	const DATETIME_FORMAT1NANO     = 'Y.m.d H:i:s.u';
 	const DATETIME_FORMAT2         = 'd.m.Y H:i:s';
+	const DATETIME_FORMAT3         = 'Y.m.d H:i:s e';
+
+	/**
+	 * The list of available timezone groups to use.
+	 *
+	 * @var    array
+	 */
+	protected static $zones = array('Africa', 'America', 'Antarctica', 'Arctic', 'Asia', 'Atlantic', 'Australia', 'Europe', 'Indian', 'Pacific');
 
 	static function dump($var)
 	{
@@ -466,5 +474,264 @@ class System
 		//list($usec, $sec) = explode(" ", microtime());
 		//return ((float)$usec + (float)$sec);
 		return array_sum(explode(' ', microtime()));
+	}
+
+
+	/**
+	 * Method to get the time zone field option groups.
+	 * 
+	 * @return  array  The field option objects as a nested array in groups.
+	 * 
+	 * @see JFormFieldTimezone::getGroups() in Joomla.Platform.Form (/libraries/joomla/form/fields/timezone.php)
+	 */
+	static function getTimezonesGroups($elements = array())
+	{
+		static $base_groups = null;
+
+		if(!isset($base_groups))
+		{
+			$base_groups = array();
+
+			// Get the list of time zones from the server.
+			$zones = DateTimeZone::listIdentifiers();
+
+			// Build the group lists.
+			foreach ($zones as $zone)
+			{
+				// Time zones not in a group we will ignore.
+				if (strpos($zone, '/') === false)
+				{
+					continue;
+				}
+
+				// Get the group/locale from the timezone.
+				list ($group, $locale) = explode('/', $zone, 2);
+
+				// Only use known groups.
+				if (in_array($group, static::$zones))
+				{
+					// Initialize the group if necessary.
+					if (!isset($base_groups[$group]))
+					{
+						$base_groups[$group] = array();
+					}
+
+					// Only add options where a locale exists.
+					if (!empty($locale))
+					{
+						$base_groups[$group][$zone] = Html::option($zone, str_replace('_', ' ', $locale), 'value', 'text', false);
+					}
+				}
+			}
+
+			// Sort the group lists.
+			ksort($base_groups);
+
+			foreach ($base_groups as &$location)
+			{
+				sort($location);
+			}
+		}
+
+		// Merge any additional groups in the XML definition.
+		if (!empty($elements))
+		{
+			return array_merge(static::getGroups($elements), $base_groups);
+		}
+
+		return $base_groups;
+	}
+
+
+	/**
+	 * Method to get the field option groups.
+	 *
+	 * @param   array  Option elements.
+	 *   type       : option|group (group if is set array of children elements)
+	 *   value      : string
+	 *   text       : string
+	 *   label      : string (for group type ONLY)
+	 *   disabled   : true|false, disabled, 1|0
+	 *   class      : string
+	 *   onclick    : string, javasript
+	 *   children   : array of elements (for group type ONLY)
+	 *
+	 * @return  array  The field option objects as a nested array in groups.
+	 *
+	 * @throws  UnexpectedValueException
+	 * 
+	 * @see JFormFieldTimezone::getGroups() in Joomla.Platform.Form (/libraries/joomla/form/fields/groupedlist.php)
+	 */
+	protected static function getGroups($elements)
+	{
+		$groups = array();
+		$label = 0;
+
+		foreach ($elements as $element)
+		{
+			switch ($element['type'])
+			{
+				// The element is an <option />
+				case 'option':
+					// Initialize the group if necessary.
+					if (!isset($groups[$label]))
+					{
+						$groups[$label] = array();
+					}
+
+					$disabled = (string) $element['disabled'];
+					$disabled = ($disabled == 'true' || $disabled == 'disabled' || $disabled == '1');
+
+					// Create a new option object based on the <option /> element.
+					$tmp = Html::option(
+							($element['value']) ? (string) $element['value'] : trim((string) $element['text']),
+							trim((string) $element['text']), 'value', 'text',
+							$disabled
+					);
+
+					// Set some option attributes.
+					$tmp->class = (string) $element['class'];
+
+					// Set some JavaScript option attributes.
+					$tmp->onclick = (string) $element['onclick'];
+
+					// Add the option.
+					$groups[$label][] = $tmp;
+					break;
+
+					// The element is a <group />
+				case 'group':
+					// Get the group label.
+					if ($groupLabel = (string) $element['label'])
+					{
+						$label =  constant('L::' . $groupLabel);
+					}
+
+					// Initialize the group if necessary.
+					if (!isset($groups[$label]))
+					{
+						$groups[$label] = array();
+					}
+
+					// Iterate through the children and build an array of options.
+					foreach ($element['children'] as $option)
+					{
+						// Only add option elements.
+						if ($option['type'] != 'option')
+						{
+							continue;
+						}
+
+						$disabled = (string) $option['disabled'];
+						$disabled = ($disabled == 'true' || $disabled == 'disabled' || $disabled == '1');
+
+						// Create a new option object based on the <option /> element.
+						$tmp = Html::option(
+								($option['value']) ? (string) $option['value'] : trim((string) $option['text']),
+								trim((string) $option['text']), 'value', 'text',
+								$disabled
+						);
+
+						// Set some option attributes.
+						$tmp->class = (string) $option['class'];
+
+						// Set some JavaScript option attributes.
+						$tmp->onclick = (string) $option['onclick'];
+
+						// Add the option.
+						$groups[$label][] = $tmp;
+					}
+
+					if ($groupLabel)
+					{
+						$label = count($groups);
+					}
+					break;
+
+					// Unknown element type.
+				default:
+					throw new UnexpectedValueException(sprintf('Unsupported element %s in JFormFieldGroupedList', $element['type']), 500);
+			}
+		}
+
+		reset($groups);
+
+		return $groups;
+	}
+
+
+	/**
+	 * Utility function to map an array to a string.
+	 *
+	 * @param   array    $array         The array to map.
+	 * @param   string   $inner_glue    The glue (optional, defaults to '=') between the key and the value.
+	 * @param   string   $outer_glue    The glue (optional, defaults to ' ') between array elements.
+	 * @param   boolean  $keepOuterKey  True if final key should be kept.
+	 *
+	 * @return  string   The string mapped from the given array
+	 *
+	 * @see JArrayHelper::toString() in Joomla.Platform.Utilities (/libraries/joomla/utilities/arrayhelper.php)
+	 */
+	public static function arrayToString($array = null, $inner_glue = '=', $outer_glue = ' ', $keepOuterKey = false)
+	{
+		$output = array();
+
+		if (is_array($array))
+		{
+			foreach ($array as $key => $item)
+			{
+				if (is_array($item))
+				{
+					if ($keepOuterKey)
+					{
+						$output[] = $key;
+					}
+					// This is value is an array, go and do it again!
+					$output[] = static::toString($item, $inner_glue, $outer_glue, $keepOuterKey);
+				}
+				else
+				{
+					$output[] = $key . $inner_glue . '"' . $item . '"';
+				}
+			}
+		}
+
+		return implode($outer_glue, $output);
+	}
+
+
+	/**
+	 * Checks if a value exists in an multidimensional array.
+	 *
+	 * @param   mixed    $needle      The searched value.
+	 * @param   array    $haystack    The array.
+	 * @param   string   $field       The searched value field name for object field value search.
+	 *
+	 * @return  bool                  True if needle is found in the array, false otherwise.
+	 */
+	public static function in_multiarray($needle, &$haystack, $field = null)
+	{
+		foreach ($haystack as $k => $value)
+		{
+			if ($haystack[$k] == $needle)
+			{
+				return true;
+			}
+			else if ($field !== null && is_object($haystack[$k]) && $haystack[$k]->$field == $needle)
+			{
+				return true;
+			}
+			else
+			{
+				if (is_array($haystack[$k]))
+				{
+					if (static::in_multiarray($needle, $haystack[$k], $field))
+					{
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 }

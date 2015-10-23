@@ -11,6 +11,13 @@ class Session extends Model
 	protected $comments;
 	protected $expiry;
 
+	/**
+	 * User level
+	 *   0   - guest
+	 *   >=1 - registered
+	 *   3   - admin (only for session with ID = 1)
+	 * @var integer
+	 */
 	private $user_level = 1;
 
 	function __construct()

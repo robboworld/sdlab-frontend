@@ -145,9 +145,9 @@ class TimeController extends Controller
 
 				// Prepare array of parameters for API method
 				$query_params = array(
-						'r'        => ($reboot ? "yes" : null),  // 1 - reboot, 0 - no reboot
 						'Datetime' => $dt->format(System::DATETIME_RFC3339_UTC),
-						'TZ'       => $timezone  // null if not changed
+						'TZ'       => $timezone,  // null if not changed
+						'Reboot'   => $reboot  // true - reboot, false - no reboot
 				);
 
 				// Send request for setting time

@@ -3,11 +3,13 @@
 	<script type="text/javascript">
 	<!--
 	$(document).ready(function(){
-		setTimeout(function() { window.location.assign("/?q=time/edit"); },60000);/*wait 60 sec*/
+		setTimeout(function() { window.location.assign("/?q=time/edit"); },70000);/*wait 70 sec (must be > (delay sheduler 1 min + delay reboot 5 sec))*/
 	});
 	//-->
 	</script>
-	<div class="alert alert-warning"><span class="glyphicon glyphicon-refresh spin"></span>&nbsp;<? echo L::time_WAIT_FOR_REBOOT; ?></div>
+	<div class="col-md-offset-1 col-md-10">
+		<div class="alert alert-warning"><span class="glyphicon glyphicon-refresh spin"></span>&nbsp;<? echo L::time_WAIT_FOR_REBOOT; ?></div>
+	</div>
 <? else : ?>
 	<div class="col-md-offset-1 col-md-10">
 		<h3><? echo $this->view->content->title; ?></h3>

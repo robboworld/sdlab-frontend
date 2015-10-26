@@ -375,7 +375,7 @@ if($setup_exists)
 		</label>
 	</div>
 	<div class="col-xs-6 col-sm-2 col-md-2 pull-right text-right">
-	<? if(!isset($this->view->content->experiment->DateEnd_exp)) :?>
+	<? if (!isset($this->view->content->experiment->DateEnd_exp) || empty($this->view->content->experiment->DateEnd_exp)) :?>
 		<!-- <a href="#" class="btn btn-default form-control disabled"><? echo L::FINISH; ?></a> -->
 	<? else : ?>
 		<span><? echo L::experiment_FINISHED; ?></span>

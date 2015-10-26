@@ -37,7 +37,7 @@ class Form
 	 */
 	static function dateToInput($date, $timezone = null)
 	{
-		$date = new DateTime($date);
+		$dt = new DateTime($date);
 
 		if ($timezone !== null)
 		{
@@ -52,7 +52,7 @@ class Form
 			$dt->setTimezone($tz);
 		}
 
-		return $date->format('Y-m-d');
+		return $dt->format('Y-m-d');
 	}
 
 	/**

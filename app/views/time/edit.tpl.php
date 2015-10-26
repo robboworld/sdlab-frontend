@@ -3,7 +3,7 @@
 	<script type="text/javascript">
 	<!--
 	$(document).ready(function(){
-		setTimeout(function() { window.location.assign("/?q=time/edit"); },70000);/*wait 70 sec (must be > (delay sheduler 1 min + delay reboot 5 sec))*/
+		setTimeout(function() { window.location.assign("/?q=time/edit"); },120000);/*wait 120 sec (must be > (delay sheduler 1 min + delay reboot 60 sec))*/
 	});
 	//-->
 	</script>

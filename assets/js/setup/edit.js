@@ -19,27 +19,27 @@ $(document).ready(function(){
 
 
 
-    /* Обновляем список доступных датчиков*/
+    // Update list of available sensors
     $(document).on('click', '#sensors-list-update', function(){
         coreAPICall('Sensors.getSensors', {getinfo: true}, updateSensorsList);
     });
     toggleSensorsListAlert('#sensors-in-setup');
-    /* Получаем список доступных датчиков */
+    // Get list of available sensors
     $('#sensors-list-update').trigger('click');
 
-    /* Adding sensors to setup-form*/
+    // Adding sensors to setup-form
     $(document).on('click', '#add-sensors', function(){
         addSensorsToSetup();
         toggleSensorsListAlert('#sensors-in-setup, #sensor-list-table');
     });
 
-    /* Removing sensors from setup-form*/
+    // Removing sensors from setup-form
     $(document).on('click', '.remove-sensor', function(){
         removeSensorFromSetup(this);
         toggleSensorsListAlert('#sensors-in-setup, #sensor-list-table');
     });
 
-    /* Input triggering when touching row */
+    // Input triggering when touching row
     $(document).on('click', '#sensor-list-table tbody tr', function(e){
         $(this).toggleClass('success');
         if(!$(e.target).is('input')){
@@ -107,7 +107,7 @@ function updateSensorsList(data){
     } else {
         toggleSensorsListAlert('#sensor-list-table');
         //error
-        alert('Ошибка');
+        alert(SDLab.Language._('ERROR'));
     }
 }
 
@@ -130,8 +130,8 @@ function addSensorsToSetup(){
                     <input type="hidden" name="sensors['+sid+']['+idx+'][val_id]" value="' + idx + '"/>\
                 </td>\
                 <td>' + $(this).find('.sensor-setup-valname').first().text() + '</td>\
-                <td class="sensor-setup-name"><input type="text" placeholder="Имя датчика" name="sensors['+sid+']['+idx+'][name]" class="form-control" required="true"/></td>\
-                <td class="text-right"><a class="btn btn-sm btn-danger remove-sensor">Удалить</a></td>\
+                <td class="sensor-setup-name"><input type="text" placeholder="'+SDLab.Language._('sensor.NAME')+'" name="sensors['+sid+']['+idx+'][name]" class="form-control" required="true"/></td>\
+                <td class="text-right"><a class="btn btn-sm btn-danger remove-sensor">'+SDLab.Language._('REMOVE')+'</a></td>\
             </tr>'
         );
         row.find('input[type=text][name$="[name]"]').val(sensorname);

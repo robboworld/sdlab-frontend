@@ -48,15 +48,15 @@ class SessionController extends Controller
 				}
 			}
 		}
-		self::setTitle('Новая сессия');
-		self::setContentTitle('Новая сессия');
+		self::setTitle(L::session_NEW_SESSION);
+		self::setContentTitle(L::session_NEW_SESSION);
 	}
 
 	function edit()
 	{
 		if(!$this->session()) System::go();
 
-		/* Если форма отправлена */
+		// If form is sent
 		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'edit-session-form')
 		{
 			if(isset($_POST['session_comments']))
@@ -79,17 +79,17 @@ class SessionController extends Controller
 				$this->session()->set('expiry', $_POST['session_expiry']);
 			}
 
-			/* Сохраняем */
+			// Save
 			$this->session()->save();
-			/* Перезаписываем в $_SESSION */
+			// Rewrite in $_SESSION
 			$this->session()->setSession();
-			/* редирект чтобы избавиться от повторной отправки формы */
+			// Redirect for prevent next form send
 			Form::redirect();
 		}
 
-		self::setTitle('Редактирование сессии');
+		self::setTitle(L::session_TITLE_EDIT);
 
-		/* загружаем эксперименты доступные в сессии*/
+		// Load experiments available in session
 		$experiments_in_session = ExperimentController::loadExperiments($this->session()->getKey());
 		if($experiments_in_session)
 		{

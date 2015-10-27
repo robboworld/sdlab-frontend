@@ -16,13 +16,20 @@ class SensorsController extends Controller
 		$this->addJs('chart');
 		$this->addJs('Sensor');
 		$this->addJs('sensors');
+		// Add language translates for scripts
+		Language::script(array(
+				'sensor_VALUE_NAME_TEMPERATURE',  // chart
+				'GRAPH', 'INFO'            // Sensor
+				                           // - sensors
+		));
+
 		$this->addCss('sensors');
 		//$this->view->content->sensors_list = $this->sensorList($this->getSensors()->Values);
 		$this->view->content->sensors_list = 'test inc';
 		$this->view->template = 'index';
 
  		//$this->view->content = $this->renderTemplate('index');
-		// todo: удалить всё лишнее в этом контроллере, заточить только под использование через API
+		// TODO: Remove all unnessesary in this controller, use only for API calls
 	}
 
 
@@ -71,7 +78,7 @@ class SensorsController extends Controller
 				$known[$key] = $item;
 			}
 
-			// Prepare insert query
+			// Prepare insert query for new sensors
 			$insert = $db->prepare('insert into sensors (sensor_id, sensor_val_id, sensor_name, value_name, si_notation, si_name, max_range, min_range, error, resolution)' .
 					' values (:sensor_id, :sensor_val_id, :sensor_name, :value_name, :si_notation, :si_name, :max_range, :min_range, :error, :resolution)');
 
@@ -129,14 +136,32 @@ class SensorsController extends Controller
 
 					foreach ($sensor->{'Values'} as $value)
 					{
-						$value->value_name  = System::getValsTranslate($value->{'Name'});
-						$value->si_notation = System::getValsTranslate($value->{'Name'}, 'si_notation');
-						$value->si_name     = System::getValsTranslate($value->{'Name'}, 'si_name');
+						$value_name = System::getValsTranslate($value->{'Name'});
+						if (($value_name !== false) && (strlen($value_name) > 0))
+						{
+							$value->value_name  =   constant('L::sensor_VALUE_NAME_' . strtoupper($value_name));
+
+							$field = System::getValsTranslate($value->{'Name'}, 'si_notation');
+							$value->si_notation = (($field !== false) && (strlen($field) > 0)) ? 
+													constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($field)) :
+													false;
+
+							$field = System::getValsTranslate($value->{'Name'}, 'si_name');
+							$value->si_name     = (($field !== false) && (strlen($field) > 0)) ?
+													constant('L::sensor_VALUE_SI_NAME_' . strtoupper($value_name) . '_' . strtoupper($field)) :
+													false;
+						}
+						else
+						{
+							$value->value_name  = false;
+							$value->si_notation = false;
+							$value->si_name     = false;
+						}
 					}
 				}
 			}
 
-			return $result; //лишнее вложение в массиве
+			return $result;
 		}
 		else
 		{
@@ -179,7 +204,7 @@ class SensorsController extends Controller
 	{
 		if (!is_array($params)) 
 		{
-			$this->error = 'Error';
+			$this->error = L::ERROR;
 
 			return false;
 		}
@@ -217,7 +242,7 @@ class SensorsController extends Controller
 
 		if (empty($result))
 		{
-			$this->error = 'Error';
+			$this->error = L::ERROR;
 
 			return false;
 		}
@@ -244,12 +269,12 @@ class SensorsController extends Controller
 				// Check access to experiment
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 
 					return false;
 				}
 
-				/* получаем датчики для эксперимента */
+				// Get sensors for experiment
 				$sensors = SetupController::getSensors($experiment->setup_id, true);
 				if(!empty($sensors))
 				{
@@ -257,7 +282,7 @@ class SensorsController extends Controller
 					$setup = (new Setup())->load($experiment->setup_id);
 					if (!$setup)
 					{
-						$this->error = 'Setup not found';
+						$this->error = L::ERROR_SETUP_NOT_FOUND;
 
 						return false;
 					}
@@ -276,13 +301,13 @@ class SensorsController extends Controller
 						// Access only if current experiment is master of Setup
 						if ($setup->master_exp_id != $experiment->id)
 						{
-							$this->error = 'Access denied';
+							$this->error = L::ACCESS_DENIED;
 
 							return false;
 						}
 					}
 
-					/* формируем список сенсоров для метода апи датчиков*/
+					// Prepare sensors list for API method
 					$params_array = array();
 					foreach($sensors as $sensor)
 					{
@@ -292,24 +317,24 @@ class SensorsController extends Controller
 						);
 					}
 
-					/* формируем массив параметров для метода апи датчиков*/
+					// Prepare array of parameters for API method
 					$query_params = array(
 						'Values' => $params_array,
 						'Period' => System::nano(1),
 						'Count'  => 1
 					);
 
-					/* отправляем запрос на создание серии из одного измерения */
+					// Send request for start series consists of one detection
 					$socket = new JSONSocket($this->config['socket']['path']);
 					$respond = $socket->call('Lab.StartSeries', (object) $query_params);
 
-					/* если апи возвращает true то пытаемся получить результаты*/
+					// If returned true try get results
 					if($respond)
 					{
-						/* Ждем 2 секунды для получения результатов*/
+						// Wait for results
 						sleep(2);
 
-						/* новый сокет для получения результатов*/
+						// For results need new socket
 						unset($socket);
 						$socket = new JSONSocket($this->config['socket']['path']);
 
@@ -353,7 +378,7 @@ class SensorsController extends Controller
 								{
 									$res = $insert->execute(array(
 										':exp_id' => $experiment->id,
-										':time' => $result[0]->Time,
+										':time' => System::convertDatetimeToUTC($result[0]->Time),
 										':sensor_id' => $sensors[$i]->id,
 										':sensor_val_id' => $sensors[$i]->sensor_val_id,
 										':detection' => $result[0]->Readings[$i],
@@ -400,14 +425,14 @@ class SensorsController extends Controller
 						}
 						else
 						{
-							$this->error = 'Empty response';
+							$this->error = L::setup_ERROR_EMPTY_RESPONSE;
 
 							return false;
 						}
 					}
 					else
 					{
-						$this->error = 'Series not started';
+						$this->error = L::setup_ERROR_SERIES_NOT_STARTED;
 
 						return false;
 					}
@@ -422,11 +447,11 @@ class SensorsController extends Controller
 			{
 				if (empty($experiment->id))
 				{
-					$this->error = 'Experiment not found';
+					$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 				}
 				else
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 				}
 
 				return false;
@@ -434,7 +459,7 @@ class SensorsController extends Controller
 		}
 		else 
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 			return false;
 		}
@@ -462,7 +487,7 @@ class SensorsController extends Controller
 				// Check access to experiment
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 
 					return false;
 				}
@@ -475,7 +500,7 @@ class SensorsController extends Controller
 					$setup = (new Setup())->load($experiment->setup_id);
 					if (!$setup)
 					{
-						$this->error = 'Setup not found';
+						$this->error = L::ERROR_SETUP_NOT_FOUND;
 
 						return false;
 					}
@@ -483,7 +508,7 @@ class SensorsController extends Controller
 					// Check active state
 					if($setup->flag)
 					{
-						$this->error = 'Setup already active';
+						$this->error = L::setup_ACTIVE_ALREADY;
 
 						return false;
 					}
@@ -492,7 +517,7 @@ class SensorsController extends Controller
 					// Check access to control Setup
 					if ($setup->master_exp_id != $experiment->id)
 					{
-						$this->error = 'Access denied';
+						$this->error = L::ACCESS_DENIED;
 					
 						return false;
 					}
@@ -571,6 +596,8 @@ class SensorsController extends Controller
 
 					// Set parameters for backend sensors API
 					$now = new DateTime();
+					$nowutc = clone $now;
+					$nowutc->setTimezone(new DateTimeZone('UTC'));
 					// Check Setup mode
 					if ($setup->amount)
 					{
@@ -582,13 +609,13 @@ class SensorsController extends Controller
 						// xxx: need add some time to interval for truely detect last values
 						//$overflow = (int)$setup->interval; // one interval
 						$overflow = 1;
-						$stopat = (new DateTime($now->format(DateTime::ATOM)))->modify('+' . ($count * (int)$setup->interval + $overflow) . ' sec')->format('Y-m-d\TH:i:s\Z');
+						$stopat = (new DateTime($nowutc->format(DateTime::RFC3339)))->modify('+' . ($count * (int)$setup->interval + $overflow) . ' sec')->format(System::DATETIME_RFC3339_UTC);
 					}
 					else
 					{
 						// Must be defined count values buffer fo RRD
 						$count = (int) ceil((int)$setup->time_det / ((int)$setup->interval > 0 ? (int)$setup->interval : 1));
-						$stopat = (new DateTime($now->format(DateTime::ATOM)))->modify('+' . (int)$setup->time_det . ' sec')->format('Y-m-d\TH:i:s\Z');
+						$stopat = (new DateTime($nowutc->format(DateTime::RFC3339)))->modify('+' . (int)$setup->time_det . ' sec')->format(System::DATETIME_RFC3339_UTC);
 					}
 
 					$query_params = array(
@@ -605,7 +632,7 @@ class SensorsController extends Controller
 					// Try get uuid of created monitor
 					if (empty($result))
 					{
-						$this->error = 'Monitoring not started';
+						$this->error = L::setup_ERROR_MONITORING_NOT_STARTED;
 
 						return false;
 					}
@@ -615,7 +642,7 @@ class SensorsController extends Controller
 					$monitor->set('exp_id', (int)$experiment->id);
 					$monitor->set('setup_id', (int)$setup->id);
 					$monitor->set('uuid', (string)$result);
-					$monitor->set('created', $now->format('Y-m-d\TH:i:s\Z'));
+					$monitor->set('created', $nowutc->format(System::DATETIME_RFC3339_UTC));
 
 					$result = $monitor->save();
 					if (!$result)
@@ -656,11 +683,11 @@ class SensorsController extends Controller
 			{
 				if (empty($experiment->id))
 				{
-					$this->error = 'Experiment not found';
+					$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 				}
 				else
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 				}
 
 				return false;
@@ -668,7 +695,7 @@ class SensorsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 			return false;
 		}
@@ -696,8 +723,8 @@ class SensorsController extends Controller
 				// Check access to experiment
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
-					$this->error = 'Access denied';
-	
+					$this->error = L::ACCESS_DENIED;
+
 					return false;
 				}
 
@@ -705,15 +732,15 @@ class SensorsController extends Controller
 				$setup = (new Setup())->load($experiment->setup_id);
 				if (!$setup)
 				{
-					$this->error = 'Setup not found';
-				
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
+
 					return false;
 				}
 
 				// Check active state
 // 				if(!$setup->flag)
 // 				{
-// 					$this->error = 'Setup not runned';
+// 					$this->error = L::setup_ERROR_SETUP_NOT_RUNNED;
 				
 // 					return false;
 // 				}
@@ -721,8 +748,8 @@ class SensorsController extends Controller
 				// Check access to control Setup
 				if ($setup->master_exp_id != $experiment->id)
 				{
-					$this->error = 'Access denied';
-				
+					$this->error = L::ACCESS_DENIED;
+
 					return false;
 				}
 
@@ -794,7 +821,7 @@ class SensorsController extends Controller
 						}
 						else
 						{
-							//$this->error = 'Monitoring not started';
+							//$this->error = L::setup_ERROR_MONITORING_NOT_STARTED;
 
 							//TODO: add other error checking, because error operation on socket returns false too!
 
@@ -843,11 +870,13 @@ class SensorsController extends Controller
 					{
 						if (is_null($mon->info->StopAt))
 						{
-							$stopdt = new DateTime('now');
+							$stopdt = new DateTime();
+							$stopdt->setTimezone(new DateTimeZone('UTC'));
 						}
 						else
 						{
 							$stopdt = new DateTime(System::cutdatemsec($mon->info->StopAt));
+							$stopdt->setTimezone(new DateTimeZone('UTC'));
 							$stopdt->modify('+' . $offset . ' sec');
 						}
 					}
@@ -856,12 +885,15 @@ class SensorsController extends Controller
 						if (is_null($mon->info->StopAt))
 						{
 							$stopdt = new DateTime(System::cutdatemsec($mon->info->Last));
+							$stopdt->setTimezone(new DateTimeZone('UTC'));
 							$stopdt->modify('+' . $offset . ' sec');
 						}
 						else
 						{
 							$lastdt = new DateTime(System::cutdatemsec($mon->info->Last));
+							$lastdt->setTimezone(new DateTimeZone('UTC'));
 							$stopdt = new DateTime(System::cutdatemsec($mon->info->StopAt));
+							$stopdt->setTimezone(new DateTimeZone('UTC'));
 
 							if ($lastdt >= $stopdt)
 							{
@@ -870,11 +902,12 @@ class SensorsController extends Controller
 							else
 							{
 								$stopdt = new DateTime(System::cutdatemsec($mon->info->Last));
+								$stopdt->setTimezone(new DateTimeZone('UTC'));
 								$stopdt->modify('+' . $offset . ' sec');
 							}
 						}
 					}
-					$stop_str = $stopdt->format('Y-m-d\TH:i:s\Z');
+					$stop_str = $stopdt->format(System::DATETIME_RFC3339_UTC);
 
 					// Prepare parameters for backend sensors API method
 					$query_params = array(
@@ -911,7 +944,8 @@ class SensorsController extends Controller
 								}
 
 								// Skip after dates
-								if ((new DateTime(System::cutdatemsec($d->Time))) > $stopdt)
+								$d_time = new DateTime(System::cutdatemsec($d->Time));
+								if ($d_time > $stopdt)
 								{
 									continue;
 								}
@@ -952,7 +986,10 @@ class SensorsController extends Controller
 									continue;
 								}
 
-								$data_values = array($experiment->id, $d->Time, $sensors[$i]->id, $sensors[$i]->sensor_val_id, $detection, $sensor_error);
+								// Convert time to UTC
+								$time = System::convertDatetimeToUTC($d->Time);
+
+								$data_values = array($experiment->id, $time, $sensors[$i]->id, $sensors[$i]->sensor_val_id, $detection, $sensor_error);
 
 								// Merge to long array of values
 								$insert_values = array_merge($insert_values, $data_values);
@@ -1035,11 +1072,11 @@ class SensorsController extends Controller
 			{
 				if (empty($experiment->id))
 				{
-					$this->error = 'Experiment not found';
+					$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 				}
 				else
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 				}
 
 				return false;
@@ -1047,11 +1084,11 @@ class SensorsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 			return false;
 		}
-	
+
 		return false;
 	}
 
@@ -1061,7 +1098,7 @@ class SensorsController extends Controller
 	 * API method: Sensors.experimentStatus
 	 * API params: experiment[, uuid]
 	 *
-	 * Return object format:
+	 * Return object in format:
 	 * <code>
 	 * {
 	 *     setup : {
@@ -1101,7 +1138,7 @@ class SensorsController extends Controller
 				// Check access to experiment
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 
 					return false;
 				}
@@ -1110,7 +1147,7 @@ class SensorsController extends Controller
 				$setup = (new Setup())->load($experiment->setup_id);
 				if (!$setup)
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 
 					return false;
 				}
@@ -1200,7 +1237,6 @@ class SensorsController extends Controller
 				$done_cnt        = 0;
 				$remain_cnt      = 0;
 				$remain_cnt_text = '';
-				$created         = time();
 
 				$now = new DateTime();
 				$setup_stopat_date  = null;
@@ -1215,15 +1251,16 @@ class SensorsController extends Controller
 				{
 					// TODO: need from backend API Monitor.Info about last data value (DS.last_ds) and test it to "U" with last_update date
 
-					$created = System::cutdatemsec($monitor->info->Created);
-					if ($monitor->info->Last === $created /* && $monitor->info->last_ds == "U" */)
+					$dt_created = new DateTime(System::cutdatemsec($monitor->info->Created));
+					$dt_last = new DateTime(System::cutdatemsec($monitor->info->Last));
+					if ($dt_last == $dt_created /* && $monitor->info->last_ds == "U" */)
 					{
 						// No data in rrd
 					}
 					else
 					{
-						$timestamp_last    = System::dateformat(System::cutdatemsec($monitor->info->Last), 'U');
-						$timestamp_created = System::dateformat($created, 'U');
+						$timestamp_created = $dt_created->format('U');
+						$timestamp_last    = $dt_last->format('U');
 
 						$done_cnt = ($timestamp_last >= $timestamp_created) ?
 								(int)(($timestamp_last - $timestamp_created) / $monitor->info->Archives[0]->Step) :
@@ -1254,8 +1291,9 @@ class SensorsController extends Controller
 						if ($monitor && isset($monitor->info))
 						{
 							$setup_stopat_date = new DateTime(System::cutdatemsec($monitor->info->Created));
+							$setup_stopat_date->setTimezone((new DateTime())->getTimezone());
 							$setup_stopat_date->modify('+'.$setup->time().' sec');
-							$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+							$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
 
 							if ($now->format('U') > $setup_stopat_date->format('U'))
 							{
@@ -1268,7 +1306,7 @@ class SensorsController extends Controller
 						}
 						else
 						{
-							$setup_stopat_text = 'Неизвестно';
+							$setup_stopat_text = L::TIME_UNKNOWN;
 						}
 					}
 					else
@@ -1281,7 +1319,8 @@ class SensorsController extends Controller
 							if ($monitor->info->StopAt !== System::nulldate())
 							{
 								$setup_stopat_date = new DateTime(System::cutdatemsec($monitor->info->StopAt));
-								$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+								$setup_stopat_date->setTimezone((new DateTime())->getTimezone());
+								$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
 
 								if ($now->format('U') > $setup_stopat_date->format('U'))
 								{
@@ -1295,8 +1334,9 @@ class SensorsController extends Controller
 							else
 							{
 								$setup_stopat_date = new DateTime(System::cutdatemsec($monitor->info->Created));
+								$setup_stopat_date->setTimezone((new DateTime())->getTimezone());
 								$setup_stopat_date->modify('+'.$setup->time().' sec');
-								$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+								$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
 
 								if ($now->format('U') > $setup_stopat_date->format('U'))
 								{
@@ -1310,7 +1350,7 @@ class SensorsController extends Controller
 						}
 						else
 						{
-							$setup_stopat_text = 'Неизвестно';
+							$setup_stopat_text = L::TIME_UNKNOWN;
 						}
 					}
 				}
@@ -1318,7 +1358,7 @@ class SensorsController extends Controller
 				{
 					$setup_stopat_date = new DateTime();
 					$setup_stopat_date->modify('+'.$setup->time().' sec');
-					$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+					$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
 				}
 
 				// Fill stat data
@@ -1335,11 +1375,11 @@ class SensorsController extends Controller
 			{
 				if (empty($experiment->id))
 				{
-					$this->error = 'Experiment not found';
+					$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 				}
 				else
 				{
-					$this->error = 'Setup not found';
+					$this->error = L::ERROR_SETUP_NOT_FOUND;
 				}
 
 				return false;
@@ -1347,7 +1387,7 @@ class SensorsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 			return false;
 		}

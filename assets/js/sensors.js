@@ -8,7 +8,7 @@ function destroySensorWidget(id){
 
 function updateSensorsList(sensors){
 
-    /* надо сравнивать с существующим списком. вынести в свойство общего объекта. */
+    // TODO: need to compare with full list sensors
     if(typeof sensors.error === 'undefined'){
 
         /*
@@ -52,21 +52,22 @@ function updateSensorsListHTML(){
 
 $(document).ready(function(){
 
-    /*Вопрос при переходе на другую страницу.
+    /*
+    // Leave page question
     $(document).on('click', 'a:not([href*="#"])', function(e){
-        if(!confirm('Leave this page?')){
+        if(!confirm(SDLab.Language._('QUESTION_LEAVE_PAGE'))){
             e.preventDefault();
         }
     });
-     */
+    */
 
-    /* Update sensors list event listener*/
+    // Update sensors list event listener
     coreAPICall('Sensors.getSensors', null, updateSensorsList);
     $(document).on('click', '#sensors-list-update', function(){
         coreAPICall('Sensors.getSensors', null, updateSensorsList);
     });
 
-    /* Create sensor widget in workspace and destroy it */
+    // Create sensor widget in workspace and destroy it
     $(document).on('click', '#available-sensors a', function(){
         if($(this).hasClass('active')){
             $(this).removeClass('active');

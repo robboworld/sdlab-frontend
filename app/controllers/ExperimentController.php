@@ -1,5 +1,6 @@
 <?php
 /**
+ * Experiment controller
  */
 
 class ExperimentController extends Controller
@@ -9,7 +10,7 @@ class ExperimentController extends Controller
 	{
 		parent::__construct($action);
 
-		/* используем id из строки experiment/edit/%id */
+		// Get id from request query string experiment/edit/%id
 		$this->id = App::router(2);
 		$this->config = App::config();
 	}
@@ -25,13 +26,13 @@ class ExperimentController extends Controller
 	 */
 	function create()
 	{
-		self::setTitle('Создание эксперимента');
-		self::setContentTitle('Создание эксперимента');
+		self::setTitle(L::experiment_TITLE_CREATION);
+		self::setContentTitle(L::experiment_TITLE_CREATION);
 
 		$this->view->form = new Form('create-experiment-form');
-		$this->view->form->submit->value = 'Создать эксперимент';
+		$this->view->form->submit->value = L::experiment_CREATE_EXPERIMENT;
 
-		/* Установки как список опций для формы*/
+		// Get setups list for the form
 		$this->view->form->setups = SetupController::loadSetups();
 
 
@@ -44,8 +45,10 @@ class ExperimentController extends Controller
 			$experiment->set('setup_id', $setup_id);
 			$experiment->set('comments', htmlspecialchars(isset($_POST['experiment_comments']) ? $_POST['experiment_comments'] : ''));
 
-			//$experiment->set('DateStart_exp', (new DateTime($_POST['experiment_date_start']))->format(DateTime::ISO8601));
-			//$experiment->set('DateEnd_exp', (new DateTime($_POST['experiment_date_end']))->format(DateTime::ISO8601));
+			// Get dates
+			// Get local date and use UNIX timestamp (UTC)
+			//$experiment->set('DateStart_exp', (new DateTime($_POST['experiment_date_start']))->format('U'));
+			//$experiment->set('DateEnd_exp', (new DateTime($_POST['experiment_date_end']))->format('U'));
 
 
 			if(empty($experiment->title))
@@ -74,7 +77,7 @@ class ExperimentController extends Controller
 				}
 			}
 
-			/* Access Experiment in view*/
+			// Access Experiment in view
 			$this->view->form->experiment = $experiment;
 
 			if($experiment->save() && !is_null($experiment->id))
@@ -115,6 +118,12 @@ class ExperimentController extends Controller
 			self::addJs('functions');
 			self::addJs('class/Sensor');
 			self::addJs('experiment/view');
+			// Add language translates for scripts
+			Language::script(array(
+					'GRAPH', 'INFO',  // class/Sensor
+					'RUNNING_', 'STROBE', 'ERROR_NOT_COMPLETED', 'experiment_ERROR_CONFIGURATION_ORPHANED'  // experiment/view
+			));
+
 			$experiment = (new Experiment())->load($this->id);
 			if($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3)
 			{
@@ -193,10 +202,14 @@ class ExperimentController extends Controller
 			// All experiments
 			$this->view->content->list = self::experimentsList();
 			self::setViewTemplate('view.all');
-			self::setTitle('Все эксперименты');
+			self::setTitle(L::experiment_TITLE_ALL);
 
 			self::addJs('functions');
 			self::addJs('experiment/view.all');
+			// Add language translates for scripts
+			Language::script(array(
+					'journal_QUESTION_REMOVE_EXPERIMENT_WITH_1', 'journal_QUESTION_REMOVE_EXPERIMENT_WITH_JS_N', 'ERROR'  // experiment/view.all
+			));
 
 			//View all available experiments in this session
 		}
@@ -214,15 +227,15 @@ class ExperimentController extends Controller
 			if($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3)
 			{
 				self::setViewTemplate('create');
-				self::setTitle('Редактирование '.$experiment->title);
-				self::setContentTitle('Редактирование "'.$experiment->title.'"');
+				self::setTitle(L::TITLE_EDIT_OF($experiment->title));
+				self::setContentTitle(L::TITLE_EDIT_OF_2($experiment->title));
 
-				/*Объект формы*/
+				// Form object
 				$this->view->form = new Form('edit-experiment-form');
-				$this->view->form->submit->value = 'Сохранить';
+				$this->view->form->submit->value = L::SAVE;
 				$this->view->form->experiment = $experiment;
 
-				/* Установки как список опций для формы*/
+				// Get setups list for the form
 				$this->view->form->setups = SetupController::loadSetups();
 
 				if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'edit-experiment-form')
@@ -463,14 +476,18 @@ class ExperimentController extends Controller
 			if($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3)
 			{
 
-				self::setTitle('Журнал '.$experiment->title);
-				self::setContentTitle('Журнал "'.$experiment->title.'"');
+				self::setTitle(L::journal_TITLE_JOURNAL_OF($experiment->title));
+				self::setContentTitle(L::journal_TITLE_JOURNAL_OF_2($experiment->title));
 				self::addJs('functions');
 				self::addJs('experiment/journal');
+				// Add language translates for scripts
+				Language::script(array(
+						'journal_QUESTION_CLEAN_JOURNAL', 'ERROR'  // experiment/journal
+				));
 
-				/*Объект формы*/
+				// Form object
 				$this->view->form = new Form('experiment-journal-form');
-				$this->view->form->submit->value = 'Обновить';
+				$this->view->form->submit->value = L::REFRESH;
 				$this->view->form->experiment = $experiment;
 
 
@@ -485,17 +502,17 @@ class ExperimentController extends Controller
 					}
 				}
 
-				/* Возможно стоит вынести все в отдельный контроллер или модель*/
+				// TODO: may be move all journal operations to separate controller/model
 				$db = new DB();
 
-				$query = 'select id, exp_id, strftime(\'%Y.%m.%d %H:%M:%f\', time) as time, sensor_id, sensor_val_id, detection, error from detections where exp_id = '.(int)$experiment->id . ' order by strftime(\'%s\', time)';
+				$query = 'select id, exp_id, strftime(\'%Y-%m-%dT%H:%M:%fZ\', time) as time, sensor_id, sensor_val_id, detection, error from detections where exp_id = '.(int)$experiment->id . ' order by strftime(\'%s\', time),strftime(\'%f\', time)';
 				$detections = $db->query($query, PDO::FETCH_OBJ);
 
-				/* Формирование вывода на основе датчиков в установке. */
+				// Prepare output depends on sensors in setup
 				$sensors = SetupController::getSensors($experiment->setup_id, true);
 				$available_sensors = $displayed_sensors = array();
 
-				/*Формируем список доступных датчиков*/
+				// Get list of available sensors
 				foreach($sensors as $sensor)
 				{
 					$key = '' . $sensor->id . '#' . (int)$sensor->sensor_val_id;
@@ -506,7 +523,7 @@ class ExperimentController extends Controller
 				}
 				$this->view->content->available_sensors = $available_sensors;
 
-				/*Если из формы пришел список то формируем список отображаемых датчиков*/
+				// If requested sensors for showing prepare displayed list by intersection  
 				if(!empty($sensors_show))
 				{
 					$this->view->content->displayed_sensors = array_intersect_key($available_sensors, $sensors_show);
@@ -516,11 +533,11 @@ class ExperimentController extends Controller
 					$this->view->content->displayed_sensors = $available_sensors;
 				}
 
-				/* сам массив значений сгруппированых по временной метке. */
+				// Array of values grouped by timestamps (UTC datetime!)
 				$journal = array();
 				foreach($detections as $row)
 				{
-					/*если есть в списке доступных датчиков, то добавим в вывод журнала*/
+					// if sensor+value is available thn add to journal output
 					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
 					if(array_key_exists($key, $this->view->content->displayed_sensors))
 					{
@@ -556,13 +573,16 @@ class ExperimentController extends Controller
 			// View/Edit graph
 
 			self::setViewTemplate('graphsingle');
-			self::setTitle('График для '.$experiment->title);
+			self::setTitle(L::graph_TITLE_GRAPH_FOR($experiment->title));
 			self::addJs('lib/jquery.flot');
 			self::addJs('lib/jquery.flot.time.min');
 			self::addJs('lib/jquery.flot.navigate');
 			self::addJs('functions');
 			self::addJs('chart');
-
+			// Add language translates for scripts
+			Language::script(array(
+					'sensor_VALUE_NAME_TEMPERATURE'  // chart
+			));
 
 			$plot_id = (int)App::router(3);
 			if (empty($plot_id))
@@ -586,7 +606,7 @@ class ExperimentController extends Controller
 				// Edit graph
 
 				$this->view->form = new Form('plot-edit-form');
-				$this->view->form->submit->value = 'Сохранить график';
+				$this->view->form->submit->value = L::graph_SAVE;
 
 				if(isset($_POST['form-id']) && $_POST['form-id'] === 'plot-edit-form')
 				{
@@ -611,20 +631,24 @@ class ExperimentController extends Controller
 			// Add new graph
 
 			self::setViewTemplate('graphsingle');
-			self::setContentTitle('Добавление графика для "'.$experiment->title.'"');
-			self::setTitle('Добавление графика для '.$experiment->title);
+			self::setTitle(L::graph_TITLE_ADD_GRAPH_FOR($experiment->title));
+			self::setContentTitle(L::graph_TITLE_ADD_GRAPH_FOR_2($experiment->title));
 		}
 		else
 		{
 			// List graphs
 
-			//self::setContentTitle('Графики для "'.$experiment->title.'"');
-			self::setTitle('Графики для '.$experiment->title);
+			self::setTitle(L::graph_TITLE_GRAPHS_FOR($experiment->title));
+			//self::setContentTitle(L::graph_TITLE_GRAPHS_FOR_2($experiment->title));
 			self::addJs('lib/jquery.flot');
 			self::addJs('lib/jquery.flot.time.min');
 			self::addJs('lib/jquery.flot.navigate');
 			self::addJs('functions');
 			self::addJs('chart');
+			// Add language translates for scripts
+			Language::script(array(
+					'sensor_VALUE_NAME_TEMPERATURE'  // chart
+			));
 
 			$db = new DB();
 			$query = 'select * from plots where exp_id = '.(int)$experiment->id;
@@ -748,7 +772,7 @@ class ExperimentController extends Controller
 		// Check id 
 		if(!isset($params['experiment']) && empty($params['experiment']))
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 			return false;
 		}
 
@@ -756,14 +780,14 @@ class ExperimentController extends Controller
 		$experiment = (new Experiment())->load((int)$params['experiment']);
 		if(!$experiment || !($experiment->id))
 		{
-			$this->error = 'Experiment not found';
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 			return false;
 		}
 
 		// Check access to experiment
 		if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 		{
-			$this->error = 'Access denied';
+			$this->error = L::ACCESS_DENIED;
 			return false;
 		}
 
@@ -779,7 +803,7 @@ class ExperimentController extends Controller
 		{
 			error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
 
-			$this->error = 'Error';
+			$this->error = L::ERROR;
 			return false;
 		}
 

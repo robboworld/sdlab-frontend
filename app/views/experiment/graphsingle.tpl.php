@@ -2,7 +2,7 @@
 
 	var data = [
 		{
-			label: "Температура-тест",
+			label: "Temperature-test",
 			color: 1,
 			data: [
 				[(new Date("2014-04-05 17:00:04.1234").getTime()), 20],
@@ -15,7 +15,7 @@
 			]
 		},
 		{
-			label: "Давление-тест",
+			label: "Pressure-test",
 			color: 2,
 			data: [
 				[(new Date("2014-04-05 17:00:01.1234").getTime()), 16],
@@ -62,7 +62,7 @@
 
 <div class="col-md-12">
 	<a href="/?q=experiment/graph/<? print $this->view->content->experiment->id; ?>" class="btn btn-sm btn-default">
-		<span class="glyphicon glyphicon-chevron-left"></span> Все графики для "<? print $this->view->content->experiment->title; ?>"
+		<span class="glyphicon glyphicon-chevron-left"></span> <? echo L::graph_TITLE_ALL_GRAPHS_FOR_2($this->view->content->experiment->title) ?>
 	</a>
 </div>
 <br><br>
@@ -72,27 +72,27 @@
 			<input type="hidden" name="form-id" value="<? print $this->view->form->id; ?>">
 			<div class="form-group col-md-6">
 				<label for="x-axis" class="col-md-12">
-					Абсцисса:
+					<? echo L::graph_ABSCISSA; ?>:
 				</label>
 				<div class="col-md-12">
-					Выражение: <input id="x-axis" class="form-control" type="text" value="t" disabled>
+					<? echo L::graph_EXPRESSION; ?>: <input id="x-axis" class="form-control" type="text" value="t" disabled>
 				</div>
 			</div>
 			<div class="form-group col-md-6">
 				<label for="y-axis" class="col-md-12">
-					Ордината:
+					<? echo L::graph_ORDINATE; ?>:
 				</label>
 				<div class="col-md-12">
 					<div class="ordinate-item">
 						<select name="ordinate-sensor-id[]" class="form-control">
-							<option> - Выбрать датчик -</option>
+							<option><? echo L::sensor_SELECT_OPTION; ?></option>
 						</select>
-						Выражение: <input id="ordinate-scale" class="form-control" type="text" value="" placeholder="Выражение">
+						<? echo L::graph_EXPRESSION; ?>: <input id="ordinate-scale" class="form-control" type="text" value="" placeholder="<? echo L::graph_EXPRESSION; ?>">
 					</div>
 				</div>
 				<div class="col-md-12">
 					<br>
-					<a href="#" class="btn btn-default">Добавить датчик</a>
+					<a href="#" class="btn btn-default"><? echo L::sensor_ADD; ?></a>
 				</div>
 			</div>
 		</form>

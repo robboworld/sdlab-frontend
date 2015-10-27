@@ -2,7 +2,7 @@
 
 /**
  * Class Form
- * хелпер для работы с формами
+ * Forms helper
  */
 class Form
 {
@@ -13,7 +13,7 @@ class Form
 	{
 		$this->id = $id;
 		$this->submit = new stdClass();
-		$this->submit->value = 'Отправить';
+		$this->submit->value = L::SEND;
 	}
 
 
@@ -35,14 +35,31 @@ class Form
 	 * @param $date
 	 * @return string
 	 */
-	static function dateToInput($date)
+	static function dateToInput($date, $timezone = null)
 	{
-		$date = new DateTime($date);
-		return $date->format('Y-m-d');
+		$dt = new DateTime($date);
+
+		if ($timezone !== null)
+		{
+			if ($timezone === 'now')
+			{
+				$tz = (new DateTime())->getTimezone();
+			}
+			else
+			{
+				$tz = (new DateTime())->setTimezone(new DateTimeZone($timezone))->getTimezone();
+			}
+			$dt->setTimezone($tz);
+		}
+
+		return $dt->format('Y-m-d');
 	}
 
 	/**
+	 * Convert datetime interval array of (days, hours, minutes, seconds) to seconds
+	 * 
 	 * @param array $dhm
+	 * 
 	 * @return int
 	 */
 	static function DHMStoSec(array $dhm)
@@ -59,12 +76,12 @@ class Form
 	{
 		$times = array();
 
-		// считать нули в значениях
+		// Zeroes counter
 		$count_zero = true;
 
-		// количество секунд в году не учитывает високосный год
-		// поэтому функция считает что в году 365 дней
-		// секунд в минуте|часе|сутках|году
+		// Number of seconds in year not use leap years specific
+		// method use 365 days in the year
+		// seconds in a minute|hour|day|year
 		$periods = array(60, 3600, 86400);
 
 		for ($i = 2; $i >= 0; $i--)

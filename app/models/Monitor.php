@@ -128,7 +128,7 @@ class Monitor extends Model
 					{
 						return false;
 					}
-					$where['created_from'] = '(strftime(\'%s\',deleted) >= strftime(\'%s\',' . $this->db->quote($str) . '))';
+					$where['created_from'] = '(strftime(\'%s\',created) >= strftime(\'%s\',' . $this->db->quote($str) . '))';
 				}
 				if (isset($created['to']))
 				{
@@ -137,7 +137,7 @@ class Monitor extends Model
 					{
 						return false;
 					}
-					$where['created_to'] = '(strftime(\'%s\',deleted) <= strftime(\'%s\',' . $this->db->quote($str) . '))';
+					$where['created_to'] = '(strftime(\'%s\',created) <= strftime(\'%s\',' . $this->db->quote($str) . '))';
 				}
 			}
 			else

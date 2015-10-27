@@ -3,9 +3,8 @@ include('app/bootstrap.php');
 
 
 /**
- * Основной вызов приложения.
+ * Main application instance call
  */
 $app = new App();
 
-/*todo: реализовать "активность" установки и эксперимента */
-/*todo: очистка старых сессий, экспериментов и установок */
+// TODO: Clean old sessions, experiments and setups

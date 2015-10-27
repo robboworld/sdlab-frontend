@@ -38,6 +38,9 @@ class DetectionsController extends Controller
 			//System::dump($ordinate_query);
 			if($ordinate_query)
 			{
+				// Get current timezone offset in seconds to correct timestamps
+				$tz_offset = (new DateTime())->format('Z');
+
 				$result = array();
 				foreach($ordinate_query as $item)
 				{
@@ -58,7 +61,7 @@ class DetectionsController extends Controller
 							$time = explode('.', $point->time);
 							$time = new DateTime($time[0]);
 							$graph_object->data[] = array(
-								$time->getTimestamp()*1000,
+								($time->getTimestamp() + $tz_offset)*1000,  // convert to localtime and to milliseconds
 								$point->detection
 							);
 						}
@@ -71,7 +74,7 @@ class DetectionsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Графика не существует.';
+			$this->error = L::ERROR_GRAPH_NOT_EXIST;
 		}
 	}
 
@@ -97,7 +100,7 @@ class DetectionsController extends Controller
 				// Check access to experiment
 				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 
 					return false;
 				}
@@ -153,12 +156,16 @@ class DetectionsController extends Controller
 					$displayed_sensors = $available_sensors;
 				}
 
-				// XXX: return time in msec (>PHP_INT_MAX)
+				// Get current timezone offset in seconds to correct timestamps
+				$tz_offset = (new DateTime())->format('Z');
+
+				// XXX: return time in milliseconds (Warning! >PHP_INT_MAX)
+				// Get time in milliseconds in local timezone
 				$query = //'select strftime(\'%Y.%m.%d %H:%M:%f\', time) as time, detection '
-						 'select (strftime(\'%s\',time) - strftime(\'%S\',time) + strftime(\'%f\',time))*1000 as time, detection '
+						 'select (strftime(\'%s\',time) - strftime(\'%S\',time) + strftime(\'%f\',time)' . ($tz_offset>=0 ? ' + ' : ' ')  . $tz_offset . ')*1000 as time, detection '
 						. 'from detections '
 						. 'where exp_id = :exp_id and sensor_id = :sensor_id and sensor_val_id = :sensor_val_id and (error isnull or error = \'\')'
-						. 'order by strftime(\'%s\', time)';
+						. 'order by strftime(\'%s\', time),strftime(\'%f\', time)';
 				$load = $db->prepare($query);
 
 				$result = array();
@@ -167,7 +174,7 @@ class DetectionsController extends Controller
 				{
 					$data = new stdClass();
 					// TODO: add to label name of sensor from setup_info (but unknown setup id for each detection, setup can be changed)
-					$data->label         = empty($sensor->value_name) ? 'неизвестный' : $sensor->value_name ;
+					$data->label         = empty($sensor->value_name) ? L::sensor_UNKNOWN : constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name));
 					$data->sensor_id     = $sensor->sensor_id;
 					$data->sensor_val_id = $sensor->sensor_val_id;
 					$data->color         = ++$i;
@@ -193,7 +200,7 @@ class DetectionsController extends Controller
 							}
 						}
 					}
-					else 
+					else
 					{
 						$data->data = array();
 					}
@@ -215,15 +222,15 @@ class DetectionsController extends Controller
 			}
 			else
 			{
-				$this->error = 'Experiment not found';
+				$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 				return false;
 			}
 		}
 		else
 		{
-			$this->error = 'Experiment not found';
-		
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+
 			return false;
 		}
 
@@ -232,7 +239,7 @@ class DetectionsController extends Controller
 
 
 	/**
-	 * Delete data from detections.
+	 * Delete data from detections by ids.
 	 * API method: Detections.delete
 	 * API params: id[]
 	 *
@@ -262,14 +269,14 @@ class DetectionsController extends Controller
 			}
 			else
 			{
-				$this->error = 'Invalid parameters';
+				$this->error = L::ERROR_INVALID_PARAMETERS;
 
 				return false;
 			}
 
 			if (empty($ids))
 			{
-				$this->error = 'Invalid parameters';
+				$this->error = L::ERROR_INVALID_PARAMETERS;
 
 				return false;
 			}
@@ -297,7 +304,7 @@ class DetectionsController extends Controller
 					{
 						error_log('PDOError: '.var_export($stmt->errorInfo(),true));  //DEBUG
 
-						$this->error = 'Fatal error';
+						$this->error = L::FATAL_ERROR;
 						return false;
 					}
 				}
@@ -305,7 +312,7 @@ class DetectionsController extends Controller
 				{
 					error_log('PDOException delete(): '.var_export($e->getMessage(),true));  //DEBUG
 
-					$this->error = 'Fatal error';
+					$this->error = L::FATAL_ERROR;
 					return false;
 				}
 				$ids_exps = (array) $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -330,7 +337,7 @@ class DetectionsController extends Controller
 				// Denied access to some detections data
 				if ($denied > 0)
 				{
-					$this->error = 'Access denied';
+					$this->error = L::ACCESS_DENIED;
 					//return false;  // But try delete only available
 				}
 			}
@@ -340,7 +347,7 @@ class DetectionsController extends Controller
 				// Use only first error
 				if (empty($this->error))
 				{
-					$this->error = 'Detections not found';
+					$this->error = L::ERROR_DETECTIONS_NOT_FOUND;
 				}
 				return false;
 			}
@@ -355,7 +362,7 @@ class DetectionsController extends Controller
 				{
 					error_log('PDOError: '.var_export($stmt->errorInfo(),true));  //DEBUG
 
-					$this->error = 'Fatal error';
+					$this->error = L::FATAL_ERROR;
 					return false;
 				}
 			}
@@ -363,7 +370,7 @@ class DetectionsController extends Controller
 			{
 				error_log('PDOException delete(): '.var_export($e->getMessage(),true));  //DEBUG
 
-				$this->error = 'Fatal error';
+				$this->error = L::FATAL_ERROR;
 				return false;
 			}
 
@@ -371,7 +378,7 @@ class DetectionsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Detections not found';
+			$this->error = L::ERROR_DETECTIONS_NOT_FOUND;
 
 			return false;
 		}
@@ -385,7 +392,7 @@ class DetectionsController extends Controller
 	 * API method: Detections.deletebytime
 	 * API params: dt[], exp_id
 	 *
-	 * @param  array $params  Array of parameters
+	 * @param  array $params  Array of parameters, dt - datetime in format Y-m-dTH:i:s.u (UTC), cuts nanoseconds to 3 digits (milliseconds)
 	 *
 	 * @return array  Result in form array('result' => True) or False on error
 	 */
@@ -400,7 +407,7 @@ class DetectionsController extends Controller
 			// Check experiment
 			if (!$experiment || empty($experiment->id))
 			{
-				$this->error = 'Experiment not found';
+				$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 				return false;
 			}
 
@@ -412,12 +419,12 @@ class DetectionsController extends Controller
 				{
 					foreach($params['dt'] as $val)
 					{
-						$dt = DateTime::createFromFormat('Y.m.d?H:i:s.u+', $val);
+						$dt = DateTime::createFromFormat('Y-m-d?H:i:s.u+', $val);
 						$err = DateTime::getLastErrors();
 						if ($dt === false || $err['error_count'] > 0) continue;
 						/*
 						try {
-							$dt = DateTime::createFromFormat('Y.m.d?H:i:s.u+', $val);
+							$dt = DateTime::createFromFormat('Y-m-d?H:i:s.u+', $val);
 						} catch (Exception $e) {
 							// echo $e->getMessage();
 						}
@@ -429,12 +436,12 @@ class DetectionsController extends Controller
 				}
 				else if (is_string($params['dt']))
 				{
-					$dt = DateTime::createFromFormat('Y.m.d?H:i:s.u+', $params['dt']);
+					$dt = DateTime::createFromFormat('Y-m-d?H:i:s.u+', $params['dt']);
 					$err = DateTime::getLastErrors();
 					if ($dt === false || $err['error_count'] > 0) continue;
 					/*
 					try{
-						$dt = DateTime::createFromFormat('Y.m.d?H:i:s.u+', $params['dt']);
+						$dt = DateTime::createFromFormat('Y-m-d?H:i:s.u+', $params['dt']);
 					} catch (Exception $e) {
 						// echo $e->getMessage();
 					}
@@ -445,13 +452,13 @@ class DetectionsController extends Controller
 				}
 				else
 				{
-					$this->error = 'Invalid parameters';
+					$this->error = L::ERROR_INVALID_PARAMETERS;
 					return false;
 				}
 
 				if (empty($dts))
 				{
-					$this->error = 'Invalid parameters';
+					$this->error = L::ERROR_INVALID_PARAMETERS;
 					return false;
 				}
 
@@ -467,7 +474,7 @@ class DetectionsController extends Controller
 					{
 						error_log('PDOError: '.var_export($stmt->errorInfo(),true));  //DEBUG
 
-						$this->error = 'Fatal error';
+						$this->error = L::FATAL_ERROR;
 						return false;
 					}
 				}
@@ -475,13 +482,13 @@ class DetectionsController extends Controller
 				{
 					error_log('PDOException delete(): '.var_export($e->getMessage(),true));  //DEBUG
 
-					$this->error = 'Fatal error';
+					$this->error = L::FATAL_ERROR;
 					return false;
 				}
 			}
 			else
 			{
-				$this->error = 'Access denied';
+				$this->error = L::ACCESS_DENIED;
 				return false;
 			}
 
@@ -489,7 +496,7 @@ class DetectionsController extends Controller
 		}
 		else
 		{
-			$this->error = 'Invalid parameters';
+			$this->error = L::ERROR_INVALID_PARAMETERS;
 
 			return false;
 		}

@@ -7,7 +7,17 @@ class Controller
 	public $view;
 	public $error;
 	protected $action;
+
+	/**
+	 * User access level for controller.
+	 * This is minimal access level needed for access to controler actions.
+	 *   0 - guest
+	 *   1 - registered (default)
+	 *   3 - admin
+	 * @var integer
+	 */
 	protected $user_access_level = 1;
+
 	function __construct($action = 'index')
 	{
 		$this->action = System::clean($action, 'method');
@@ -19,6 +29,7 @@ class Controller
 	{
 		// default method
 	}
+
 	function error()
 	{
 		return $this->error;
@@ -48,6 +59,30 @@ class Controller
 			}
 			return $css_list;
 		}
+	}
+
+	private function genJsLang()
+	{
+		$script_lang = '';
+
+		// Generate script language declarations.
+		if (count(Language::script()))
+		{
+			$script_lang .= '<script type="text/javascript">';
+			$script_lang .=     '(function() {';
+			$script_lang .=         'var strings = ' . json_encode(Language::script()) . ';';
+			$script_lang .=         'if (typeof SDLab == \'undefined\') {';
+			$script_lang .=             'SDLab = {};';
+			$script_lang .=             'SDLab.Language = strings;';
+			$script_lang .=         '}';
+			$script_lang .=         'else {';
+			$script_lang .=             'SDLab.Language.load(strings);';
+			$script_lang .=         '}';
+			$script_lang .=     '})();';
+			$script_lang .= '</script>';
+		}
+
+		return $script_lang;
 	}
 
 	protected function addJs($filename)

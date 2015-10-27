@@ -1,8 +1,8 @@
 <?
 
 /**
- * Карта классов
- * Массив с парами ИмяКласса => путь/к/ФайлуКласса
+ * Classmap
+ * Array with pairs ClassName => path/to/ClassFile
  */
 
 return array(
@@ -12,12 +12,14 @@ return array(
 	'System' => CONTROLLERS.'/helpers/System.php',
 	'Menu' => CONTROLLERS.'/helpers/Menu.php',
 	'Form' => CONTROLLERS.'/helpers/Form.php',
+	'Html' => CONTROLLERS.'/helpers/Html.php',
 	'PageController' => CONTROLLERS.'/PageController.php',
 	'SessionController' => CONTROLLERS.'/SessionController.php',
 	'SensorsController' => CONTROLLERS.'/SensorsController.php',
 	'DetectionsController' => CONTROLLERS.'/DetectionsController.php',
 	'ExperimentController' => CONTROLLERS.'/ExperimentController.php',
 	'SetupController' => CONTROLLERS.'/SetupController.php',
+	'TimeController' => CONTROLLERS.'/TimeController.php',
 	'ApiController' => CONTROLLERS.'/ApiController.php',
 	'ModelInterface' => MODELS.'/interfaces/ModelInterface.php',
 	'Model' => MODELS.'/Model.php',
@@ -26,5 +28,6 @@ return array(
 	'Setup' => MODELS.'/Setup.php',
 	'Monitor' => MODELS.'/Monitor.php',
 	'Plot' => MODELS.'/Plot.php',
-	'JSONSocket' => CONTROLLERS.'/helpers/JSONSocket.php'
+	'JSONSocket' => CONTROLLERS.'/helpers/JSONSocket.php',
+	'Language' => CONTROLLERS.'/helpers/Language.php'
 );

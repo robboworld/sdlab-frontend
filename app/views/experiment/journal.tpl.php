@@ -12,18 +12,19 @@
 		<h3><? print htmlspecialchars($this->view->content->title, ENT_QUOTES, 'UTF-8'); ?></h3>
 		<p>
 			<button type="button" id="cleanDetections" class="btn btn-danger">
-				<span class="glyphicon glyphicon-trash"></span> Очистить
+				<span class="glyphicon glyphicon-trash"></span> <? echo L::CLEAN; ?>
 			</button>
 		</p>
-		<!-- <input type="checkbox"> Включить в отчет -->
+		<!-- <input type="checkbox"> <? echo L::INCLUDE_TO_REPORT; ?> -->
 		<table class="table-detections table table-striped table-bordered">
 			<thead>
 				<tr>
 					<td>№</td>
-					<td>Время</td>
+					<td><? echo L::TIME; ?></td>
 					<? foreach ($this->view->content->displayed_sensors as $skey => $sensor) :?>
 					<td><? print htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?><br/>
-						<small><? echo htmlspecialchars($sensor->value_name, ENT_QUOTES, 'UTF-8') . ', ' . htmlspecialchars($sensor->si_notation, ENT_QUOTES, 'UTF-8'); ?></small><br/>
+						<small><? echo htmlspecialchars(constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8')
+								. ', ' . htmlspecialchars(constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)), ENT_QUOTES, 'UTF-8'); ?></small><br/>
 						<small class="muted">(id: <? print htmlspecialchars($skey, ENT_QUOTES, 'UTF-8'); ?>)</small>
 					</td>
 					<? endforeach; ?>
@@ -38,14 +39,14 @@
 							<a href="javascript:void(0);" class="btn-remove-detection btn btn-xs text-danger pull-left" style="display: none;"><span class="glyphicon glyphicon-remove"></span></a>
 						</div>
 					</td>
-					<td><? print htmlspecialchars($time, ENT_QUOTES, 'UTF-8'); ?></td>
+					<td><? print htmlspecialchars(System::datemsecformat($time, System::DATETIME_FORMAT1NANO, 'now'), ENT_QUOTES, 'UTF-8'); ?></td>
 					<? foreach ($this->view->content->displayed_sensors as $skey => $sensor) :?>
 					<td><? 
 						if (isset($row[$skey]))
 						{
 							print ($row[$skey]->error !== 'NaN') ? (float)$row[$skey]->detection : '';
 						}
-					 ?></td>
+					?></td>
 					<? endforeach; ?>
 				</tr>
 			<? endforeach; ?>
@@ -54,8 +55,8 @@
 	</div>
 
 	<div class="col-md-3">
-		<h3>Датчики
-			<a class="btn btn-link btn-sm" id="collapseSensorsControl" role="button" data-toggle="collapse" href="#collapseSensors" aria-expanded="true" aria-controls="collapseSensors" title="Показать/спрятать фильтр">
+		<h3><? echo L::SENSORS; ?>
+			<a class="btn btn-link btn-sm" id="collapseSensorsControl" role="button" data-toggle="collapse" href="#collapseSensors" aria-expanded="true" aria-controls="collapseSensors" title="<? echo L::graph_FILTER_SHOW_HIDE; ?>">
 				<span class="glyphicon glyphicon-chevron-down"></span>
 			</a>
 		</h3>
@@ -67,7 +68,7 @@
 					</li>
 				<? endforeach; ?>
 			</ul>
-			<input type="submit" class="btn btn-primary" value="Обновить" />
+			<input type="submit" class="btn btn-primary" value="<? echo L::REFRESH; ?>" />
 		</div>
 	</div>
 </div>

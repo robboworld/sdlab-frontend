@@ -35,14 +35,31 @@ class Form
 	 * @param $date
 	 * @return string
 	 */
-	static function dateToInput($date)
+	static function dateToInput($date, $timezone = null)
 	{
-		$date = new DateTime($date);
-		return $date->format('Y-m-d');
+		$dt = new DateTime($date);
+
+		if ($timezone !== null)
+		{
+			if ($timezone === 'now')
+			{
+				$tz = (new DateTime())->getTimezone();
+			}
+			else
+			{
+				$tz = (new DateTime())->setTimezone(new DateTimeZone($timezone))->getTimezone();
+			}
+			$dt->setTimezone($tz);
+		}
+
+		return $dt->format('Y-m-d');
 	}
 
 	/**
+	 * Convert datetime interval array of (days, hours, minutes, seconds) to seconds
+	 * 
 	 * @param array $dhm
+	 * 
 	 * @return int
 	 */
 	static function DHMStoSec(array $dhm)

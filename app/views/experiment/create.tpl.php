@@ -33,10 +33,10 @@
 			<div class="form-group col-md-6">
 				<div class="row">
 					<div class="col-md-6">
-						<input type="date" class="form-control" name="experiment_date_start" value="<? if(!empty($this->view->form->experiment->DateStart_exp)) print Form::dateToInput('@'.$this->view->form->experiment->DateStart_exp);?>">
+						<input type="date" class="form-control" name="experiment_date_start" value="<? if(!empty($this->view->form->experiment->DateStart_exp)) print Form::dateToInput('@'.$this->view->form->experiment->DateStart_exp, 'now');?>">
 					</div>
 					<div class="col-md-6">
-						<input type="date" class="form-control" name="experiment_date_end" value="<? if(!empty($this->view->form->experiment->DateEnd_exp)) print Form::dateToInput('@'.$this->view->form->experiment->DateEnd_exp);?>">
+						<input type="date" class="form-control" name="experiment_date_end" value="<? if(!empty($this->view->form->experiment->DateEnd_exp)) print Form::dateToInput('@'.$this->view->form->experiment->DateEnd_exp, 'now');?>">
 					</div>
 				</div>
 			</div>

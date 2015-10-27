@@ -378,7 +378,7 @@ class SensorsController extends Controller
 								{
 									$res = $insert->execute(array(
 										':exp_id' => $experiment->id,
-										':time' => $result[0]->Time,
+										':time' => System::convertDatetimeToUTC($result[0]->Time),
 										':sensor_id' => $sensors[$i]->id,
 										':sensor_val_id' => $sensors[$i]->sensor_val_id,
 										':detection' => $result[0]->Readings[$i],
@@ -596,6 +596,8 @@ class SensorsController extends Controller
 
 					// Set parameters for backend sensors API
 					$now = new DateTime();
+					$nowutc = clone $now;
+					$nowutc->setTimezone(new DateTimeZone('UTC'));
 					// Check Setup mode
 					if ($setup->amount)
 					{
@@ -607,13 +609,13 @@ class SensorsController extends Controller
 						// xxx: need add some time to interval for truely detect last values
 						//$overflow = (int)$setup->interval; // one interval
 						$overflow = 1;
-						$stopat = (new DateTime($now->format(DateTime::ATOM)))->modify('+' . ($count * (int)$setup->interval + $overflow) . ' sec')->format('Y-m-d\TH:i:s\Z');
+						$stopat = (new DateTime($nowutc->format(DateTime::RFC3339)))->modify('+' . ($count * (int)$setup->interval + $overflow) . ' sec')->format(System::DATETIME_RFC3339_UTC);
 					}
 					else
 					{
 						// Must be defined count values buffer fo RRD
 						$count = (int) ceil((int)$setup->time_det / ((int)$setup->interval > 0 ? (int)$setup->interval : 1));
-						$stopat = (new DateTime($now->format(DateTime::ATOM)))->modify('+' . (int)$setup->time_det . ' sec')->format('Y-m-d\TH:i:s\Z');
+						$stopat = (new DateTime($nowutc->format(DateTime::RFC3339)))->modify('+' . (int)$setup->time_det . ' sec')->format(System::DATETIME_RFC3339_UTC);
 					}
 
 					$query_params = array(
@@ -640,7 +642,7 @@ class SensorsController extends Controller
 					$monitor->set('exp_id', (int)$experiment->id);
 					$monitor->set('setup_id', (int)$setup->id);
 					$monitor->set('uuid', (string)$result);
-					$monitor->set('created', $now->format('Y-m-d\TH:i:s\Z'));
+					$monitor->set('created', $nowutc->format(System::DATETIME_RFC3339_UTC));
 
 					$result = $monitor->save();
 					if (!$result)
@@ -868,11 +870,13 @@ class SensorsController extends Controller
 					{
 						if (is_null($mon->info->StopAt))
 						{
-							$stopdt = new DateTime('now');
+							$stopdt = new DateTime();
+							$stopdt->setTimezone(new DateTimeZone('UTC'));
 						}
 						else
 						{
 							$stopdt = new DateTime(System::cutdatemsec($mon->info->StopAt));
+							$stopdt->setTimezone(new DateTimeZone('UTC'));
 							$stopdt->modify('+' . $offset . ' sec');
 						}
 					}
@@ -881,12 +885,15 @@ class SensorsController extends Controller
 						if (is_null($mon->info->StopAt))
 						{
 							$stopdt = new DateTime(System::cutdatemsec($mon->info->Last));
+							$stopdt->setTimezone(new DateTimeZone('UTC'));
 							$stopdt->modify('+' . $offset . ' sec');
 						}
 						else
 						{
 							$lastdt = new DateTime(System::cutdatemsec($mon->info->Last));
+							$lastdt->setTimezone(new DateTimeZone('UTC'));
 							$stopdt = new DateTime(System::cutdatemsec($mon->info->StopAt));
+							$stopdt->setTimezone(new DateTimeZone('UTC'));
 
 							if ($lastdt >= $stopdt)
 							{
@@ -895,11 +902,12 @@ class SensorsController extends Controller
 							else
 							{
 								$stopdt = new DateTime(System::cutdatemsec($mon->info->Last));
+								$stopdt->setTimezone(new DateTimeZone('UTC'));
 								$stopdt->modify('+' . $offset . ' sec');
 							}
 						}
 					}
-					$stop_str = $stopdt->format('Y-m-d\TH:i:s\Z');
+					$stop_str = $stopdt->format(System::DATETIME_RFC3339_UTC);
 
 					// Prepare parameters for backend sensors API method
 					$query_params = array(
@@ -978,7 +986,10 @@ class SensorsController extends Controller
 									continue;
 								}
 
-								$data_values = array($experiment->id, $d->Time, $sensors[$i]->id, $sensors[$i]->sensor_val_id, $detection, $sensor_error);
+								// Convert time to UTC
+								$time = System::convertDatetimeToUTC($d->Time);
+
+								$data_values = array($experiment->id, $time, $sensors[$i]->id, $sensors[$i]->sensor_val_id, $detection, $sensor_error);
 
 								// Merge to long array of values
 								$insert_values = array_merge($insert_values, $data_values);
@@ -1087,7 +1098,7 @@ class SensorsController extends Controller
 	 * API method: Sensors.experimentStatus
 	 * API params: experiment[, uuid]
 	 *
-	 * Return object format:
+	 * Return object in format:
 	 * <code>
 	 * {
 	 *     setup : {
@@ -1226,7 +1237,6 @@ class SensorsController extends Controller
 				$done_cnt        = 0;
 				$remain_cnt      = 0;
 				$remain_cnt_text = '';
-				$created         = time();
 
 				$now = new DateTime();
 				$setup_stopat_date  = null;
@@ -1241,15 +1251,16 @@ class SensorsController extends Controller
 				{
 					// TODO: need from backend API Monitor.Info about last data value (DS.last_ds) and test it to "U" with last_update date
 
-					$created = System::cutdatemsec($monitor->info->Created);
-					if ($monitor->info->Last === $created /* && $monitor->info->last_ds == "U" */)
+					$dt_created = new DateTime(System::cutdatemsec($monitor->info->Created));
+					$dt_last = new DateTime(System::cutdatemsec($monitor->info->Last));
+					if ($dt_last == $dt_created /* && $monitor->info->last_ds == "U" */)
 					{
 						// No data in rrd
 					}
 					else
 					{
-						$timestamp_last    = System::dateformat(System::cutdatemsec($monitor->info->Last), 'U');
-						$timestamp_created = System::dateformat($created, 'U');
+						$timestamp_created = $dt_created->format('U');
+						$timestamp_last    = $dt_last->format('U');
 
 						$done_cnt = ($timestamp_last >= $timestamp_created) ?
 								(int)(($timestamp_last - $timestamp_created) / $monitor->info->Archives[0]->Step) :
@@ -1280,8 +1291,9 @@ class SensorsController extends Controller
 						if ($monitor && isset($monitor->info))
 						{
 							$setup_stopat_date = new DateTime(System::cutdatemsec($monitor->info->Created));
+							$setup_stopat_date->setTimezone((new DateTime())->getTimezone());
 							$setup_stopat_date->modify('+'.$setup->time().' sec');
-							$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+							$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
 
 							if ($now->format('U') > $setup_stopat_date->format('U'))
 							{
@@ -1307,7 +1319,8 @@ class SensorsController extends Controller
 							if ($monitor->info->StopAt !== System::nulldate())
 							{
 								$setup_stopat_date = new DateTime(System::cutdatemsec($monitor->info->StopAt));
-								$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+								$setup_stopat_date->setTimezone((new DateTime())->getTimezone());
+								$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
 
 								if ($now->format('U') > $setup_stopat_date->format('U'))
 								{
@@ -1321,8 +1334,9 @@ class SensorsController extends Controller
 							else
 							{
 								$setup_stopat_date = new DateTime(System::cutdatemsec($monitor->info->Created));
+								$setup_stopat_date->setTimezone((new DateTime())->getTimezone());
 								$setup_stopat_date->modify('+'.$setup->time().' sec');
-								$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+								$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
 
 								if ($now->format('U') > $setup_stopat_date->format('U'))
 								{
@@ -1344,7 +1358,7 @@ class SensorsController extends Controller
 				{
 					$setup_stopat_date = new DateTime();
 					$setup_stopat_date->modify('+'.$setup->time().' sec');
-					$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+					$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
 				}
 
 				// Fill stat data

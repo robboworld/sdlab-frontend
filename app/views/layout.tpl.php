@@ -11,6 +11,11 @@
 	<link rel="stylesheet" href="assets/bootstrap/css/bootstrap-theme.min.css">
 	<link rel="stylesheet" href="assets/css/style.css">
 	<script src="assets/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript">
+	$(function () {
+		$('[data-toggle="tooltip"]').tooltip()
+	})
+	</script>
 	<? print $this->collectJs(); ?>
 
 	<? print $this->collectCss(); ?>
@@ -22,10 +27,9 @@
 	<div class="container" id="navigation">
 		<div class="navbar navbar-fixed-top navbar-inverse">
 			<div class="navbar-text">
-				<span class="text-center">
-					<span class="glyphicon glyphicon-time"></span>
-						<? print date('H:i')?>
-				</span>
+				<div class="text-center" data-toggle="tooltip" data-placement="auto" data-delay="100" data-trigger="click hover focus" title="<? print (new DateTime())->format(System::DATETIME_FORMAT3); ?>">
+					<span class="glyphicon glyphicon-time"></span>&nbsp;<? print (new DateTime())->format('H:i'); ?>
+				</div>
 			</div>
 
 			<ul class="nav navbar-nav">

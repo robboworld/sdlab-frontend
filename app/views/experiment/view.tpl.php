@@ -11,7 +11,6 @@ $done_cnt        = 0;       //#setup_done_cnt
                             //#setup_interval
 $remain_cnt      = 0;       //#setup_remain_cnt
 $remain_cnt_text = '';
-$created         = time();
 
 //#setup_time_det
 
@@ -38,15 +37,16 @@ if($setup_exists)
 
 		// TODO: need from backend API Monitor.Info about last data value (DS.last_ds) and test it to "U" with last_update date
 
-		$created = System::cutdatemsec($this->view->content->monitor->info->Created);
-		if ($this->view->content->monitor->info->Last === $created /* && $this->view->content->monitor->info->last_ds == "U" */)
+		$dt_created = new DateTime(System::cutdatemsec($this->view->content->monitor->info->Created));
+		$dt_last = new DateTime(System::cutdatemsec($this->view->content->monitor->info->Last));
+		if ($dt_last == $dt_created /* && $this->view->content->monitor->info->last_ds == "U" */)
 		{
 			// No data in rrd
 		}
 		else
 		{
-			$timestamp_last    = System::dateformat(System::cutdatemsec($this->view->content->monitor->info->Last), 'U');
-			$timestamp_created = System::dateformat($created, 'U');
+			$timestamp_created = $dt_created->format('U');
+			$timestamp_last    = $dt_last->format('U');
 
 			$done_cnt = ($timestamp_last >= $timestamp_created) ?
 					(int)(($timestamp_last - $timestamp_created) / $this->view->content->monitor->info->Archives[0]->Step) :
@@ -73,12 +73,16 @@ if($setup_exists)
 		// Check Setup mode
 		if ($this->view->content->setup->amount)
 		{
+			// Amount detections mode
+
 			// Has monitor data
 			if ($this->view->content->monitor && isset($this->view->content->monitor->info))
 			{
+				// Get StopAt from Created + Setup.time(sec)
 				$setup_stopat_date = new DateTime(System::cutdatemsec($this->view->content->monitor->info->Created));
+				$setup_stopat_date->setTimezone((new DateTime())->getTimezone());
 				$setup_stopat_date->modify('+'.$this->view->content->setup->time().' sec');
-				$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+				$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
 
 				if ($now->format('U') > $setup_stopat_date->format('U'))
 				{
@@ -97,6 +101,8 @@ if($setup_exists)
 		}
 		else
 		{
+			// StopAt mode
+
 			// Has monitor data
 			if ($this->view->content->monitor && isset($this->view->content->monitor->info))
 			{
@@ -105,7 +111,8 @@ if($setup_exists)
 				if ($this->view->content->monitor->info->StopAt !== System::nulldate())
 				{
 					$setup_stopat_date = new DateTime(System::cutdatemsec($this->view->content->monitor->info->StopAt));
-					$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+					$setup_stopat_date->setTimezone((new DateTime())->getTimezone());
+					$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
 
 					if ($now->format('U') > $setup_stopat_date->format('U'))
 					{
@@ -120,8 +127,9 @@ if($setup_exists)
 				else
 				{
 					$setup_stopat_date = new DateTime(System::cutdatemsec($this->view->content->monitor->info->Created));
+					$setup_stopat_date->setTimezone((new DateTime())->getTimezone());
 					$setup_stopat_date->modify('+'.$this->view->content->setup->time().' sec');
-					$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+					$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
 
 					if ($now->format('U') > $setup_stopat_date->format('U'))
 					{
@@ -144,7 +152,7 @@ if($setup_exists)
 	{
 		$setup_stopat_date = new DateTime();
 		$setup_stopat_date->modify('+'.$this->view->content->setup->time().' sec');
-		$setup_stopat_text = $setup_stopat_date->format('Y.m.d H:i:s');
+		$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
 	}
 }
 ?>
@@ -201,11 +209,11 @@ if($setup_exists)
 						<div class="date-block">
 							<div id="exp_datestart" class="text-left ln-hgt-16px">
 								<? if(!empty($this->view->content->experiment->DateStart_exp))
-									print System::dateformat('@'.$this->view->content->experiment->DateStart_exp); ?>
+									print System::dateformat('@'.$this->view->content->experiment->DateStart_exp, System::DATETIME_FORMAT2, 'now'); ?>
 							</div>
 							<div id="exp_end" class="text-left ln-hgt-16px">
 								<? if(!empty($this->view->content->experiment->DateEnd_exp))
-									print System::dateformat('@'.$this->view->content->experiment->DateEnd_exp); ?>
+									print System::dateformat('@'.$this->view->content->experiment->DateEnd_exp, System::DATETIME_FORMAT2, 'now'); ?>
 							</div>
 						</div>
 						<div class="label-block">
@@ -367,7 +375,7 @@ if($setup_exists)
 		</label>
 	</div>
 	<div class="col-xs-6 col-sm-2 col-md-2 pull-right text-right">
-	<? if(!isset($this->view->content->experiment->DateEnd_exp)) :?>
+	<? if (!isset($this->view->content->experiment->DateEnd_exp) || empty($this->view->content->experiment->DateEnd_exp)) :?>
 		<!-- <a href="#" class="btn btn-default form-control disabled"><? echo L::FINISH; ?></a> -->
 	<? else : ?>
 		<span><? echo L::experiment_FINISHED; ?></span>

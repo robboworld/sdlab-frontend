@@ -579,11 +579,6 @@ class SensorsController extends Controller
 						));
 					}
 
-					// Set active state
-					$setup->set('flag', true);
-					$setup->save();
-
-
 					// Set sensors and values list for backend sensors API
 					$params_array = array();
 					foreach($sensors as $sensor)
@@ -636,6 +631,10 @@ class SensorsController extends Controller
 
 						return false;
 					}
+
+					// Set active state
+					$setup->set('flag', true);
+					$setup->save();
 
 					// Save started monitor uuid
 					$monitor = new Monitor();

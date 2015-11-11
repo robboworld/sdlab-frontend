@@ -22,6 +22,9 @@
 			<a href="?q=time/edit" class="btn btn-primary">
 				<span class="glyphicon glyphicon-cog"></span>&nbsp;<? echo L::time_SETTINGS; ?>
 			</a>
+			<a href="?q=webcam/view" class="btn btn-primary">
+				<span class="glyphicon glyphicon-facetime-video"></span>&nbsp;<? echo L::time_SETTINGS; ?>
+			</a>
 		</div>
 		<? endif; ?>
 	</div>

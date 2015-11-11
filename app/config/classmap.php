@@ -20,6 +20,7 @@ return array(
 	'ExperimentController' => CONTROLLERS.'/ExperimentController.php',
 	'SetupController' => CONTROLLERS.'/SetupController.php',
 	'TimeController' => CONTROLLERS.'/TimeController.php',
+	'WebcamController' => CONTROLLERS.'/WebcamController.php',
 	'ApiController' => CONTROLLERS.'/ApiController.php',
 	'ModelInterface' => MODELS.'/interfaces/ModelInterface.php',
 	'Model' => MODELS.'/Model.php',

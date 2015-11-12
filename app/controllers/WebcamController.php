@@ -152,7 +152,7 @@ class WebcamController extends Controller
 			$socket = new JSONSocket($this->config['socket']['path']);
 			$result = $socket->call('Lab.ListVideos', $query_params);
 			unset($socket);
-
+//error_log('Lab.ListVideos:'.var_export($result,true)); //DEBUG
 			// Get results
 			if($result !== false)
 			{
@@ -185,7 +185,7 @@ class WebcamController extends Controller
 						// Send request for get info about camera stream
 						$socket = new JSONSocket($this->config['socket']['path']);
 						$data = $socket->call('Lab.GetVideoStream', $query_params);
-
+//error_log('Lab.GetVideoStream:'.var_export($data,true)); //DEBUG
 						// Get results
 						if ($data)
 						{
@@ -225,6 +225,10 @@ class WebcamController extends Controller
 			{
 				// error
 				// TODO: error get monitor data from backend api, may by need show error
+
+				// TODO: need fix false if empty cameras list returned
+
+				$this->view->content->list = array();
 			}
 
 			//View all available webcams
@@ -237,13 +241,13 @@ class WebcamController extends Controller
 	 */
 	function start()
 	{
-		if (!empty($this->id) && is_numeric($this->id))
+		if (isset($_POST) && isset($_POST['dev_id']))
 		{
 			//if ($this->session()->getUserLevel() == 3)
 			{
 				if (isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'action-webcam-form')
 				{
-					$dev_id = (isset($_POST['dev_id']) ? (int)$_POST['dev_id'] : -1);
+					$dev_id = ((int)$_POST['dev_id'] >= 0) ? (int)$_POST['dev_id'] : -1;
 
 					if ($dev_id < 0)
 					{
@@ -253,7 +257,7 @@ class WebcamController extends Controller
 					}
 
 					// Prepare parameters for api method
-					$query_params = array($dev_id);
+					$query_params = array('/dev/video' . (int)$dev_id);
 
 					// Send request for list cameras
 					$socket = new JSONSocket($this->config['socket']['path']);
@@ -289,13 +293,13 @@ class WebcamController extends Controller
 	 */
 	function stop()
 	{
-		if (!empty($this->id) && is_numeric($this->id))
+		if (isset($_POST) && isset($_POST['dev_id']))
 		{
 			//if($this->session()->getUserLevel() == 3)
 			{
 				if (isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'action-webcam-form')
 				{
-					$dev_id = (isset($_POST['dev_id']) ? (int)$_POST['dev_id'] : -1);
+					$dev_id = ((int)$_POST['dev_id'] >= 0) ? (int)$_POST['dev_id'] : -1;
 
 					if ($dev_id < 0)
 					{
@@ -305,7 +309,7 @@ class WebcamController extends Controller
 					}
 
 					// Prepare parameters for api method
-					$query_params = array($dev_id);
+					$query_params = array('/dev/video' . (int)$dev_id);
 
 					// Send request for list cameras
 					$socket = new JSONSocket($this->config['socket']['path']);
@@ -333,5 +337,73 @@ class WebcamController extends Controller
 		{
 			System::go('webcam/view');
 		}
+	}
+
+	/** Action: Start all
+	 * Start all web cameras streaming
+	 */
+	function startall()
+	{
+		//if ($this->session()->getUserLevel() == 3)
+		{
+			if (isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'action-webcam-form')
+			{
+				// Prepare parameters for api method
+				$query_params = null;
+
+				// Send request for list cameras
+				$socket = new JSONSocket($this->config['socket']['path']);
+				$result = $socket->call('Lab.StartVideoStreamAll', $query_params);
+				unset($socket);
+
+				// Check result
+				if (!$result)
+				{
+					// Error: cannot start stream, or camera not found
+					System::go('webcam/view');
+					return;
+				}
+			}
+			System::go('webcam/view');
+			return;
+		}
+		//else
+		//{
+		//	System::go('experiment/view');
+		//}
+	}
+
+	/** Action: Stop all
+	 * Stop all web cameras streaming
+	 */
+	function stopall()
+	{
+		//if($this->session()->getUserLevel() == 3)
+		{
+			if (isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'action-webcam-form')
+			{
+				// Prepare parameters for api method
+				$query_params = null;
+
+				// Send request for list cameras
+				$socket = new JSONSocket($this->config['socket']['path']);
+				$result = $socket->call('Lab.StopVideoStreamAll', $query_params);
+				unset($socket);
+
+				// Check result
+				if (!$result)
+				{
+					// Error: cannot stop streams, or cameras not found
+					System::go('webcam/view');
+					return;
+				}
+			}
+			System::go('webcam/view');
+			return;
+		}
+		//else
+		//{
+		//	System::go('experiment/view');
+		//}
 	}
 }

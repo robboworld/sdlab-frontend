@@ -39,6 +39,18 @@ if(isset($this->view->content->list))
 			form.elements["dev_id"].value = $(this).data('devid');
 			form.submit();
 		});
+		$('.webcam-stream-startall').click(function(){
+			var form = document.getElementById('sdform');
+			form.action = '?q=webcam/startall';
+			form.elements["dev_id"].value = -1;
+			form.submit();
+		});
+		$('.webcam-stream-stopall').click(function(){
+			var form = document.getElementById('sdform');
+			form.action = '?q=webcam/stopall';
+			form.elements["dev_id"].value = -1;
+			form.submit();
+		});
 	});
 //-->
 </script>
@@ -49,8 +61,8 @@ if(isset($this->view->content->list))
 		</div>
 	</div>
 	<div>
-		<a href="?q=webcam/startall" class="btn btn-primary"><span class="glyphicon glyphicon-play">&nbsp;</span><? echo L::webcam_START_ALL; ?></a>
-		<a href="?q=webcam/stopall" class="btn btn-warning"><span class="glyphicon glyphicon-stop">&nbsp;</span><? echo L::webcam_STOP_ALL; ?></a>
+		<button type="button" class="webcam-stream-startall btn btn-primary"><span class="glyphicon glyphicon-play">&nbsp;</span><? echo L::webcam_START_ALL; ?></button>
+		<button type="button" class="webcam-stream-stopall btn btn-warning"><span class="glyphicon glyphicon-stop">&nbsp;</span><? echo L::webcam_STOP_ALL; ?></button>
 	</div>
 	<form id="sdform" method="post" action="?<? print $_SERVER['QUERY_STRING']?>" >
 		<input type="hidden" name="form-id" value="action-webcam-form"/>
@@ -105,7 +117,25 @@ if(isset($this->view->content->list))
 			<? endforeach; ?>
 
 			</tbody>
+			<? if(empty($this->view->content->list )) : ?>
+
+			<tfoot>
+			<tr>
+				<td colspan="5">
+					<div class="alert alert-danger">
+						<span><? echo L::webcam_CAMERAS_NOT_FOUND; ?></span>
+					</div>
+				</td>
+			</tr>
+			</tfoot>
+			<? endif; ?>
+
 		</table>
+		<? else : ?>
+		<div class="alert alert-danger">
+			<span><? echo L::webcam_FATAL_ERROR_LIST; ?></span>
+		</div>
 		<? endif; ?>
+
 	</form>
 </div>

@@ -61,8 +61,8 @@ if(isset($this->view->content->list))
 		</div>
 	</div>
 	<div>
-		<button type="button" class="webcam-stream-startall btn btn-primary"><span class="glyphicon glyphicon-play">&nbsp;</span><? echo L::webcam_START_ALL; ?></button>
-		<button type="button" class="webcam-stream-stopall btn btn-warning"><span class="glyphicon glyphicon-stop">&nbsp;</span><? echo L::webcam_STOP_ALL; ?></button>
+		<button type="button" class="webcam-stream-startall btn btn-success"><span class="glyphicon glyphicon-off">&nbsp;</span><? echo L::webcam_START_ALL; ?></button>
+		<button type="button" class="webcam-stream-stopall btn btn-danger"><span class="glyphicon glyphicon-ban-circle">&nbsp;</span><? echo L::webcam_STOP_ALL; ?></button>
 	</div>
 	<form id="sdform" method="post" action="?<? print $_SERVER['QUERY_STRING']?>" >
 		<input type="hidden" name="form-id" value="action-webcam-form"/>
@@ -105,13 +105,16 @@ if(isset($this->view->content->list))
 						<? print htmlspecialchars($item->Device, ENT_QUOTES, 'UTF-8'); ?>
 					</td>
 					<td>
-						<div>
+						<div id="stream-wrapper">
 							<img <? echo (!empty($item->stream) && ($item->stream->Stream >= 0)) ? ('id="mjpgstream'.$item->stream->Stream.'"') : ''; ?>/>
 						</div>
+						<button type="button" class="webcam-stream-start btn btn-sm btn-success" data-devid="<? echo (int)$item->Index; ?>" style="display:none;"><span class="glyphicon glyphicon-play"></span></button>
+						<button type="button" class="webcam-stream-stop btn btn-sm btn-danger" data-devid="<? echo (int)$item->Index; ?>" style="display:none;"><span class="glyphicon glyphicon-stop"></span></button>
+						<button type="button" class="webcam-stream-stop btn btn-sm btn-primary" data-devid="<? echo (int)$item->Index; ?>" style="display:none;"><span class="glyphicon glyphicon-picture"></span></button>
 					</td>
 					<td class="text-right">
-						<button type="button" class="webcam-stream-start btn btn-sm btn-success" data-devid="<? echo (int)$item->Index; ?>"><span class="glyphicon glyphicon-play"></span></button>
-						<button type="button" class="webcam-stream-stop btn btn-sm btn-danger" data-devid="<? echo (int)$item->Index; ?>"><span class="glyphicon glyphicon-stop"></span></button>
+						<button type="button" class="webcam-stream-start btn btn-sm btn-success" data-devid="<? echo (int)$item->Index; ?>"><span class="glyphicon glyphicon-off"></span></button>
+						<button type="button" class="webcam-stream-stop btn btn-sm btn-danger" data-devid="<? echo (int)$item->Index; ?>"><span class="glyphicon glyphicon-ban-circle"></span></button>
 					</td>
 				</tr>
 			<? endforeach; ?>

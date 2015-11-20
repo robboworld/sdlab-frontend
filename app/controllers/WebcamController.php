@@ -162,12 +162,12 @@ class WebcamController extends Controller
 					// Some cameras
 
 					/*
-					// Format result
-					{
-						device: /dev/video0
-						name: Logitech C900
-						index: 0
-					}
+					// Lab.ListVideos result format example:
+					[{
+						Device:  /dev/video0
+						Name:    Logitech C900
+						Index:   0
+					}, ...]
 					*/
 
 					// Get streaming info
@@ -190,11 +190,11 @@ class WebcamController extends Controller
 						if ($data)
 						{
 							/*
-							// Format data
+							// Lab.GetVideoStream result format example:
 							{
-								device: /dev/video0
-								stream: 0
-								port: 8090
+								Device:  /dev/video0
+								Stream:  0
+								Port:    8090
 							}
 							*/
 							if ($data->Stream < 0)

@@ -131,7 +131,7 @@ class WebcamController extends Controller
 			self::setTitle(L::webcam_TITLE_ALL);
 
 			self::addJs('functions');
-			//self::addJs('class/Webcam');
+			self::addJs('class/Webcam');
 			//self::addJs('webcam/view.all');
 			// Add language translates for scripts
 			//Language::script(array(

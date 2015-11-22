@@ -199,8 +199,8 @@ class WebcamController extends Controller
 							*/
 							if ($data->Stream < 0)
 							{
-								// No stream fo this device
-								$data->Stream = null;
+								// No stream for this device
+								$data->Stream = -1;
 							}
 
 							$result[$k]->stream = $data;

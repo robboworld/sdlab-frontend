@@ -61,6 +61,12 @@ if(isset($this->view->content->list))
 		$('.webcam-stream-stop').click(function(){
 			sdwc.stop($(this).data('devid'));
 		});
+		$('.webcam-stream-step-forward').click(function(){
+			sdwc.snapshot($(this).data('devid'));
+		});
+		//$('.webcam-stream-fast-forward').click(function(){
+		//	sdwc.start($(this).data('devid'), 200);
+		//});
 	});
 </script>
 <div class="col-md-12">
@@ -115,12 +121,16 @@ if(isset($this->view->content->list))
 						<? print htmlspecialchars($item->Device, ENT_QUOTES, 'UTF-8'); ?>
 					</td>
 					<td>
-						<div id="webcam_<? echo (int)$item->Index; ?>" class="stream-wrapper" style="position:relative;overflow:hidden;margin:2px 0;<? echo $streamed ? "width:320px;height:240px;" : ""; ?>">
+						<div id="webcam_<? echo (int)$item->Index; ?>" class="stream-wrapper" style="<? echo $streamed ? "width:320px;height:240px;" : ""; ?>">
 							<img <? echo $streamed ? ('id="mjpgstream'.$item->stream->Stream.'"') : ''; ?>/>
 						</div>
 						<? if ($streamed) : ?>
-						<button type="button" class="webcam-stream-start btn btn-xs btn-success" data-devid="<? echo (int)$item->Index; ?>"><span class="glyphicon glyphicon-play"></span></button>
-						<button type="button" class="webcam-stream-stop btn btn-xs btn-danger" data-devid="<? echo (int)$item->Index; ?>"><span class="glyphicon glyphicon-stop"></span></button>
+						<div class="btn-group btn-group-xs btn-group-streamplay" role="group">
+							<button type="button" class="webcam-stream-start btn btn-xs btn-success" data-devid="<? echo (int)$item->Index; ?>"><span class="glyphicon glyphicon-play"></span></button>
+							<button type="button" class="webcam-stream-step-forward btn btn-xs btn-success" data-devid="<? echo (int)$item->Index; ?>"><span class="glyphicon glyphicon-step-forward"></span></button>
+							<button type="button" class="webcam-stream-stop btn btn-xs btn-danger" data-devid="<? echo (int)$item->Index; ?>"><span class="glyphicon glyphicon-stop"></span></button>
+						</div>
+						<button type="button" class="webcam-stream-fast-forward btn btn-xs btn-success" data-devid="<? echo (int)$item->Index; ?>" style="display:none;"><span class="glyphicon glyphicon-fast-forward"></span></button>
 						<button type="button" class="webcam-stream-step btn btn-xs btn-primary" data-devid="<? echo (int)$item->Index; ?>" style="display:none;"><span class="glyphicon glyphicon-picture"></span></button>
 						<? endif; ?>
 					</td>

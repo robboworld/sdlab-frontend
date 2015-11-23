@@ -235,3 +235,11 @@ h3.exp-title {
 	background-color: rgba(255,255,255,0.8);
 	padding: 5px;
 }
+
+/* Webcam streaming */
+.stream-wrapper {
+	position: relative;
+	overflow: hidden;
+	z-index: 0;
+	margin: 2px 0;
+}

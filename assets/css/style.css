@@ -243,3 +243,6 @@ h3.exp-title {
 	z-index: 0;
 	margin: 2px 0;
 }
+.webcam-info.dl-horizontal dt {
+	text-align: left;
+}

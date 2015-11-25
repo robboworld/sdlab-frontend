@@ -28,100 +28,113 @@ class WebcamController extends Controller
 	{
 		if(!is_null($this->id) && is_numeric($this->id))
 		{
-			System::go('webcam/view');
+			self::setViewTemplate('view');
+			self::setTitle(L::webcam_TITLE);
 
-			// TODO: view for one camera
-
-			/*
 			self::addJs('functions');
 			self::addJs('class/Webcam');
-			self::addJs('webcam/view');
 			// Add language translates for scripts
 			//Language::script(array(
-			//		'GRAPH', 'INFO',  // class/Sensor
-			//		'RUNNING_', 'STROBE', 'ERROR_NOT_COMPLETED', 'experiment_ERROR_CONFIGURATION_ORPHANED'  // experiment/view
 			//));
 
+			$this->view->content->item = null;
+
 			// TODO: Get list of available video streams (parse mjpg process run cmdline, get N ids /dev/videoN)
+			// Prepare parameters for api method
+			$query_params = null;
 
+			// Send request for list cameras
+			$socket = new JSONSocket($this->config['socket']['path']);
+			$result = $socket->call('Lab.ListVideos', $query_params);
+			unset($socket);
 
-			// TODO: Check if requested id is in the available list /dev/videoN
-
-			// TODO: Show error message if cam is not available
-
-			$experiment = (new Experiment())->load($this->id);
-			//if($this->session()->getUserLevel() == 3)  // TODO: only admin access to webcam
+			// Get results
+			if($result !== false)
 			{
-				$this->view->content->experiment = $experiment;
-				if($experiment->setup_id)
+				//Prepare results
+				if(!empty($result))
 				{
-					$this->view->content->setup = (new Setup())->load($experiment->setup_id);
-					$this->view->content->sensors = SetupController::getSensors($experiment->setup_id, true);
-					$monitors = (new Monitor())->loadItems(
-							array(
-									'exp_id' => (int)$experiment->id,
-									'setup_id' => (int)$experiment->setup_id,
-									'deleted' => 0
-							),
-							'id', 'DESC', 1
-					);
-					$this->view->content->monitor = (!empty($monitors)) ? $monitors[0] : null;
+					// Some cameras
 
-					// Get last monitoring info from api
-					if (!empty($this->view->content->monitor))
+					/*
+					// Lab.ListVideos result format example:
+					[{
+					Device:  /dev/video0
+					Name:    Logitech C900
+					Index:   0
+					}, ...]
+					*/
+
+					// Get streaming info
+					foreach ($result as $k => $vid)
 					{
-						// Prepare parameters for api method
-						$query_params = array($this->view->content->monitor->uuid);
-
-						// Send request for get monitor info
-						$socket = new JSONSocket($this->config['socket']['path']);
-						$result = $socket->call('Lab.GetMonInfo', $query_params);
-
-						// Get results
-						if($result)
+						if (strlen($vid->Device) == 0)
 						{
-							//Prepare results
-							$nd = System::nulldate();
-
-							if(isset($result->Created) && ($result->Created === $nd))
-							{
-								$result->Created = null;
-							}
-
-							if(isset($result->StopAt) && ($result->StopAt === $nd))
-							{
-								$result->StopAt = null;
-							}
-
-							if(isset($result->Last) && ($result->Last === $nd))
-							{
-								$result->Last = null;
-							}
-
-							$this->view->content->monitor->info = $result;
+							continue;
 						}
-						else
+
+						if ($vid->Index == (int)$this->id)
 						{
-							// TODO: error get monitor data from backend api, may by need show error
+							$result[$k]->stream = null;
+
+							// Prepare parameters for api method
+							$query_params = array($vid->Device);
+
+							// Send request for get info about camera stream
+							$socket = new JSONSocket($this->config['socket']['path']);
+							$data = $socket->call('Lab.GetVideoStream', $query_params);
+
+							// Get results
+							if ($data)
+							{
+								/*
+								// Lab.GetVideoStream result format example:
+								{
+								Device:  /dev/video0
+								Stream:  0
+								Port:    8090
+								}
+								*/
+								if ($data->Stream < 0)
+								{
+									// No stream for this device
+									$data->Stream = -1;
+								}
+
+								$result[$k]->stream = $data;
+							}
+							else
+							{
+								// error
+								// TODO: error get streaming data for camera from backend api, may by need show error
+							}
+							unset($socket);
+
+							$this->view->content->item = clone $result[$k];
+
+							break;
 						}
 					}
 				}
-
-				if($this->session()->getUserLevel() == 3)
-				{
-					$this->view->content->session = (new Session())->load($experiment->session_key);
-				}
 				else
 				{
-					$this->view->content->session = $this->session();
+					// Empty cameras
 				}
-				self::setTitle($experiment->title);
 			}
 			else
 			{
-				System::go('experiment/view');
+				// error
+				// TODO: error get monitor data from backend api, may by need show error
+			
+				// TODO: need fix false if empty cameras list returned
+				//System::go('webcam/view');
 			}
-			*/
+
+			// Camera not found
+			if (empty($this->view->content->item))
+			{
+				//System::go('webcam/view');
+			}
 		}
 		else
 		{
@@ -135,19 +148,14 @@ class WebcamController extends Controller
 			//self::addJs('webcam/view.all');
 			// Add language translates for scripts
 			//Language::script(array(
-			//		'GRAPH', 'INFO',  // class/Sensor
-			//		'RUNNING_', 'STROBE', 'ERROR_NOT_COMPLETED', 'experiment_ERROR_CONFIGURATION_ORPHANED'  // experiment/view
-			//		'journal_QUESTION_REMOVE_EXPERIMENT_WITH_1', 'journal_QUESTION_REMOVE_EXPERIMENT_WITH_JS_N', 'ERROR'  // experiment/view.all
 			//));
 
-
-			
 			$this->view->content->list = null;
-			
+
 			// TODO: Get list of available video streams (parse mjpg process run cmdline, get N ids /dev/videoN)
 			// Prepare parameters for api method
 			$query_params = null;
-			
+
 			// Send request for list cameras
 			$socket = new JSONSocket($this->config['socket']['path']);
 			$result = $socket->call('Lab.ListVideos', $query_params);
@@ -252,7 +260,9 @@ class WebcamController extends Controller
 					if ($dev_id < 0)
 					{
 						// Error: do nothing
+						// Redirect to list
 						System::go('webcam/view');
+
 						return;
 					}
 
@@ -268,22 +278,27 @@ class WebcamController extends Controller
 					if (!$result)
 					{
 						// Error: cannot start stream, or camera not found
-						System::go('webcam/view');
+						// Redirect back
+						System::goback('webcam/view', 'post');
 						return;
 					}
 				}
-				System::go('webcam/view');
+
+				// Redirect back
+				System::goback('webcam/view', 'post');
+
 				return;
 			}
 			//else
 			//{
-			//	System::go('experiment/view');
+			//	// Redirect back
+			//	System::goback('webcam/view');
 			//}
-
 		}
 		else
 		{
-			System::go('webcam/view');
+			// Redirect back
+			System::goback('webcam/view', 'post');
 		}
 	}
 
@@ -304,7 +319,9 @@ class WebcamController extends Controller
 					if ($dev_id < 0)
 					{
 						// Error: do nothing
+						// Redirect to list
 						System::go('webcam/view');
+
 						return;
 					}
 
@@ -320,22 +337,34 @@ class WebcamController extends Controller
 					if (!$result)
 					{
 						// Error: cannot stop stream, or camera not found
-						System::go('webcam/view');
+						// Redirect back
+						System::goback('webcam/view', 'post');
 						return;
 					}
 				}
-				System::go('webcam/view');
+
+				// Redirect back
+				System::goback('webcam/view', 'post');
+
 				return;
 			}
 			//else
 			//{
-			//	System::go('experiment/view');
+			//	// Redirect back
+			//	if(isset($_GET['destination']) && $_GET['destination'] != $_GET['q'])
+			//	{
+			//		System::go(System::clean($_GET['destination'], 'path'));
+			//	}
+			//	else
+			//	{
+			//		System::go('webcam/view');
+			//	}
 			//}
-
 		}
 		else
 		{
-			System::go('webcam/view');
+			// Redirect back
+			System::goback('webcam/view', 'post');
 		}
 	}
 
@@ -360,11 +389,14 @@ class WebcamController extends Controller
 				if (!$result)
 				{
 					// Error: cannot start stream, or camera not found
-					System::go('webcam/view');
+					System::goback('webcam/view', 'post');
 					return;
 				}
 			}
-			System::go('webcam/view');
+
+			// Redirect back
+			System::goback('webcam/view', 'post');
+
 			return;
 		}
 		//else
@@ -394,11 +426,14 @@ class WebcamController extends Controller
 				if (!$result)
 				{
 					// Error: cannot stop streams, or cameras not found
-					System::go('webcam/view');
+					// Redirect back
+					System::goback('webcam/view', 'post');
 					return;
 				}
 			}
-			System::go('webcam/view');
+
+			// Redirect back
+			System::goback('webcam/view', 'post');
 			return;
 		}
 		//else

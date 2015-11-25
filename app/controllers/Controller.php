@@ -130,7 +130,8 @@ class Controller
 	{
 		return strtolower(str_replace('Controller', '', get_class($this)));
 	}
-	/**
+
+	/*
 	function renderTemplate($template, $controller = null)
 	{
 		if($controller == null) $controller = App::router(0);
@@ -150,7 +151,7 @@ class Controller
 		ob_end_clean();
 		return $result;
 	}
-	 */
+	*/
 
 	function user_access_level()
 	{

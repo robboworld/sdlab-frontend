@@ -121,6 +121,11 @@ class Setup extends Model
 	 */
 	function userCanEdit($session)
 	{
+		if(!$session)
+		{
+			return false;
+		}
+
 		if(!empty($this->master_exp_id) && $this->flag == false)
 		{
 			$experiment = (new Experiment())->load($this->master_exp_id);
@@ -138,6 +143,11 @@ class Setup extends Model
 	 */
 	function userCanCreate($session)
 	{
+		if(!$session)
+		{
+			return false;
+		}
+
 		// Admin can create setups
 		if($session->getUserLevel() == 3)
 		{

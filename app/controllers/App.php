@@ -3,6 +3,7 @@
 class App
 {
 	private $controller;
+	public $session;
 
 	public function __construct()
 	{
@@ -13,7 +14,7 @@ class App
 
 		$query_array = $this->router();
 
-		if($query_array[0]!= '')
+		if(isset($query_array[0]) && ($query_array[0] != ''))
 		{
 			$controller_class = ucfirst($query_array[0]).'Controller';
 			if (isset($query_array[1]))

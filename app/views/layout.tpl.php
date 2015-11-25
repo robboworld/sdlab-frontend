@@ -40,11 +40,15 @@
 				echo $this->app->lang->render();
 			endif; ?>
 
-			<? if(is_object($this->session())): ?>
+			<? 
+			$session = $this->session();
+
+			if (is_object($session)) : ?>
+
 				<div class="pull-right text-right col-md-5">
 					<div class="btn-group ">
 						<a href="?q=session/edit" id="session-name" class="btn btn-sm btn-info navbar-btn" title="<? echo L::session_EDIT; ?>">
-							<? print htmlspecialchars($this->session()->name, ENT_QUOTES, 'UTF-8'); ?>
+							<? print htmlspecialchars($session->name, ENT_QUOTES, 'UTF-8'); ?>
 						</a>
 						<a href="?q=session/destroy" class="btn btn-sm btn-default navbar-btn"><span class="glyphicon glyphicon-log-out">&nbsp;</span><span class="hidden-xs"><? echo L::LOGOFF; ?></span></a>
 						<a href="?q=session/create" class="btn btn-sm btn-default navbar-btn"><span class="glyphicon glyphicon-plus">&nbsp;</span><span class="hidden-xs"><? echo L::session_NEW_SESSION; ?></span></a>
@@ -53,6 +57,7 @@
 				</div>
 
 			<? else : ?>
+
 				<div class="col-md-5 col-sm-6 col-xs-6 pull-right">
 					<form id="nav-buttons" class="navbar-form" action="?q=session/create<? if(isset($_GET['q'])) : ?>&destination=<? print $_GET['q']; endif; ?>" method="post">
 						<div class="input-group input-group-sm">
@@ -65,6 +70,7 @@
 					</form>
 				</div>
 			<? endif; ?>
+
 		</div>
 	</div>
 	<div class="container-fluid" id="data-container">

@@ -17,7 +17,7 @@ if(isset($this->view->content->list))
 <script type="text/javascript">
 	$(document).ready(function(){
 		var sdwc = new WebCams();
-		var opts = {cams:<? echo json_encode($cams); ?>,delay:0};
+		var opts = {cams:<? echo json_encode($cams); ?>,delay:30};
 		sdwc.init(opts);
 
 		//sdwc.setStreamImg();
@@ -123,6 +123,7 @@ if(isset($this->view->content->list))
 					<td>
 						<div id="webcam_<? echo (int)$item->Index; ?>" class="stream-wrapper" style="<? echo $streamed ? "width:320px;height:240px;" : ""; ?>">
 							<img <? echo $streamed ? ('id="mjpgstream'.$item->stream->Stream.'"') : ''; ?>/>
+							<img id="stream_image_error_<? echo (int)$item->Index; ?>" style="display:none;position:absolute;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAB+ElEQVR42s3WQUgUYRQA4PfeJApdCqJLJy+iaO46Q4J46OBBTyqyO2UX8ZCC4MEuBR0k6JKHgvAgehFB0R2pQ0EG3Tql7ewiFCl2FermepCsea/nWIuLuzvjOgv+DDMw//zzvf+9/x8GocoNLwzACatdQNb8QcTdlMpuRAZIMmkwfv9MAHEfY3apOXsLnwBHArDdNoqAMwWowAg57ty5Abl38yofGttEdK0ABfhJgg3opPfOBXhJ8yUhjBedGcALI+U+qBjgu7FmYcwS0KWi/cy/iY1WfJX+VhGg0X/Q6LvyN1bSx9c71knkvbGa7TkzILbVr+fXBTeLAP6zIL2UyrwJDcjQ7To+2P+qy7I+DKC12MFcroXWdn6FAjjR9hgJn57qKAH4QYk8IifzLBDgROyGgLFFBJfPAjDIPhI00nJmtyzg2eaSpmaw2MzKAT4isGA47lBJgG2rUwv2kUoVPwjQTOksOmjZ/XQKkEkg/hLf0B1rQqkWAPxL1To1ZTr+f6fyACfN+4gwC+VaCOA4WhhGx53PA9IXu8K1WliA6xBBY5YfWFvTQIvrOR/Qwj7Xl08Ejgw7A/ALPqUFf4gyYDUyeZua+5pIAYBD/MMtqNG/0+h7AkdUkirht+glTE83FVUFOFq2nh2fBqAxivgH4OjlesxU/a/iLzY3w5AskOJNAAAAAElFTkSuQmCC"/>
 						</div>
 						<? if ($streamed) : ?>
 						<div class="btn-group btn-group-xs btn-group-streamplay" role="group">

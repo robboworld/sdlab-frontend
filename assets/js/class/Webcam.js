@@ -81,10 +81,13 @@ function WebCams(){
 		var img = new Image();
 		img.style.position = "absolute";
 		img.style.zIndex = -1;
+		img.style.height = "inherit";
+		img.style.width = "inherit";
 		img.camsObj = this;
 		img.camId = i;
 		img.camSnapshot = (single === true ? true : false);
 		img.onload = imageCamOnload;
+		img.onerror = imageCamOnerror;
 		//img.onclick = imageCamOnclick;
 		img.src = window.location.protocol + "//" + window.location.hostname + ":8090?action=snapshot_" + this.cams[i].stream + "&n=" + (++this.cams[i].imageNr);
 		var webcam = document.getElementById(parentId);
@@ -119,24 +122,74 @@ function WebCams(){
 
 // Two layers are always present (except at the very beginning), to avoid flicker
 function imageCamOnload(){
-	if (typeof this.camsObj == "undefined"
+	if(typeof this.camsObj == "undefined"
 		|| typeof this.camId == "undefined"
 		|| typeof this.camsObj.cams[this.camId] == "undefined")
 		return;
 
 	var cam = this.camsObj.cams[this.camId];
 
+	var err_img = document.getElementById('stream_image_error_'+this.camId);
+	if(err_img && (err_img.style.display!='none')){
+		err_img.style.display = 'none';
+	}
+
 	this.style.zIndex = cam.imageNr; // Image finished, bring to front!
-	while (1 < cam.finished.length) {
+	while(1 < cam.finished.length){
 		var del = cam.finished.shift(); // Delete old image(s) from document
 		del.src = ""; // Fix memory leak?
-		del.parentNode.removeChild(del);
+		if(del.parentNode){
+			del.parentNode.removeChild(del);
+		}
+		else{
+			$(del).remove();
+		}
 	}
 	cam.finished.push(this);
-	if (!this.camSnapshot && !cam.paused){
+	if(!this.camSnapshot && !cam.paused){
 		if(this.camsObj.delay>0){
 			var self = this;
 			setTimeout(function(){self.camsObj._createImageLayer(self.camId, self.camsObj.container_prefix + cam.id);}, this.camsObj.delay); // Timeout for hide loading image message
+		}
+		else{
+			this.camsObj._createImageLayer(this.camId, this.camsObj.container_prefix + cam.id);
+		}
+	}
+}
+
+// Two layers are always present (except at the very beginning), to avoid flicker
+function imageCamOnerror(){
+	if(typeof this.camsObj == "undefined"
+		|| typeof this.camId == "undefined"
+		|| typeof this.camsObj.cams[this.camId] == "undefined")
+		return;
+
+	var cam = this.camsObj.cams[this.camId];
+
+	var err_img = document.getElementById('stream_image_error_'+this.camId);
+	if(err_img && (err_img.style.display=='none')){
+		err_img.style.display = 'block';
+		err_img.style.zIndex = cam.imageNr; // Image finished, bring to front!
+	}
+
+	//this.style.zIndex = cam.imageNr; // Image finished, bring to front!
+	while(1 < cam.finished.length){
+		var del = cam.finished.shift(); // Delete old image(s) from document
+		del.src = ""; // Fix memory leak?
+		if(del.parentNode){
+			del.parentNode.removeChild(del);
+		}
+		else{
+			$(del).remove();
+		}
+	}
+	cam.finished.push(this);
+	var delay = this.camsObj.delay;
+	//delay = 200; // constant delay ms on error load
+	if(!this.camSnapshot && !cam.paused){
+		if(delay>0){
+			var self = this;
+			setTimeout(function(){self.camsObj._createImageLayer(self.camId, self.camsObj.container_prefix + cam.id);}, delay); // Timeout for hide loading image message
 		}
 		else{
 			this.camsObj._createImageLayer(this.camId, this.camsObj.container_prefix + cam.id);

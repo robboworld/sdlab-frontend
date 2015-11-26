@@ -5,14 +5,14 @@ class Setup extends Model
 
 	protected $id;
 	protected $master_exp_id;
-    protected $title;
-    protected $interval;
-    protected $amount;
-    protected $time_det;
-    protected $period;
-    protected $number_error;
-    protected $period_repeated_det;
-    protected $flag;
+	protected $title;
+	protected $interval;
+	protected $amount;
+	protected $time_det;
+	protected $period;
+	protected $number_error;
+	protected $period_repeated_det;
+	protected $flag;
 
 	private $sql_load_query = 'select * from setups where id = :id';
 	private $sql_insert_query = 'insert into setups
@@ -126,10 +126,25 @@ class Setup extends Model
 			return false;
 		}
 
-		if(!empty($this->master_exp_id) && $this->flag == false)
+		// Check active
+		if($this->flag)
+		{
+			return false;
+		}
+
+		// Check if set master
+		if(!empty($this->master_exp_id))
 		{
 			$experiment = (new Experiment())->load($this->master_exp_id);
-			if($session->getKey() == $experiment->session_key || $session->getUserLevel() == 3)
+			if(($experiment && $session->getKey() == $experiment->session_key) || ($session->getUserLevel() == 3))
+			{
+				return true;
+			}
+		}
+		else
+		{
+			// Only admin can edit w/o master
+			if($session->getUserLevel() == 3)
 			{
 				return true;
 			}

@@ -65,8 +65,9 @@ class Experiment extends Model
 				{
 					$this->$key = $experiment->$key;
 				}
+				return $this;
 			}
-			return $this;
+			return false;
 		}
 		return false;
 	}

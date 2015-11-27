@@ -105,4 +105,62 @@ class Experiment extends Model
 
 		return $result ? $this : false;
 	}
+
+	/**
+	 * @param $session
+	 * @return bool
+	 */
+	function userCanView($session)
+	{
+		if(!$session)
+		{
+			return false;
+		}
+
+		if($this->session_key == $session->getKey() || $session->getUserLevel() == 3)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param $session
+	 * @return bool
+	 */
+	function userCanEdit($session)
+	{
+		if(!$session)
+		{
+			return false;
+		}
+
+		if($this->session_key == $session->getKey() || $session->getUserLevel() == 3)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param $session
+	 * @return bool
+	 */
+	function userCanDelete($session)
+	{
+		if(!$session)
+		{
+			return false;
+		}
+
+		// Only admin can delete experiment
+		if(/*$this->session_key == $session->getKey() ||*/ $session->getUserLevel() == 3)
+		{
+			return true;
+		}
+
+		return false;
+	}
 }

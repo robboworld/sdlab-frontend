@@ -110,6 +110,22 @@ class Experiment extends Model
 	 * @param $session
 	 * @return bool
 	 */
+	function userCanCreate($session)
+	{
+		// TODO: add experiments counter for registered users, check counter not exceed max value, may be max count in config
+
+		if(!$session)
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param $session
+	 * @return bool
+	 */
 	function userCanView($session)
 	{
 		if(!$session)

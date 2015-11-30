@@ -59,7 +59,7 @@
 			<? else : ?>
 
 				<div class="col-md-5 col-sm-6 col-xs-6 pull-right">
-					<form id="nav-buttons" class="navbar-form" action="?q=session/create<? if(isset($_GET['q'])) : ?>&destination=<? print $_GET['q']; endif; ?>" method="post">
+					<form id="nav-buttons" class="navbar-form" action="?q=session/create<? if(isset($_GET['q'])) : ?>&destination=<? print urlencode($_GET['q']); endif; ?>" method="post">
 						<div class="input-group input-group-sm">
 							<input type="text" name="session_key" placeholder="<? echo L::session_KEY_EXAMPLE; ?>" title="<? echo L::session_KEY_EXAMPLE2; ?>" class="form-control">
 							<span class="input-group-btn">

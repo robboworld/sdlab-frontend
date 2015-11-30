@@ -256,15 +256,15 @@ class DetectionsController extends Controller
 			{
 				foreach($params['id'] as $val)
 				{
-					if ((int)$val == 0) continue;
+					if ((int)$val <= 0) continue;
 					$ids[(int)$val] = null;
 				}
 			}
 			else if (is_numeric($params['id']))
 			{
-				if ((int)$params['id'] != 0)
+				if ((int)$params['id'] > 0)
 				{
-					$ids[(int)$val] = null;
+					$ids[(int)$params['id']] = null;
 				}
 			}
 			else
@@ -285,7 +285,8 @@ class DetectionsController extends Controller
 
 			$db = new DB();
 
-			// Check access to experiment
+			// Check access to data
+			// TODO: need Experiment::userCanEdit() for multiple data
 			if ($this->session()->getUserLevel() != 3)
 			{
 				// Get experiments with sessions identificators for detections ids
@@ -327,7 +328,7 @@ class DetectionsController extends Controller
 					}
 				}
 
-				// Set only available date
+				// Set only available data
 				foreach ($ids_exps as $val)
 				{
 					$ids[(int)$val['id']] = (int)$val['exp_id'];

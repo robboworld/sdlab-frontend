@@ -132,13 +132,27 @@ class Setup extends Model
 			return false;
 		}
 
+		// TODO: add check access to edit by setup owner (add setup.session_key field to DB as experiment), because master_exp_id field changes on start by other experiment
+
 		// Check if set master
 		if(!empty($this->master_exp_id))
 		{
 			$experiment = (new Experiment())->load($this->master_exp_id);
-			if(($experiment && $session->getKey() == $experiment->session_key) || ($session->getUserLevel() == 3))
+			if(!$experiment)
 			{
-				return true;
+				// Unknown/orphaned experiment - only admin can edit
+				if($session->getUserLevel() == 3)
+				{
+					return true;
+				}
+			}
+			else
+			{
+				// Check access to experiment edit
+				if($experiment->userCanEdit($session))
+				{
+					return true;
+				}
 			}
 		}
 		else
@@ -158,11 +172,14 @@ class Setup extends Model
 	 */
 	function userCanCreate($session)
 	{
+		// TODO: not used, not only admin can create now, remove this
+		// TODO: add setups counter for registered users, check counter not exceed max value, may be max count in config
+
 		if(!$session)
 		{
 			return false;
 		}
-
+		/*
 		// Admin can create setups
 		if($session->getUserLevel() == 3)
 		{
@@ -172,6 +189,30 @@ class Setup extends Model
 		{
 			return false;
 		}
+		*/
+		return true;
+	}
+
+	/**
+	 * @param $session
+	 * @return bool
+	 */
+	function userCanDelete($session)
+	{
+		//TODO: not used delete check for setups, only experiments can be deleted by admin
+
+		if(!$session)
+		{
+			return false;
+		}
+	
+		// Only admin can delete setups
+		if(/*$this->session_key == $session->getKey() ||*/ $session->getUserLevel() == 3)
+		{
+			return true;
+		}
+	
+		return false;
 	}
 
 	function time()

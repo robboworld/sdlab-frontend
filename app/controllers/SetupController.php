@@ -6,9 +6,12 @@ class SetupController extends Controller
 
 	function __construct($action = 'create')
 	{
-		$this->id = App::router(2);
 		parent::__construct($action);
+
+		// Get id from request query string setup/edit/%id
+		$this->id = App::router(2);
 	}
+
 	function index()
 	{
 		System::go('setup/create');
@@ -44,18 +47,24 @@ class SetupController extends Controller
 
 			// Get master experiment
 			$master_exp = (new Experiment())->load($_GET['master']);
-			if(!$master_exp || empty($master_exp->id))
+			if(!$master_exp)
 			{
 				System::go('experiment/view');
 			}
 
 			// Check access to master experiment
-			if(!(($master_exp->session_key == $this->session()->getKey()) || $this->session()->getUserLevel() == 3))
+			if(!$master_exp->userCanEdit($this->session()))
 			{
 				System::go('experiment/view');
 			}
 
 			$setup = new Setup();
+
+			// Check access to create
+			if(!$setup->userCanCreate($this->session()))
+			{
+				System::go('experiment/view');
+			}
 
 			$setup->set('title', htmlspecialchars(isset($_POST['setup_title']) ? $_POST['setup_title'] : ''));
 
@@ -117,6 +126,14 @@ class SetupController extends Controller
 
 			$setup = new Setup();
 			$this->view->form->setup = $setup;
+
+			// Check access to create (now can view creation page)
+			/*
+			if(!$this->view->form->setup->userCanCreate($this->session()))
+			{
+				System::go('experiment/view');
+			}
+			*/
 		}
 	}
 

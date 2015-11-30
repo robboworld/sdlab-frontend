@@ -13,15 +13,15 @@ class SessionController extends Controller
 				$this->session($session);
 				$this->session()->setSession();
 
-				if(isset($_GET['destination']) && $_GET['destination'] != $_GET['q'])
+				$destination = System::getVarBackurl();
+				if($destination !== null && $destination != $_GET['q'])
 				{
-					System::go(System::clean($_GET['destination'], 'path'));
+					System::go(System::cleanVar($destination, 'path'));
 				}
 				else
 				{
 					System::go();
 				}
-
 			}
 		}
 
@@ -37,9 +37,10 @@ class SessionController extends Controller
 					$this->session()->save();
 					$this->session()->setSession();
 
-					if(isset($_GET['destination']) && $_GET['destination'] != $_GET['q'])
+					$destination = System::getVarBackurl();
+					if($destination !== null && $destination != $_GET['q'])
 					{
-						System::go(System::clean($_GET['destination'], 'path'));
+						System::go(System::cleanVar($destination, 'path'));
 					}
 					else
 					{
@@ -54,7 +55,12 @@ class SessionController extends Controller
 
 	function edit()
 	{
-		if(!$this->session()) System::go();
+		// Check access
+		if(!$this->session())
+		{
+			// Only for registered
+			System::go();
+		}
 
 		// If form is sent
 		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'edit-session-form')

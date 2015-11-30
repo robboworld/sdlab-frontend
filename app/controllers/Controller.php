@@ -20,7 +20,7 @@ class Controller
 
 	function __construct($action = 'index')
 	{
-		$this->action = System::clean($action, 'method');
+		$this->action = System::cleanVar($action, 'method');
 		$this->view = new stdClass();
 		$this->view->content = new stdClass();
 	}

@@ -378,7 +378,7 @@ class System
 	 *
 	 * @since   11.1
 	 */
-	static function clean($source, $type = 'raw')
+	public static function cleanVar($source, $type = 'raw')
 	{
 		// Handle the type constraint
 		switch (strtoupper($type))
@@ -442,6 +442,8 @@ class System
 				$result = @ (string) $matches[0];
 				break;
 
+			// TODO: add URL clean var rule
+
 			case 'TRIM':
 				$result = (string) trim($source);
 				//include 'phputf8.trim';
@@ -460,6 +462,139 @@ class System
 		}
 
 		return $result;
+	}
+
+
+	/**
+	 * Fetches and returns a given variable.
+	 *
+	 * The default behaviour is fetching variables depending on the
+	 * current request method: GET and HEAD will result in returning
+	 * an entry from $_GET, POST and PUT will result in returning an
+	 * entry from $_POST.
+	 *
+	 * You can force the source by setting the $hash parameter:
+	 *
+	 * post    $_POST
+	 * get     $_GET
+	 * files   $_FILES
+	 * cookie  $_COOKIE
+	 * env     $_ENV
+	 * server  $_SERVER
+	 * method  via current $_SERVER['REQUEST_METHOD']
+	 * default $_REQUEST
+	 *
+	 * @param   string   $name     Variable name.
+	 * @param   string   $default  Default value if the variable does not exist.
+	 * @param   string   $hash     Where the var should come from (POST, GET, FILES, COOKIE, METHOD).
+	 * @param   string   $type     Return type for the variable, for valid values see {@link System::cleanVar()}.
+	 * @param   integer  $mask     Filter mask for the variable.
+	 * 
+	 * @return  mixed  Requested variable.
+	 * 
+	 * @see Joomla 3.2+ JRequest::getVar()
+	 *
+	 */
+	public static function getVar($name, $default = null, $hash = 'default', $type = 'none')
+	{
+		// Ensure hash and type are uppercase
+		$hash = strtoupper($hash);
+
+		if ($hash === 'METHOD')
+		{
+			$hash = strtoupper($_SERVER['REQUEST_METHOD']);
+		}
+
+		$type = strtoupper($type);
+
+		// Get the input hash
+		switch ($hash)
+		{
+			case 'GET':
+				$input = &$_GET;
+				break;
+			case 'POST':
+				$input = &$_POST;
+				break;
+			case 'FILES':
+				$input = &$_FILES;
+				break;
+			case 'COOKIE':
+				$input = &$_COOKIE;
+				break;
+			case 'ENV':
+				$input = &$_ENV;
+				break;
+			case 'SERVER':
+				$input = &$_SERVER;
+				break;
+			default:
+				$input = &$_REQUEST;
+				$hash = 'REQUEST';
+				break;
+		}
+
+		if (isset($input[$name]) && $input[$name] !== null)
+		{
+			// Get the variable from the input hash and clean it
+			$var = self::cleanVar($input[$name], $type);
+		}
+		elseif ($default !== null)
+		{
+			// Clean the default value
+			$var = self::cleanVar($default, $type);
+		}
+		else
+		{
+			$var = $default;
+		}
+
+		return $var;
+	}
+
+
+	/**
+	 * Fetches and returns a given variable.
+	 *
+	 * The default behaviour is fetching variables depending on the
+	 * current request method: GET and HEAD will result in returning
+	 * an entry from $_GET, POST and PUT will result in returning an
+	 * entry from $_POST.
+	 *
+	 * You can force the source by setting the $hash parameter:
+	 *
+	 * post    $_POST
+	 * get     $_GET
+	 * files   $_FILES
+	 * cookie  $_COOKIE
+	 * env     $_ENV
+	 * server  $_SERVER
+	 * method  via current $_SERVER['REQUEST_METHOD']
+	 * default $_REQUEST
+	 *
+	 * @param   string   $name     Variable name.
+	 * @param   string   $default  Default value if the variable does not exist.
+	 * @param   string   $hash     Where the var should come from (POST, GET, FILES, COOKIE, METHOD).
+	 * @param   string   $type     Return type for the variable, for valid values see {@link System::cleanVar()}.
+	 * @param   integer  $mask     Filter mask for the variable.
+	 * 
+	 * @return  mixed  Requested variable.
+	 * 
+	 * @see Joomla 3.2+ JRequest::getVar()
+	 *
+	 */
+	public static function getVarBackurl($name = 'destination')
+	{
+		// Try get from REQUEST vars
+		$backurl = self::getVar($name);
+
+		// Try get from GET vars
+		if ($backurl === null || strlen($backurl) == 0)
+		{
+			$backurl = self::getVar($name, null, 'get');
+		}
+
+		return (($backurl === null || strlen($backurl) == 0) ? null : $backurl);
 	}
 
 

@@ -35,13 +35,19 @@ class ExperimentController extends Controller
 		// Get setups list for the form
 		$this->view->form->setups = SetupController::loadSetups();
 
-
 		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'create-experiment-form')
 		{
 			// Save new experiment
 
-			// Fill the Experiment properties
 			$experiment = new Experiment($this->session()->getKey());
+
+			// Check access to create
+			if(!$experiment->userCanCreate($this->session()))
+			{
+				System::go('experiment/view');
+			}
+
+			// Fill the Experiment properties
 			$experiment->set('title', htmlspecialchars(isset($_POST['experiment_title']) ? $_POST['experiment_title'] : ''));
 			$setup_id = (isset($_POST['setup_id']) ? (int)$_POST['setup_id'] : '');
 			$experiment->set('setup_id', $setup_id);
@@ -106,6 +112,14 @@ class ExperimentController extends Controller
 			// Edit new experiment
 
 			$this->view->form->experiment = new Experiment();
+
+			// Check access to create (now can view creation page)
+			/*
+			if(!$this->view->form->experiment->userCanCreate($this->session()))
+			{
+				System::go('experiment/view');
+			}
+			*/
 		}
 	}
 
@@ -502,7 +516,7 @@ class ExperimentController extends Controller
 			System::go('experiment/view');
 		}
 
-		// Check access to view
+		// Check access to experiment
 		if(!$experiment->userCanView($this->session()))
 		{
 			System::go('experiment/view');
@@ -588,9 +602,21 @@ class ExperimentController extends Controller
 			System::go('experiment/view');
 		}
 
+		// Load experiment
 		$this->view->content->experiment = $experiment = (new Experiment())->load($this->id);
+		if(!$this->view->content->experiment)
+		{
+			System::go('experiment/view');
+		}
 
-		if (is_numeric(App::router(3)))
+		// Check access to experiment
+		if(!$this->view->content->experiment->userCanView($this->session()))
+		{
+			System::go('experiment/view');
+		}
+
+		$id = App::router(3);
+		if (is_numeric($id))
 		{
 			// View/Edit graph
 
@@ -606,7 +632,7 @@ class ExperimentController extends Controller
 					'sensor_VALUE_NAME_TEMPERATURE'  // chart
 			));
 
-			$plot_id = (int)App::router(3);
+			$plot_id = (int)$id;
 			if (empty($plot_id))
 			{
 				System::go('experiment/graph');
@@ -648,7 +674,7 @@ class ExperimentController extends Controller
 
 			$this->view->content->plot = $plot;
 		}
-		elseif (App::router(3) == 'add')
+		elseif ($id === 'add')
 		{
 			// Add new graph
 
@@ -725,56 +751,58 @@ class ExperimentController extends Controller
 	 */
 	function clean()
 	{
-		if (!empty($this->id) && is_numeric($this->id))
-		{
-			$experiment = (new Experiment())->load($this->id);
-
-			// Check access to experiment
-			if ($experiment && $experiment->id && ($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
-			{
-				if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'experiment-journal-form')
-				{
-					$db = new DB();
-
-					// Remove detections
-					$delete = $db->prepare('delete from detections where exp_id=:exp_id');
-					$result = $delete->execute(array(':exp_id' => $this->id));
-					if (!$result)
-					{
-						error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
-					}
-
-					if(isset($_GET['destination']) && $_GET['destination'] != $_GET['q'])
-					{
-						System::go(System::clean($_GET['destination'], 'path'));
-					}
-					else
-					{
-						System::go('experiment/journal/'.$this->id);
-					}
-				}
-				else 
-				{
-					// TODO: check return back link from $_GET['destination'] or $_POST['destination']
-
-					System::go('experiment/journal/'.$this->id);
-				}
-
-				// TODO: Show info about errors while clean or about success (need session saved msgs)
-
-				return;
-			}
-			else
-			{
-				// Error: experiment not found or no access
-				System::go('experiment/view');
-			}
-		}
-		else
+		if (empty($this->id) || !is_numeric($this->id))
 		{
 			// Error: incorrect experiment id
 			System::go('experiment/view');
 		}
+
+		// Load experiment
+		$experiment = (new Experiment())->load($this->id);
+		if(!$experiment)
+		{
+			System::go('experiment/view');
+		}
+
+		// Check access to experiment
+		if(!$experiment->userCanView($this->session()))
+		{
+			System::go('experiment/view');
+		}
+
+		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'experiment-journal-form')
+		{
+			// Make clean
+
+			$db = new DB();
+
+			// Remove detections
+			$delete = $db->prepare('delete from detections where exp_id=:exp_id');
+			$result = $delete->execute(array(':exp_id' => $this->id));
+			if (!$result)
+			{
+				error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
+			}
+
+			$destination = System::getVarBackurl();
+			if($destination !== null && $destination != $_GET['q'])
+			{
+				System::go(System::cleanVar($destination, 'path'));
+			}
+			else
+			{
+				System::go('experiment/journal/'.$this->id);
+			}
+		}
+		else 
+		{
+			// No view page fo clean
+			System::go('experiment/journal/'.$this->id);
+		}
+
+		// TODO: Show info about errors while clean or about success (need session saved msgs)
+
+		return;
 	}
 
 
@@ -800,14 +828,14 @@ class ExperimentController extends Controller
 
 		// Load experiment
 		$experiment = (new Experiment())->load((int)$params['experiment']);
-		if(!$experiment || !($experiment->id))
+		if(!$experiment)
 		{
 			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 			return false;
 		}
 
 		// Check access to experiment
-		if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
+		if(!$experiment->userCanView($this->session()))
 		{
 			$this->error = L::ACCESS_DENIED;
 			return false;
@@ -862,8 +890,10 @@ class ExperimentController extends Controller
 	}
 
 	/**
-	 * @param null $session_key
-	 * @return array
+	 * Load experiments by session or all
+	 * 
+	 * @param  string  $session_key  $session_key
+	 * @return array  Array of objects with experiment ids or empty
 	 */
 	static function loadExperiments($session_key = null)
 	{

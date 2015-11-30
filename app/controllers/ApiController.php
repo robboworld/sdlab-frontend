@@ -7,8 +7,8 @@ class ApiController extends Controller
 		$method_query = explode('.', isset($_GET['method']) ? $_GET['method'] : '');
 
 		// Check values
-		$method_query[0] = isset($method_query[0]) ? System::clean($method_query[0], 'class')  : '';
-		$method_query[1] = isset($method_query[1]) ? System::clean($method_query[1], 'method') : '';
+		$method_query[0] = isset($method_query[0]) ? System::cleanVar($method_query[0], 'class')  : '';
+		$method_query[1] = isset($method_query[1]) ? System::cleanVar($method_query[1], 'method') : '';
 
 		$api_method_class = $method_query[0].'Controller';
 

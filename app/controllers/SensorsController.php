@@ -57,117 +57,112 @@ class SensorsController extends Controller
 
 		$socket = new JSONSocket($this->config['socket']['path']);
 		$result = $socket->call('Lab.ListSensors', array($rescan));
-		//var_dump($socket->error());
-		//var_dump($result);
-		if ($result)
-		{
-			// Sync sensors table
-
-			// TODO: move to sensors model class, update also by cron task, or on connect sensors?
-
-			$db = new DB();
-
-			// Get known sensors
-			$query = $db->prepare('select distinct sensor_id, sensor_val_id from sensors');
-			$query->execute();
-			$items = (array) $query->fetchAll(PDO::FETCH_OBJ);
-			$known = array();
-			foreach($items as $k => $item)
-			{
-				$key = '' . $item->sensor_id . '#' . (int)$item->sensor_val_id;
-				$known[$key] = $item;
-			}
-
-			// Prepare insert query for new sensors
-			$insert = $db->prepare('insert into sensors (sensor_id, sensor_val_id, sensor_name, value_name, si_notation, si_name, max_range, min_range, error, resolution)' .
-					' values (:sensor_id, :sensor_val_id, :sensor_name, :value_name, :si_notation, :si_name, :max_range, :min_range, :error, :resolution)');
-
-			foreach($result as $sensor_id => $obj)
-			{
-				$sensor_name = (string) preg_replace('/\-.*/i', '', $sensor_id);
-				if (strlen($sensor_name) == 0)
-				{
-					continue;
-				}
-
-				foreach($obj->{'Values'} as $sensor_val_id => &$data)
-				{
-					$key = '' . $sensor_id . '#' . (int)$sensor_val_id;
-					if (isset($known[$key]))
-					{
-						continue;
-					}
-
-					try
-					{
-						$res = $insert->execute(array(
-								':sensor_id'     => $sensor_id,
-								':sensor_val_id' => (int)$sensor_val_id,
-								':sensor_name'   => $sensor_name,
-								':value_name'    => System::getValsTranslate($data->{'Name'}),
-								':si_notation'   => System::getValsTranslate($data->{'Name'}, 'si_notation'),
-								':si_name'       => System::getValsTranslate($data->{'Name'}, 'si_name'),
-								':max_range'     => (isset($data->{'Range'}->{'Max'}) && !is_null($data->{'Range'}->{'Max'})) ? $data->{'Range'}->{'Max'} : null,
-								':min_range'     => (isset($data->{'Range'}->{'Min'}) && !is_null($data->{'Range'}->{'Min'})) ? $data->{'Range'}->{'Min'} : null,
-								':error'         => NULL, // todo: use error or resolution for sensors?
-								':resolution'    => $data->{'Resolution'}
-						));
-						if (!$res)
-						{
-							error_log('PDOError: '.var_export($insert->errorInfo(),true));  //DEBUG
-						}
-					}
-					catch (PDOException $e)
-					{
-						var_dump($e->getMessage());
-						error_log('PDOException: '.var_export($e->getMessage(),true));  //DEBUG
-					}
-				}
-			}
-
-
-			// Get additional sensors data
-			if(isset($params['getinfo']) && $params['getinfo'])
-			{
-				foreach($result as $sensor_id => $sensor)
-				{
-					// Add additional data to main sensor data
-					$sensor->sensor_name = (string) preg_replace('/\-.*/i', '', $sensor_id);
-
-					foreach ($sensor->{'Values'} as $value)
-					{
-						$value_name = System::getValsTranslate($value->{'Name'});
-						if (($value_name !== false) && (strlen($value_name) > 0))
-						{
-							$value->value_name  =   constant('L::sensor_VALUE_NAME_' . strtoupper($value_name));
-
-							$field = System::getValsTranslate($value->{'Name'}, 'si_notation');
-							$value->si_notation = (($field !== false) && (strlen($field) > 0)) ? 
-													constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($field)) :
-													false;
-
-							$field = System::getValsTranslate($value->{'Name'}, 'si_name');
-							$value->si_name     = (($field !== false) && (strlen($field) > 0)) ?
-													constant('L::sensor_VALUE_SI_NAME_' . strtoupper($value_name) . '_' . strtoupper($field)) :
-													false;
-						}
-						else
-						{
-							$value->value_name  = false;
-							$value->si_notation = false;
-							$value->si_name     = false;
-						}
-					}
-				}
-			}
-
-			return $result;
-		}
-		else
+		if (!$result)
 		{
 			return false;
 		}
 
+		// Sync sensors table
+
+		// TODO: move to sensors model class, update also by cron task, or on connect sensors?
+
+		$db = new DB();
+
+		// Get known sensors
+		$query = $db->prepare('select distinct sensor_id, sensor_val_id from sensors');
+		$query->execute();
+		$items = (array) $query->fetchAll(PDO::FETCH_OBJ);
+		$known = array();
+		foreach($items as $k => $item)
+		{
+			$key = '' . $item->sensor_id . '#' . (int)$item->sensor_val_id;
+			$known[$key] = $item;
+		}
+
+		// Prepare insert query for new sensors
+		$insert = $db->prepare('insert into sensors (sensor_id, sensor_val_id, sensor_name, value_name, si_notation, si_name, max_range, min_range, error, resolution)' .
+				' values (:sensor_id, :sensor_val_id, :sensor_name, :value_name, :si_notation, :si_name, :max_range, :min_range, :error, :resolution)');
+
+		foreach($result as $sensor_id => $obj)
+		{
+			$sensor_name = (string) preg_replace('/\-.*/i', '', $sensor_id);
+			if (strlen($sensor_name) == 0)
+			{
+				continue;
+			}
+
+			foreach($obj->{'Values'} as $sensor_val_id => &$data)
+			{
+				$key = '' . $sensor_id . '#' . (int)$sensor_val_id;
+				if (isset($known[$key]))
+				{
+					continue;
+				}
+
+				try
+				{
+					$res = $insert->execute(array(
+							':sensor_id'     => $sensor_id,
+							':sensor_val_id' => (int)$sensor_val_id,
+							':sensor_name'   => $sensor_name,
+							':value_name'    => System::getValsTranslate($data->{'Name'}),
+							':si_notation'   => System::getValsTranslate($data->{'Name'}, 'si_notation'),
+							':si_name'       => System::getValsTranslate($data->{'Name'}, 'si_name'),
+							':max_range'     => (isset($data->{'Range'}->{'Max'}) && !is_null($data->{'Range'}->{'Max'})) ? $data->{'Range'}->{'Max'} : null,
+							':min_range'     => (isset($data->{'Range'}->{'Min'}) && !is_null($data->{'Range'}->{'Min'})) ? $data->{'Range'}->{'Min'} : null,
+							':error'         => NULL, // todo: use error or resolution for sensors?
+							':resolution'    => $data->{'Resolution'}
+					));
+					if (!$res)
+					{
+						error_log('PDOError: '.var_export($insert->errorInfo(),true));  //DEBUG
+					}
+				}
+				catch (PDOException $e)
+				{
+					var_dump($e->getMessage());
+					error_log('PDOException: '.var_export($e->getMessage(),true));  //DEBUG
+				}
+			}
+		}
+
+
+		// Get additional sensors data
+		if(isset($params['getinfo']) && $params['getinfo'])
+		{
+			foreach($result as $sensor_id => $sensor)
+			{
+				// Add additional data to main sensor data
+				$sensor->sensor_name = (string) preg_replace('/\-.*/i', '', $sensor_id);
+
+				foreach ($sensor->{'Values'} as $value)
+				{
+					$value_name = System::getValsTranslate($value->{'Name'});
+					if (($value_name !== false) && (strlen($value_name) > 0))
+					{
+						$value->value_name  =   constant('L::sensor_VALUE_NAME_' . strtoupper($value_name));
+
+						$field = System::getValsTranslate($value->{'Name'}, 'si_notation');
+						$value->si_notation = (($field !== false) && (strlen($field) > 0)) ? 
+												constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($field)) :
+												false;
+
+						$field = System::getValsTranslate($value->{'Name'}, 'si_name');
+						$value->si_name     = (($field !== false) && (strlen($field) > 0)) ?
+												constant('L::sensor_VALUE_SI_NAME_' . strtoupper($value_name) . '_' . strtoupper($field)) :
+												false;
+					}
+					else
+					{
+						$value->value_name  = false;
+						$value->si_notation = false;
+						$value->si_name     = false;
+					}
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	/**
@@ -261,210 +256,205 @@ class SensorsController extends Controller
 	 */
 	function experimentStrob($params)
 	{
-		if(!empty($params['experiment']))
-		{
-			$experiment = (new Experiment())->load($params['experiment']);
-			if(!empty($experiment->setup_id))
-			{
-				// Check access to experiment
-				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
-				{
-					$this->error = L::ACCESS_DENIED;
-
-					return false;
-				}
-
-				// Get sensors for experiment
-				$sensors = SetupController::getSensors($experiment->setup_id, true);
-				if(!empty($sensors))
-				{
-					// Load Setup
-					$setup = (new Setup())->load($experiment->setup_id);
-					if (!$setup)
-					{
-						$this->error = L::ERROR_SETUP_NOT_FOUND;
-
-						return false;
-					}
-
-					// Check active state
-					if(!$setup->flag)
-					{
-						// Not use set active state on strob requests
-						//$setup->set('flag', true);
-						//$setup->save();
-					}
-					else 
-					{
-						//Check access to control Setup
-
-						// Access only if current experiment is master of Setup
-						if ($setup->master_exp_id != $experiment->id)
-						{
-							$this->error = L::ACCESS_DENIED;
-
-							return false;
-						}
-					}
-
-					// Prepare sensors list for API method
-					$params_array = array();
-					foreach($sensors as $sensor)
-					{
-						$params_array[] = (object) array(
-								'Sensor'   => $sensor->id,
-								'ValueIdx' => (int) $sensor->sensor_val_id
-						);
-					}
-
-					// Prepare array of parameters for API method
-					$query_params = array(
-						'Values' => $params_array,
-						'Period' => System::nano(1),
-						'Count'  => 1
-					);
-
-					// Send request for start series consists of one detection
-					$socket = new JSONSocket($this->config['socket']['path']);
-					$respond = $socket->call('Lab.StartSeries', (object) $query_params);
-
-					// If returned true try get results
-					if($respond)
-					{
-						// Wait for results
-						sleep(2);
-
-						// For results need new socket
-						unset($socket);
-						$socket = new JSONSocket($this->config['socket']['path']);
-
-						$result = $socket->call('Lab.GetSeries', null);
-						if(!empty($result))
-						{
-							$db = new DB();
-							$db->beginTransaction();  // speed up inserts within transaction
-
-							$insert = $db->prepare('insert into detections (exp_id, time, sensor_id, sensor_val_id, detection, error) values (:exp_id, :time, :sensor_id, :sensor_val_id, :detection, :error)');
-
-							for($i = 0; $i < count($sensors); $i++)
-							{
-								// Check error value
-								$sensor_error = null;
-								if ($result[0]->Readings[$i] === 'NaN')
-								{
-									$sensor_error = 'NaN';
-									$result[0]->Readings[$i] = null;
-								}
-
-								//Check range
-								if (is_null($sensor_error))
-								{
-									if (isset($sensors[$i]->min_range) && ((float)$result[0]->Readings[$i] < (float)$sensors[$i]->min_range))
-									{
-										$sensor_error = 'NaN';
-										$result[0]->Readings[$i] = $sensors[$i]->min_range;
-									}
-								}
-								if (is_null($sensor_error))
-								{
-									if (isset($sensors[$i]->max_range) && ((float)$result[0]->Readings[$i] > (float)$sensors[$i]->max_range))
-									{
-										$sensor_error = 'NaN';
-										$result[0]->Readings[$i] = $sensors[$i]->max_range;
-									}
-								}
-
-								try
-								{
-									$res = $insert->execute(array(
-										':exp_id' => $experiment->id,
-										':time' => System::convertDatetimeToUTC($result[0]->Time),
-										':sensor_id' => $sensors[$i]->id,
-										':sensor_val_id' => $sensors[$i]->sensor_val_id,
-										':detection' => $result[0]->Readings[$i],
-										':error' => $sensor_error
-									));
-									if (!$res)
-									{
-										error_log('PDOError: '.var_export($insert->errorInfo(),true));  //DEBUG
-									}
-								}
-								catch (PDOException $e)
-								{
-									error_log('PDOException experimentStop(): '.var_export($e->getMessage(),true));  //DEBUG
-									var_dump($e->getMessage());
-								}
-							}
-
-							// Update experiment start
-							$sql_exp_update_query = "update experiments set DateStart_exp = :DateStart_exp where id = :id and ((DateStart_exp isnull) or (DateStart_exp = 0) or (DateStart_exp = ''))";
-							$update = $db->prepare($sql_exp_update_query);
-							$result = $update->execute(array(
-									':DateStart_exp' => (new DateTime())->format('U'),
-									':id' => $experiment->id
-							));
-							if (!$result)
-							{
-								error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
-							}
-							// Update experiment stop
-							$sql_exp_update_query = "update experiments set DateEnd_exp = :DateEnd_exp where id = :id";
-							$update = $db->prepare($sql_exp_update_query);
-							$result = $update->execute(array(
-									':DateEnd_exp' => (new DateTime())->format('U'),
-									':id' => $experiment->id
-							));
-							if (!$result)
-							{
-								error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
-							}
-
-							$db->commit();
-
-							return array('result' => true);
-						}
-						else
-						{
-							$this->error = L::setup_ERROR_EMPTY_RESPONSE;
-
-							return false;
-						}
-					}
-					else
-					{
-						$this->error = L::setup_ERROR_SERIES_NOT_STARTED;
-
-						return false;
-					}
-
-				}
-				else 
-				{
-					return false;
-				}
-			}
-			else
-			{
-				if (empty($experiment->id))
-				{
-					$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
-				}
-				else
-				{
-					$this->error = L::ERROR_SETUP_NOT_FOUND;
-				}
-
-				return false;
-			}
-		}
-		else 
+		if(empty($params['experiment']))
 		{
 			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 			return false;
 		}
 
-		return false;
+		// Load experiment
+		$experiment = (new Experiment())->load($params['experiment']);
+		if(!$experiment)
+		{
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+
+			return false;
+		}
+
+		// Check access to experiment edit
+		if(!$experiment->userCanEdit($this->session()))
+		{
+			$this->error = L::ACCESS_DENIED;
+
+			return false;
+		}
+
+
+		// Check setup
+		if(empty($experiment->setup_id))
+		{
+			$this->error = L::ERROR_SETUP_NOT_FOUND;
+
+			return false;
+		}
+
+		// Get sensors for experiment with setup
+		$sensors = SetupController::getSensors($experiment->setup_id, true);
+		if(empty($sensors))
+		{
+			// TODO: error message about empty setup or no sensors
+
+			return false;
+		}
+
+		// Load Setup
+		$setup = (new Setup())->load($experiment->setup_id);
+		if (!$setup)
+		{
+			$this->error = L::ERROR_SETUP_NOT_FOUND;
+
+			return false;
+		}
+
+		// Check active state
+		if(!$setup->flag)
+		{
+			// Now not set active state on strob requests
+			//$setup->set('flag', true);
+			//$setup->save();
+		}
+		else
+		{
+			//Check access to control Setup
+
+			// Access only if current experiment is master of Setup
+			if ($setup->master_exp_id != $experiment->id)
+			{
+				$this->error = L::ACCESS_DENIED;
+
+				return false;
+			}
+		}
+
+		// Prepare sensors list for API method
+		$params_array = array();
+		foreach($sensors as $sensor)
+		{
+			$params_array[] = (object) array(
+					'Sensor'   => $sensor->id,
+					'ValueIdx' => (int) $sensor->sensor_val_id
+			);
+		}
+
+		// Prepare array of parameters for API method
+		$query_params = array(
+			'Values' => $params_array,
+			'Period' => System::nano(1),
+			'Count'  => 1
+		);
+
+		// TODO: Add return value to StartSeries the uniqid+timestamp for identify self series on backend, add uniq id param to GetSeries
+
+		// Send request for start series consists of one detection
+		$socket = new JSONSocket($this->config['socket']['path']);
+		$respond = $socket->call('Lab.StartSeries', (object) $query_params);
+
+		// If returned true try get results
+		if(!$respond)
+		{
+			$this->error = L::setup_ERROR_SERIES_NOT_STARTED;
+
+			return false;
+		}
+
+		// Wait for results
+		sleep(2);
+
+		// For results need new socket
+		unset($socket);
+		$socket = new JSONSocket($this->config['socket']['path']);
+
+		$result = $socket->call('Lab.GetSeries', null);
+		if(empty($result))
+		{
+			$this->error = L::setup_ERROR_EMPTY_RESPONSE;
+
+			return false;
+		}
+
+
+		$db = new DB();
+		$db->beginTransaction();  // speed up inserts within transaction
+
+		$insert = $db->prepare('insert into detections (exp_id, time, sensor_id, sensor_val_id, detection, error) values (:exp_id, :time, :sensor_id, :sensor_val_id, :detection, :error)');
+
+		for($i = 0; $i < count($sensors); $i++)
+		{
+			// Check error value
+			$sensor_error = null;
+			if ($result[0]->Readings[$i] === 'NaN')
+			{
+				$sensor_error = 'NaN';
+				$result[0]->Readings[$i] = null;
+			}
+
+			//Check range
+			if (is_null($sensor_error))
+			{
+				if (isset($sensors[$i]->min_range) && ((float)$result[0]->Readings[$i] < (float)$sensors[$i]->min_range))
+				{
+					$sensor_error = 'NaN';
+					$result[0]->Readings[$i] = $sensors[$i]->min_range;
+				}
+			}
+			if (is_null($sensor_error))
+			{
+				if (isset($sensors[$i]->max_range) && ((float)$result[0]->Readings[$i] > (float)$sensors[$i]->max_range))
+				{
+					$sensor_error = 'NaN';
+					$result[0]->Readings[$i] = $sensors[$i]->max_range;
+				}
+			}
+
+			try
+			{
+				$res = $insert->execute(array(
+					':exp_id' => $experiment->id,
+					':time' => System::convertDatetimeToUTC($result[0]->Time),
+					':sensor_id' => $sensors[$i]->id,
+					':sensor_val_id' => $sensors[$i]->sensor_val_id,
+					':detection' => $result[0]->Readings[$i],
+					':error' => $sensor_error
+				));
+				if (!$res)
+				{
+					error_log('PDOError: '.var_export($insert->errorInfo(),true));  //DEBUG
+				}
+			}
+			catch (PDOException $e)
+			{
+				error_log('PDOException experimentStop(): '.var_export($e->getMessage(),true));  //DEBUG
+				//var_dump($e->getMessage());
+			}
+		}
+
+		// Update experiment start
+		$sql_exp_update_query = "update experiments set DateStart_exp = :DateStart_exp where id = :id and ((DateStart_exp isnull) or (DateStart_exp = 0) or (DateStart_exp = ''))";
+		$update = $db->prepare($sql_exp_update_query);
+		$result = $update->execute(array(
+				':DateStart_exp' => (new DateTime())->format('U'),
+				':id' => $experiment->id
+		));
+		if (!$result)
+		{
+			error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
+		}
+		// Update experiment stop
+		$sql_exp_update_query = "update experiments set DateEnd_exp = :DateEnd_exp where id = :id";
+		$update = $db->prepare($sql_exp_update_query);
+		$result = $update->execute(array(
+				':DateEnd_exp' => (new DateTime())->format('U'),
+				':id' => $experiment->id
+		));
+		if (!$result)
+		{
+			error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
+		}
+
+		$db->commit();
+
+		return array('result' => true);
 	}
 
 
@@ -479,225 +469,232 @@ class SensorsController extends Controller
 	 */
 	function experimentStart($params)
 	{
-		if(!empty($params['experiment']))
-		{
-			$experiment = (new Experiment())->load($params['experiment']);
-			if(!empty($experiment->setup_id))
-			{
-				// Check access to experiment
-				if(!($experiment->session_key == $this->session()->getKey() || $this->session()->getUserLevel() == 3))
-				{
-					$this->error = L::ACCESS_DENIED;
-
-					return false;
-				}
-
-				// Get sensors for experiment
-				$sensors = SetupController::getSensors($experiment->setup_id);
-				if(!empty($sensors))
-				{
-					// Load Setup
-					$setup = (new Setup())->load($experiment->setup_id);
-					if (!$setup)
-					{
-						$this->error = L::ERROR_SETUP_NOT_FOUND;
-
-						return false;
-					}
-
-					// Check active state
-					if($setup->flag)
-					{
-						$this->error = L::setup_ACTIVE_ALREADY;
-
-						return false;
-					}
-
-
-					// Check access to control Setup
-					if ($setup->master_exp_id != $experiment->id)
-					{
-						$this->error = L::ACCESS_DENIED;
-					
-						return false;
-					}
-
-					$db = new DB();
-
-
-					// Get old monitors
-					$monitors = (new Monitor())->loadItems(
-							array(
-									'exp_id'   => (int)$experiment->id,
-									'setup_id' => (int)$setup->id,
-									//'deleted'  => 0
-							),
-							'id', 'ASC'
-					);
-
-					// Remove all old monitors
-					// TODO: may be not remove old monitors now, just update DB monitors as deleted, remove api by cron?
-
-					// Remove monitors call for backend sensors API
-					$delmons = array();
-					$errmons = array();
-					foreach($monitors as $mon)
-					{
-						// Send request for removing monitor
-						$query_params = array((string) $mon->uuid);
-						$socket = new JSONSocket($this->config['socket']['path']);  // new socket because closed in call
-						$respond = $socket->call('Lab.RemoveMonitor', $query_params);
-						if ($respond)
-						{
-							$delmons[] = $mon->uuid;
-						}
-						else 
-						{
-							$errmons[] = $mon->uuid;
-						}
-						unset($socket);
-					}
-					if (!empty($errmons))
-					{
-						error_log('Error remove monitors: {'. implode('},{', $errmons) . '}');  //DEBUG
-					}
-
-					// Remove from DB
-					/*
-					$delete = $db->prepare('delete from monitors where exp_id=:exp_id and setup_id=:setup_id');
-					$result = $delete->execute(array(
-							':exp_id'    => (int)$experiment->id,
-							':setup_id'  => (int)$setup->id
-					));
-					*/
-					//foreach($delmons as $uuid)
-					foreach($monitors as $mon)
-					{
-						$delete = $db->prepare('delete from monitors where uuid=:uuid');
-						$result = $delete->execute(array(
-								':uuid' => (string)$mon->uuid
-						));
-					}
-
-					// Set sensors and values list for backend sensors API
-					$params_array = array();
-					foreach($sensors as $sensor)
-					{
-						$params_array[] = (object) array(
-								'Sensor'   => $sensor->id,
-								'ValueIdx' => (int) $sensor->sensor_val_id
-						);
-					}
-
-					// Set parameters for backend sensors API
-					$now = new DateTime();
-					$nowutc = clone $now;
-					$nowutc->setTimezone(new DateTimeZone('UTC'));
-					// Check Setup mode
-					if ($setup->amount)
-					{
-						$count = (int)$setup->amount;
-						// Safe end time
-						// TODO: can dont stop detections by stop at time, and repeat infinitely and stop only by manual
-						//$stopat = System::nulldate();
-
-						// xxx: need add some time to interval for truely detect last values
-						//$overflow = (int)$setup->interval; // one interval
-						$overflow = 1;
-						$stopat = (new DateTime($nowutc->format(DateTime::RFC3339)))->modify('+' . ($count * (int)$setup->interval + $overflow) . ' sec')->format(System::DATETIME_RFC3339_UTC);
-					}
-					else
-					{
-						// Must be defined count values buffer fo RRD
-						$count = (int) ceil((int)$setup->time_det / ((int)$setup->interval > 0 ? (int)$setup->interval : 1));
-						$stopat = (new DateTime($nowutc->format(DateTime::RFC3339)))->modify('+' . (int)$setup->time_det . ' sec')->format(System::DATETIME_RFC3339_UTC);
-					}
-
-					$query_params = array(
-							'Values' => $params_array,
-							'Step'   => (int)$setup->interval,
-							'Count'  => $count,
-							'StopAt' => $stopat
-					);
-
-					// Send request for starting monitor
-					$socket = new JSONSocket($this->config['socket']['path']);
-					$result = $socket->call('Lab.StartMonitor', (object) $query_params);
-
-					// Try get uuid of created monitor
-					if (empty($result))
-					{
-						$this->error = L::setup_ERROR_MONITORING_NOT_STARTED;
-
-						return false;
-					}
-
-					// Set active state
-					$setup->set('flag', true);
-					$setup->save();
-
-					// Save started monitor uuid
-					$monitor = new Monitor();
-					$monitor->set('exp_id', (int)$experiment->id);
-					$monitor->set('setup_id', (int)$setup->id);
-					$monitor->set('uuid', (string)$result);
-					$monitor->set('created', $nowutc->format(System::DATETIME_RFC3339_UTC));
-
-					$result = $monitor->save();
-					if (!$result)
-					{
-						error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
-					}
-
-					// Update experiment start
-					$sql_exp_update_query = "update experiments set DateStart_exp = :DateStart_exp where id = :id and ((DateStart_exp isnull) or (DateStart_exp = 0) or (DateStart_exp = ''))";
-					$update = $db->prepare($sql_exp_update_query);
-					$result = $update->execute(array(
-							':DateStart_exp' => (new DateTime())->format('U'),
-							':id' => $experiment->id
-					));
-					if (!$result)
-					{
-						error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
-					}
-					// Update experiment stop reset
-					$sql_exp_update_query = "update experiments set DateEnd_exp = NULL where id = :id";
-					$update = $db->prepare($sql_exp_update_query);
-					$result = $update->execute(array(
-							':id' => $experiment->id
-					));
-					if (!$result)
-					{
-						error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
-					}
-
-					return array('result' => true);
-				}
-				else
-				{
-					return false;
-				}
-			}
-			else
-			{
-				if (empty($experiment->id))
-				{
-					$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
-				}
-				else
-				{
-					$this->error = L::ERROR_SETUP_NOT_FOUND;
-				}
-
-				return false;
-			}
-		}
-		else
+		if(empty($params['experiment']))
 		{
 			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
 			return false;
 		}
+
+		// Load experiment
+		$experiment = (new Experiment())->load($params['experiment']);
+		if(!$experiment)
+		{
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+
+			return false;
+		}
+
+		// Check access to experiment edit
+		if(!$experiment->userCanEdit($this->session()))
+		{
+			$this->error = L::ACCESS_DENIED;
+
+			return false;
+		}
+
+
+		// Check setup
+		if(empty($experiment->setup_id))
+		{
+			$this->error = L::ERROR_SETUP_NOT_FOUND;
+
+			return false;
+		}
+
+		// Get sensors for experiment with setup
+		$sensors = SetupController::getSensors($experiment->setup_id);
+		if(empty($sensors))
+		{
+			// TODO: error message about empty setup or no sensors
+
+			return false;
+		}
+
+		// Load Setup
+		$setup = (new Setup())->load($experiment->setup_id);
+		if (!$setup)
+		{
+			$this->error = L::ERROR_SETUP_NOT_FOUND;
+
+			return false;
+		}
+
+		// Check active state
+		if($setup->flag)
+		{
+			$this->error = L::setup_ACTIVE_ALREADY;
+
+			return false;
+		}
+
+
+		// Check access to control Setup
+		/*
+		if ($setup->master_exp_id != $experiment->id)
+		{
+			$this->error = L::ACCESS_DENIED;
+
+			return false;
+		}
+		*/
+		// TODO: set master_exp_id to this setup on success start (when flag=true)
+
+		$db = new DB();
+
+
+		// Get old monitors
+		$monitors = (new Monitor())->loadItems(
+				array(
+						'exp_id'   => (int)$experiment->id,
+						'setup_id' => (int)$setup->id,
+						//'deleted'  => 0
+				),
+				'id', 'ASC'
+		);
+
+		// Remove all old monitors
+		// TODO: may be not remove old monitors now, just update DB monitors as deleted, remove api by cron?
+
+		// Remove monitors call for backend sensors API
+		$delmons = array();
+		$errmons = array();
+		foreach($monitors as $mon)
+		{
+			// Send request for removing monitor
+			$query_params = array((string) $mon->uuid);
+			$socket = new JSONSocket($this->config['socket']['path']);  // new socket because closed in call
+			$respond = $socket->call('Lab.RemoveMonitor', $query_params);
+			if ($respond)
+			{
+				$delmons[] = $mon->uuid;
+			}
+			else 
+			{
+				$errmons[] = $mon->uuid;
+			}
+			unset($socket);
+		}
+		if (!empty($errmons))
+		{
+			error_log('Error remove monitors: {'. implode('},{', $errmons) . '}');  //DEBUG
+		}
+
+		// Remove from DB
+		/*
+		$delete = $db->prepare('delete from monitors where exp_id=:exp_id and setup_id=:setup_id');
+		$result = $delete->execute(array(
+				':exp_id'    => (int)$experiment->id,
+				':setup_id'  => (int)$setup->id
+		));
+		*/
+		//foreach($delmons as $uuid)
+		foreach($monitors as $mon)
+		{
+			$delete = $db->prepare('delete from monitors where uuid=:uuid');
+			$result = $delete->execute(array(
+					':uuid' => (string)$mon->uuid
+			));
+		}
+
+		// Set sensors and values list for backend sensors API
+		$params_array = array();
+		foreach($sensors as $sensor)
+		{
+			$params_array[] = (object) array(
+					'Sensor'   => $sensor->id,
+					'ValueIdx' => (int) $sensor->sensor_val_id
+			);
+		}
+
+		// Set parameters for backend sensors API
+		$now = new DateTime();
+		$nowutc = clone $now;
+		$nowutc->setTimezone(new DateTimeZone('UTC'));
+		// Check Setup mode
+		if ($setup->amount)
+		{
+			$count = (int)$setup->amount;
+			// Safe end time
+			// TODO: can dont stop detections by stop at time, and repeat infinitely and stop only by manual
+			//$stopat = System::nulldate();
+
+			// xxx: need add some time to interval for truely detect last values
+			//$overflow = (int)$setup->interval; // one interval
+			$overflow = 1;
+			$stopat = (new DateTime($nowutc->format(DateTime::RFC3339)))->modify('+' . ($count * (int)$setup->interval + $overflow) . ' sec')->format(System::DATETIME_RFC3339_UTC);
+		}
+		else
+		{
+			// Must be defined count values buffer fo RRD
+			$count = (int) ceil((int)$setup->time_det / ((int)$setup->interval > 0 ? (int)$setup->interval : 1));
+			$stopat = (new DateTime($nowutc->format(DateTime::RFC3339)))->modify('+' . (int)$setup->time_det . ' sec')->format(System::DATETIME_RFC3339_UTC);
+		}
+
+		$query_params = array(
+				'Values' => $params_array,
+				'Step'   => (int)$setup->interval,
+				'Count'  => $count,
+				'StopAt' => $stopat
+		);
+
+		// Send request for starting monitor
+		$socket = new JSONSocket($this->config['socket']['path']);
+		$result = $socket->call('Lab.StartMonitor', (object) $query_params);
+
+		// Try get uuid of created monitor
+		if (empty($result))
+		{
+			$this->error = L::setup_ERROR_MONITORING_NOT_STARTED;
+
+			return false;
+		}
+
+		// Set active state
+		$setup->set('flag', true);
+		$setup->save();
+
+		// Save started monitor uuid
+		$monitor = new Monitor();
+		$monitor->set('exp_id', (int)$experiment->id);
+		$monitor->set('setup_id', (int)$setup->id);
+		$monitor->set('uuid', (string)$result);
+		$monitor->set('created', $nowutc->format(System::DATETIME_RFC3339_UTC));
+
+		$result = $monitor->save();
+		if (!$result)
+		{
+			error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
+		}
+
+		// Update experiment start
+		$sql_exp_update_query = "update experiments set DateStart_exp = :DateStart_exp where id = :id and ((DateStart_exp isnull) or (DateStart_exp = 0) or (DateStart_exp = ''))";
+		$update = $db->prepare($sql_exp_update_query);
+		$result = $update->execute(array(
+				':DateStart_exp' => (new DateTime())->format('U'),
+				':id' => $experiment->id
+		));
+		if (!$result)
+		{
+			error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
+		}
+		// Update experiment stop reset
+		$sql_exp_update_query = "update experiments set DateEnd_exp = NULL where id = :id";
+		$update = $db->prepare($sql_exp_update_query);
+		$result = $update->execute(array(
+				':id' => $experiment->id
+		));
+		if (!$result)
+		{
+			error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
+		}
+
+		return array('result' => true);
+
+
+
+
+
 
 		return false;
 	}

@@ -217,7 +217,7 @@ class Monitor extends Model
 			}
 			catch (PDOException $e)
 			{
-				var_dump($e->getMessage());
+				//var_dump($e->getMessage());
 				error_log('PDOException:'.var_export($e->getMessage(), true)); //DEBUG
 			}
 		}
@@ -236,7 +236,7 @@ class Monitor extends Model
 			}
 			catch (PDOException $e)
 			{
-				var_dump($e->getMessage());
+				//var_dump($e->getMessage());
 				error_log('PDOException:'.var_export($e->getMessage(), true)); //DEBUG
 			}
 

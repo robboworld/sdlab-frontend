@@ -31,7 +31,7 @@ class SetupController extends Controller
 		));
 
 
-		// TODO: Create setups without master?
+		// TODO: Create Setups without master?
 		// Need master experiment id
 		if(!isset($_GET['master']) || !is_numeric($_GET['master']))
 		{
@@ -43,7 +43,7 @@ class SetupController extends Controller
 
 		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'create-setup-form')
 		{
-			// Save new setup
+			// Save new Setup
 
 			// Get master experiment
 			$master_exp = (new Experiment())->load($_GET['master']);
@@ -68,7 +68,7 @@ class SetupController extends Controller
 
 			$setup->set('title', htmlspecialchars(isset($_POST['setup_title']) ? $_POST['setup_title'] : ''));
 
-			// Set setup mode
+			// Set Setup mode
 			$setup_type = isset($_POST['setup-type']) ? $_POST['setup-type'] : '';
 			if($setup_type === 'setup-type-amount')
 			{
@@ -98,7 +98,7 @@ class SetupController extends Controller
 				if ($setup->save() && !empty($setup->id))
 				{
 					$this->id = $setup->id;
-					// If is set experiment-master and no setup used then assign to it new current setup
+					// If is set experiment-master and no Setup used then assign to it new current Setup
 					if (empty($master_exp->setup_id))
 					{
 						$master_exp->set('setup_id', $setup->id);
@@ -122,7 +122,7 @@ class SetupController extends Controller
 		}
 		else
 		{
-			// Edit new setup
+			// Edit new Setup
 
 			$setup = new Setup();
 			$this->view->form->setup = $setup;
@@ -159,7 +159,7 @@ class SetupController extends Controller
 		$this->view->form = new Form('edit-setup-form');
 		$this->view->form->submit->value = L::SAVE;
 
-		// Load setup
+		// Load Setup
 		$setup = (new Setup())->load($this->id);
 		if(!$setup)
 		{
@@ -176,11 +176,11 @@ class SetupController extends Controller
 
 		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'edit-setup-form')
 		{
-			// Save setup
+			// Save Setup
 
 			$setup->set('title', htmlspecialchars(isset($_POST['setup_title']) ? $_POST['setup_title'] : ''));
 
-			// Set setup mode
+			// Set Setup mode
 			$setup_type = isset($_POST['setup-type']) ? $_POST['setup-type'] : '';
 			if($setup_type === 'setup-type-amount')
 			{
@@ -223,7 +223,7 @@ class SetupController extends Controller
 			}
 		}
 
-		// Rewrite setup for update fields with requested data
+		// Rewrite Setup for update fields with requested data
 		$this->view->form->setup = $setup;
 
 		// Get available sensors with sensors info
@@ -237,7 +237,7 @@ class SetupController extends Controller
 	{
 		$db = new DB();
 
-		$search = $db->prepare('select id,title from setups');
+		$search = $db->prepare('select id,title,flag from setups');
 		$search->execute();
 
 		return $search->fetchAll(PDO::FETCH_OBJ);
@@ -245,9 +245,9 @@ class SetupController extends Controller
 
 
 	/**
-	 * Get sensors in setup
+	 * Get sensors in Setup
 	 * 
-	 * @param  $id  The id of setup
+	 * @param  $id  The id of Setup
 	 * 
 	 * @return array|bool
 	 */

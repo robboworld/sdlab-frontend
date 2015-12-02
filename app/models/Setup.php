@@ -90,8 +90,8 @@ class Setup extends Model
 		}
 		else
 		{
-			try{
-
+			try
+			{
 				$insert = $this->db->prepare($this->sql_insert_query);
 				$result = $insert->execute(array(
 					':master_exp_id' => $this->master_exp_id,
@@ -104,9 +104,11 @@ class Setup extends Model
 					':period_repeated_det' => $this->period_repeated_det,
 					':flag' => $this->flag
 				));
-			} catch (PDOException $e)
+			}
+			catch (PDOException $e)
 			{
-				var_dump($e->getMessage());
+				//var_dump($e->getMessage());
+				error_log('PDOException:'.var_export($e->getMessage(), true)); //DEBUG
 			}
 
 			$this->id = $this->db->lastInsertId();
@@ -132,7 +134,7 @@ class Setup extends Model
 			return false;
 		}
 
-		// TODO: add check access to edit by setup owner (add setup.session_key field to DB as experiment), because master_exp_id field changes on start by other experiment
+		// TODO: add check access to edit by Setup owner (add setup.session_key field to DB as experiment), because master_exp_id field changes on start by other experiment
 
 		// Check if set master
 		if(!empty($this->master_exp_id))
@@ -173,14 +175,14 @@ class Setup extends Model
 	function userCanCreate($session)
 	{
 		// TODO: not used, not only admin can create now, remove this
-		// TODO: add setups counter for registered users, check counter not exceed max value, may be max count in config
+		// TODO: add Setups counter for registered users, check counter not exceed max value, may be max count in config
 
 		if(!$session)
 		{
 			return false;
 		}
 		/*
-		// Admin can create setups
+		// Admin can create Setups
 		if($session->getUserLevel() == 3)
 		{
 			return true;
@@ -199,19 +201,19 @@ class Setup extends Model
 	 */
 	function userCanDelete($session)
 	{
-		//TODO: not used delete check for setups, only experiments can be deleted by admin
+		//TODO: not used delete check for Setups, only experiments can be deleted by admin
 
 		if(!$session)
 		{
 			return false;
 		}
-	
-		// Only admin can delete setups
+
+		// Only admin can delete Setups
 		if(/*$this->session_key == $session->getKey() ||*/ $session->getUserLevel() == 3)
 		{
 			return true;
 		}
-	
+
 		return false;
 	}
 

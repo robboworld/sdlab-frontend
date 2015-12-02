@@ -32,7 +32,7 @@ class ExperimentController extends Controller
 		$this->view->form = new Form('create-experiment-form');
 		$this->view->form->submit->value = L::experiment_CREATE_EXPERIMENT;
 
-		// Get setups list for the form
+		// Get Setups list for the form
 		$this->view->form->setups = SetupController::loadSetups();
 
 		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'create-experiment-form')
@@ -58,7 +58,7 @@ class ExperimentController extends Controller
 			//$experiment->set('DateStart_exp', (new DateTime($_POST['experiment_date_start']))->format('U'));
 			//$experiment->set('DateEnd_exp', (new DateTime($_POST['experiment_date_end']))->format('U'));
 
-			// Check setup available
+			// Check Setup available
 			if($setup_id)
 			{
 				$found = false;
@@ -72,7 +72,7 @@ class ExperimentController extends Controller
 				}
 				if (!$found)
 				{
-					// Reset setup, not found
+					// Reset Setup, not found
 					$setup_id = '';
 					$experiment->set('setup_id', $setup_id);
 				}
@@ -84,7 +84,7 @@ class ExperimentController extends Controller
 			{
 				if($experiment->save() && !is_null($experiment->id))
 				{
-					// Set master of setup if set setup with no master
+					// Set master of Setup if set Setup with no master
 					if($setup_id)
 					{
 						$setup = (new Setup())->load($setup_id);
@@ -94,7 +94,7 @@ class ExperimentController extends Controller
 							$result = $setup->save();
 							if (!$result)
 							{
-								// Error update setup master
+								// Error update Setup master
 								// Ignore
 							}
 						}
@@ -277,7 +277,7 @@ class ExperimentController extends Controller
 		$this->view->form->submit->value = L::SAVE;
 		$this->view->form->experiment = $experiment;
 
-		// Get setups list for the form
+		// Get Setups list for the form
 		$this->view->form->setups = SetupController::loadSetups();
 
 		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'edit-experiment-form')
@@ -290,7 +290,7 @@ class ExperimentController extends Controller
 			$experiment->set('setup_id', $setup_id);
 			$experiment->set('comments', htmlspecialchars(isset($_POST['experiment_comments']) ? $_POST['experiment_comments'] : ''));
 
-			// Check setup available
+			// Check Setup available
 			if($setup_id)
 			{
 				$found = false;
@@ -304,9 +304,9 @@ class ExperimentController extends Controller
 				}
 				if (!$found)
 				{
-					// Reset setup, not found
+					// Reset Setup, not found
 
-					// XXX: No reset old orphaned setups
+					// XXX: No reset old orphaned Setups
 
 					//$setup_id = '';
 					//$experiment->set('setup_id', $setup_id);
@@ -319,7 +319,7 @@ class ExperimentController extends Controller
 			{
 				if($experiment->save() && !is_null($experiment->id))
 				{
-					// Set master of setup if set setup with no master
+					// Set master of Setup if set Setup with no master
 					if($setup_id && $found)
 					{
 						$setup = (new Setup())->load($setup_id);
@@ -329,7 +329,7 @@ class ExperimentController extends Controller
 							$result = $setup->save();
 							if (!$result)
 							{
-								// Error update setup master
+								// Error update Setup master
 								// Ignore
 							}
 						}
@@ -378,11 +378,11 @@ class ExperimentController extends Controller
 		$setups = (array) $query->fetchAll(PDO::FETCH_COLUMN, 0);
 		$cnt_active = count($setups);
 
-		// Force delete experiment if has active setups
+		// Force delete experiment if has active Setups
 		$force = (isset($_POST) && isset($_POST['force']) && is_numeric($_POST['force'])) ? (int) $_POST['force'] : 0;
 		if ($cnt_active && !$force)
 		{
-			// Error: experiment with active setups
+			// Error: experiment with active Setups
 			System::go('experiment/view');
 			return;
 		}
@@ -392,7 +392,7 @@ class ExperimentController extends Controller
 
 		try
 		{
-			// Unactivate setup and unset master experiment
+			// Unactivate Setup and unset master experiment
 			$sql_setups_update_query = 'update setups set flag = NULL, master_exp_id = NULL where master_exp_id = :master_exp_id';
 			$update = $db->prepare($sql_setups_update_query);
 			$result = $update->execute(array(':master_exp_id' => $this->id));
@@ -556,7 +556,7 @@ class ExperimentController extends Controller
 		$query = 'select id, exp_id, strftime(\'%Y-%m-%dT%H:%M:%fZ\', time) as time, sensor_id, sensor_val_id, detection, error from detections where exp_id = '.(int)$experiment->id . ' order by strftime(\'%s\', time),strftime(\'%f\', time)';
 		$detections = $db->query($query, PDO::FETCH_OBJ);
 
-		// Prepare output depends on sensors in setup
+		// Prepare output depends on sensors in Setup
 		$sensors = SetupController::getSensors($experiment->setup_id, true);
 		$available_sensors = $displayed_sensors = array();
 
@@ -808,7 +808,7 @@ class ExperimentController extends Controller
 
 	/**
 	 * Check if some Setup is active in experiment.
-	 * Return boolean value and ids of active setups.
+	 * Return boolean value and ids of active Setups.
 	 * 
 	 * API method: Experiment.isActive
 	 * API params: experiment
@@ -843,7 +843,7 @@ class ExperimentController extends Controller
 
 		$db = new DB();
 
-		// Check active setups in experiment
+		// Check active Setups in experiment
 		// TODO: use sql Count for query or return array of active
 		$query = $db->prepare('select id from setups where master_exp_id = :master_exp_id and flag > 0');
 		$res = $query->execute(array(

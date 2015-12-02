@@ -23,7 +23,7 @@ function coreAPICall(method, params, callback){
         error: function(){
             console.log('API Call error: Transport error');
         }
-    })
+    });
 }
 
 
@@ -105,4 +105,4 @@ SDLab.Language = {
             return typeof args[number] != 'undefined' ? args[number] : match;
         });
     }
-}
+};

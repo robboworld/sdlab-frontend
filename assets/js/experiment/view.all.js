@@ -31,7 +31,7 @@ $(document).ready(function(){
             rq.activator = this;
         });
     }
-})
+});
 
 function showRescanResults(data) {
     if(typeof data.error === 'undefined'){

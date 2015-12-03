@@ -61,7 +61,7 @@ function updateSensorsList(data){
                 var exists = $('#sensors-in-setup tbody').find('input[name="sensors['+sensor.id+']['+i+'][id]"]'), newrow;
                 if(exists.size() == 0){
                     newrow = $('\
-                        <tr sensor-id="'+ sid +'" class="success">\
+                        <tr data-sensor-id="'+ sid +'" class="success">\
                             <td><input type="checkbox" checked="checked"/></td>\
                             <td>' + sensor.id + '</td>\
                             <td class="sensor-setup-valname">' + (info ? sensor.Values[i].value_name : '-') + '</td>\
@@ -84,7 +84,7 @@ function updateSensorsList(data){
                         sensorname = jsensorname.first().val();
                     }
                     newrow = $('\
-                        <tr sensor-id="'+ sid +'" class="success" style="display: none;" ' + ((typeof sensorname !== 'undefined' && sensorname !== '') ? ('data-sensorname="'+sensorname+'"') : '') + '>\
+                        <tr data-sensor-id="'+ sid +'" class="success" style="display: none;" ' + ((typeof sensorname !== 'undefined' && sensorname !== '') ? ('data-sensorname="'+sensorname+'"') : '') + '>\
                             <td><input type="checkbox"/></td>\
                             <td>' + sensor.id + '</td>\
                             <td class="sensor-setup-valname">' + (info ? sensor.Values[i].value_name : '-') + '</td>\
@@ -113,7 +113,7 @@ function updateSensorsList(data){
 
 function addSensorsToSetup(){
     $('#sensor-list-table').find(':checked').parent().parent().each(function(id){
-        var sensorId = $(this).attr('sensor-id');
+        var sensorId = $(this).data('sensor-id');
         var pos = sensorId.lastIndexOf("#"), idx = 0, sid = sensorId;
         if(pos > 0){
             sid = sensorId.slice(0, pos);
@@ -150,7 +150,7 @@ function removeSensorFromSetup(obj){
     var sensorname = rmrow.find('.sensor-setup-name input[type=text]').val();
 
     rmrow.remove();
-    $('tr[sensor-id="'+ sensorId +'"]').removeClass('success').data('sensorname',sensorname).show();
+    $('tr[data-sensor-id="'+ sensorId +'"]').removeClass('success').data('sensorname',sensorname).show();
 
     console.log('Remove sensor #'+ sensorId +' from setup configuration.');
 }

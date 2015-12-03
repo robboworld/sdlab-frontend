@@ -1,9 +1,11 @@
 <?
 // Setup status
-$setup_exists    = isset($this->view->content->setup);
+$setup_exists    = isset($this->view->content->setup) && $this->view->content->setup;
 $setup_active    = $setup_exists && $this->view->content->setup->flag;  //#setup_status_active
+// TODO: check ownership of Setup by session_key field of Setup
+//$ownSetup        = $setup_exists && ($this->view->content->setup->session_key == $this->session()->session_key->getKey());
 $ownSetup        = $setup_exists && ($this->view->content->setup->master_exp_id == $this->view->content->experiment->id);
-$canSetupControl = $setup_exists && $ownSetup;
+$canSetupControl = $setup_exists && (!$setup_active || ($setup_active && ($ownSetup  || $session->getUserLevel() == 3)));
 
 // Init stats
 $amount          = 0;       //#setup_amount_cnt
@@ -319,7 +321,7 @@ if($setup_exists)
 		<? if (isset($this->view->content->sensors)) :?>
 			<? foreach($this->view->content->sensors as $sensor): 
 				$skey = '' . $sensor->id . '#' . (int)$sensor->sensor_val_id; ?>
-				<div class="col-xs-6 col-sm-4 col-md-3 sensor-widget" sensor-id="<? print $skey; ?>">
+				<div class="col-xs-6 col-sm-4 col-md-3 sensor-widget" data-sensor-id="<? print $skey; ?>">
 					<div class="panel panel-default">
 						<div class="panel-heading">
 							<span class="panel-title">
@@ -349,14 +351,14 @@ if($setup_exists)
 		<div class="row">
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
 				<a class="btn btn-default form-control <? echo (!$canSetupControl) ? 'disabled' : ''; 
-					?>" id="experiment-action" data-experiment-state="<? echo (int)$setup_active;?>" experiment-id="<? print $this->view->content->experiment->id; ?>" data-text-0="<? echo L::START; ?>" data-text-1="<? echo L::STOP; ?>" <? echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><? 
+					?>" id="experiment-action" data-experiment-state="<? echo (int)$setup_active;?>" data-experiment-id="<? print $this->view->content->experiment->id; ?>" data-text-0="<? echo L::START; ?>" data-text-1="<? echo L::STOP; ?>" <? echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><? 
 					echo ($setup_active) ? L::STOP : L::START;
 					?></a>
 			</div>
 
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
 					<a class="btn btn-default form-control <? echo (!$canSetupControl) ? 'disabled' : '';
-						?>" id="experiment-strob" experiment-id="<? print (int)$this->view->content->experiment->id; ?>" <? echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><? echo L::STROBE; ?></a>
+						?>" id="experiment-strob" data-experiment-id="<? print (int)$this->view->content->experiment->id; ?>" <? echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><? echo L::STROBE; ?></a>
 			</div>
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
 					<a class="btn btn-default form-control" href="/?q=experiment/journal/<? print (int)$this->view->content->experiment->id; ?>"><? echo L::JOURNAL; ?></a>

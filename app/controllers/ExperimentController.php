@@ -280,29 +280,39 @@ class ExperimentController extends Controller
 		// Get Setups list for the form
 		$this->view->form->setups = SetupController::loadSetups();
 
+		// Get current Setup
+		$this->view->form->cur_setup = null;
+		$this->view->form->cur_setup_id = $experiment->setup_id;
+		if ($experiment->setup_id)
+		{
+			$this->view->form->cur_setup = (new Setup())->load($experiment->setup_id);
+		}
+
 		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'edit-experiment-form')
 		{
 			// Save experiment
 
 			// Fill the Experiment properties
 			$experiment->set('title', htmlspecialchars(isset($_POST['experiment_title']) ? $_POST['experiment_title'] : ''));
-			$setup_id = (isset($_POST['setup_id']) ? (int)$_POST['setup_id'] : '');
-			$experiment->set('setup_id', $setup_id);
 			$experiment->set('comments', htmlspecialchars(isset($_POST['experiment_comments']) ? $_POST['experiment_comments'] : ''));
+			$new_setup_id = (isset($_POST['setup_id']) ? (int)$_POST['setup_id'] : 0);
+			$new_setup_id = ($new_setup_id<0) ? 0 : $new_setup_id;
+			//$experiment->set('setup_id', $new_setup_id);
 
-			// Check Setup available
-			if($setup_id)
+			// Check new Setup available
+			$new_setup = null;
+			if($new_setup_id)
 			{
-				$found = false;
-				foreach ($this->view->form->setups as $s)
+				foreach ($this->view->form->setups as $k => $s)
 				{
-					if ($s->id == $setup_id)
+					if ($s->id == $new_setup_id)
 					{
-						$found = true;
+						$new_setup = $this->view->form->setups[$k];
 						break;
 					}
 				}
-				if (!$found)
+
+				if (!$new_setup)
 				{
 					// Reset Setup, not found
 
@@ -313,6 +323,41 @@ class ExperimentController extends Controller
 				}
 			}
 
+			$canChangeSetup = true;
+			if ((int)$experiment->setup_id)
+			{
+				if ((int)$new_setup_id != (int)$experiment->setup_id)
+				{
+					// Setup must be changed
+
+					if ($this->view->form->cur_setup)
+					{
+						if ($this->view->form->cur_setup->flag)
+						{
+							$canChangeSetup = false;
+						}
+						else
+						{
+							if ((int)$new_setup_id && !$new_setup)
+							{
+								$canChangeSetup = false;
+							}
+						}
+					}
+					else
+					{
+						if ((int)$new_setup_id && !$new_setup)
+						{
+							$canChangeSetup = false;
+						}
+					}
+				}
+			}
+			if ($canChangeSetup)
+			{
+				$experiment->set('setup_id', $new_setup_id);
+			}
+
 			// Validate
 			$valid = (strlen($experiment->title)>0);
 			if($valid)
@@ -320,10 +365,10 @@ class ExperimentController extends Controller
 				if($experiment->save() && !is_null($experiment->id))
 				{
 					// Set master of Setup if set Setup with no master
-					if($setup_id && $found)
+					if($canChangeSetup && $new_setup)
 					{
-						$setup = (new Setup())->load($setup_id);
-						if ($setup && !is_null($setup->id) && empty($setup->master_exp_id))
+						$setup = (new Setup())->load($new_setup->id);
+						if ($setup && empty($setup->master_exp_id))
 						{
 							$setup->set('master_exp_id', $experiment->id);
 							$result = $setup->save();

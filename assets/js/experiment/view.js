@@ -12,7 +12,7 @@ $(document).ready(function(){
 
     var sensors = [];
     $('.sensor-widget').each(function(){
-        var sensorId = $(this).attr('sensor-id');
+        var sensorId = $(this).data('sensor-id');
         sensors.push(sensorId);
     });
     if(sensors.length){
@@ -20,19 +20,19 @@ $(document).ready(function(){
     }
 
     $('.sensor-widget .sensor-icon-btn').click(function(){
-        var sensorId = $(this).parents('.sensor-widget').attr('sensor-id');
+        var sensorId = $(this).parents('.sensor-widget').data('sensor-id');
         $(this).removeClass('glyphicon-eye-open').addClass('glyphicon-refresh').addClass('spin');
         var el = $(this);
         updateSensorValue(sensorId, function(){el.removeClass('spin').removeClass('glyphicon-refresh').addClass('glyphicon-eye-open');});
     });
 
     $(document).on('click', '#experiment-strob', function(){
-        var id = $(this).attr('experiment-id');
+        var id = $(this).data('experiment-id');
         getExperimentStrob(id);
     })
 
     $(document).on('click', '#experiment-action', function(){
-        var id = $(this).attr('experiment-id');
+        var id = $(this).data('experiment-id');
         var state = $(this).data('experiment-state');
         if((typeof $(this).attr('disabled') !== 'undefined' && ($(this).attr('disabled')=='disabled')) || $(this).hasClass('disabled')){
             return false;
@@ -54,7 +54,7 @@ $(document).ready(function(){
             SDExperiment.updaterSensorId = setInterval(function() {
                 var ids = [];
                 $('.sensor-widget').each(function(){
-                    var sensorId = $(this).attr('sensor-id');
+                    var sensorId = $(this).data('sensor-id');
                     ids.push(sensorId);
                 });
                 if(ids.length){
@@ -90,11 +90,11 @@ function updateSensorValue(id, onalways){
         ValueIdx: idx
     }, function(data){
         if(typeof data.Reading !== 'undefined'){
-            $('.sensor-widget[sensor-id="'+id+'"]').find('.sensor-value').html(data.Reading);
-            $('.sensor-widget[sensor-id="'+id+'"]').find('.panel-body').removeClass('bg-danger');
+            $('.sensor-widget[data-sensor-id="'+id+'"]').find('.sensor-value').html(data.Reading);
+            $('.sensor-widget[data-sensor-id="'+id+'"]').find('.panel-body').removeClass('bg-danger');
         }else{
-            $('.sensor-widget[sensor-id="'+id+'"]').find('.sensor-value').html('--');
-            $('.sensor-widget[sensor-id="'+id+'"]').find('.panel-body').addClass('bg-danger');
+            $('.sensor-widget[data-sensor-id="'+id+'"]').find('.sensor-value').html('--');
+            $('.sensor-widget[data-sensor-id="'+id+'"]').find('.panel-body').addClass('bg-danger');
         }
 
     });
@@ -125,9 +125,9 @@ function updateSensorsValues(ids, onalways){
             for(var i=0;i<data.length;i++){
                 var sel;
                 if(typeof data[i].ValueIdx !== 'undefined'){
-                    sel = '.sensor-widget[sensor-id="'+data[i].Sensor +'#'+data[i].ValueIdx+'"]';
+                    sel = '.sensor-widget[data-sensor-id="'+data[i].Sensor +'#'+data[i].ValueIdx+'"]';
                 }else{
-                    sel =  '.sensor-widget[sensor-id="'+data[i].Sensor +'"]';
+                    sel =  '.sensor-widget[data-sensor-id="'+data[i].Sensor +'"]';
                 }
                 if((typeof data[i].result.error === 'undefined') && (typeof data[i].result.Reading !== 'undefined')){
                     $(sel).find('.sensor-value').html(data[i].result.Reading);
@@ -139,8 +139,8 @@ function updateSensorsValues(ids, onalways){
             }
         }else{
             for(var i=0;i<jqxhr.sensor_ids.length;i++){
-                $('.sensor-widget[sensor-id="'+jqxhr.sensor_ids[i]+'"]').find('.sensor-value').html('--');
-                $('.sensor-widget[sensor-id="'+jqxhr.sensor_ids[i]+'"]').find('.panel-body').addClass('bg-danger');
+                $('.sensor-widget[data-sensor-id="'+jqxhr.sensor_ids[i]+'"]').find('.sensor-value').html('--');
+                $('.sensor-widget[data-sensor-id="'+jqxhr.sensor_ids[i]+'"]').find('.panel-body').addClass('bg-danger');
             }
         }
     });

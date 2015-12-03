@@ -1,3 +1,19 @@
+<?
+
+// Check access
+$canChangeSetup = true;
+if ($this->view->form->id != 'create-experiment-form')
+{
+	// Edit mode
+
+	// Check Setup change access
+	if ($this->view->form->cur_setup)
+	{
+		$canChangeSetup = !((int)$this->view->form->cur_setup->flag > 0);
+	}
+}
+
+?>
 <div class="row">
 	<? if($this->view->form->id == 'create-experiment-form') : ?>
 	<div class="col-md-offset-1 col-md-10">
@@ -19,16 +35,23 @@
 	<form method="post" action="?<? print $_SERVER['QUERY_STRING']?>">
 		<input type="hidden" name="form-id" value="<?print $this->view->form->id;?>"/>
 		<div class="col-md-offset-1 form-group col-md-5">
-			<input class="form-control" maxlength="80" type="text" name="experiment_title" placeholder="<? echo L::experiment_NAME; ?>" required="true" value="<? print htmlspecialchars($this->view->form->experiment->title, ENT_QUOTES, 'UTF-8');?>"/>
+			<input class="form-control" maxlength="80" type="text" name="experiment_title" placeholder="<? echo L::experiment_NAME; ?>" required="required" value="<? print htmlspecialchars($this->view->form->experiment->title, ENT_QUOTES, 'UTF-8');?>"/>
 		</div>
 		<div class="form-group col-md-5">
-			<select class="form-control" name="setup_id">
+			<select class="form-control" name="setup_id" <? if ($this->view->form->id != 'create-experiment-form' && !$canChangeSetup) echo 'disabled="disabled"';?>>
 				<option value=""><? echo L::setup_SELECT_OPTION; ?></option>
 				<? foreach ($this->view->form->setups as $setup): ?>
 					<option value="<? print (int)$setup->id; ?>" <? if ($setup->id == $this->view->form->experiment->setup_id) print 'selected="selected"'; ?>><? print ((($setup->flag)?'* ':'') . htmlspecialchars($setup->title, ENT_QUOTES, 'UTF-8')); ?></option>
 				<? endforeach; ?>
 			</select>
 		</div>
+		<? if ($this->view->form->id != 'create-experiment-form' && !$canChangeSetup) : ?>
+
+		<div class="form-group col-md-offset-1 col-md-10">
+			<div class="alert alert-warning"><? echo L::experiment_ERROR_SETUP_CANNOT_BE_CHANGED_ACTIVE; ?></div>
+		</div>
+		<? endif; ?>
+
 		<!--
 			<div class="form-group col-md-6">
 				<div class="row">

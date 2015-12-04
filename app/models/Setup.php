@@ -5,6 +5,7 @@ class Setup extends Model
 
 	protected $id;
 	protected $master_exp_id;
+	protected $session_key;
 	protected $title;
 	protected $interval;
 	protected $amount;
@@ -16,12 +17,13 @@ class Setup extends Model
 
 	private $sql_load_query = 'select * from setups where id = :id';
 	private $sql_insert_query = 'insert into setups
-										(master_exp_id, title, interval, amount, time_det, period, number_error, period_repeated_det, flag)
+										(master_exp_id, session_key, title, interval, amount, time_det, period, number_error, period_repeated_det, flag)
 										values
-										(:master_exp_id, :title, :interval, :amount, :time_det, :period, :number_error, :period_repeated_det, :flag)';
+										(:master_exp_id, :session_key, :title, :interval, :amount, :time_det, :period, :number_error, :period_repeated_det, :flag)';
 
 	private $sql_update_query = 'update setups set
 										master_exp_id = :master_exp_id,
+										session_key = :session_key,
 										title = :title,
 										interval = :interval,
 										amount = :amount,
@@ -33,18 +35,27 @@ class Setup extends Model
 									where id = :id';
 
 
-	function __construct()
+	function __construct($session_key = null)
 	{
-		$id = null;
-		$master_exp_id = null;
-		$title = null;
-		$interval = null;
-		$amount = null;
-		$time_det = null;
-		$period = null;
-		$number_error = null;
-		$period_repeated_det = null;
-		$flag = null;
+		if(is_numeric($session_key) && Session::keyExists($session_key))
+		{
+			$this->session_key = $session_key;
+		}
+		else
+		{
+			$this->session_key = null;
+		}
+		$this->id = null;
+		$this->master_exp_id = null;
+		$this->session_key = null;
+		$this->title = null;
+		$this->interval = null;
+		$this->amount = null;
+		$this->time_det = null;
+		$this->period = null;
+		$this->number_error = null;
+		$this->period_repeated_det = null;
+		$this->flag = null;
 		parent::__construct();
 	}
 
@@ -78,6 +89,7 @@ class Setup extends Model
 			$result = $update->execute(array(
 				':id' => $this->id,
 				':master_exp_id' => $this->master_exp_id,
+				':session_key' => $this->session_key,
 				':title' => $this->title,
 				':interval' => $this->interval,
 				':amount' => $this->amount,
@@ -95,6 +107,7 @@ class Setup extends Model
 				$insert = $this->db->prepare($this->sql_insert_query);
 				$result = $insert->execute(array(
 					':master_exp_id' => $this->master_exp_id,
+					':session_key' => $this->session_key,
 					':title' => $this->title,
 					':interval' => $this->interval,
 					':amount' => $this->amount,
@@ -134,36 +147,10 @@ class Setup extends Model
 			return false;
 		}
 
-		// TODO: add check access to edit by Setup owner (add setup.session_key field to DB as experiment), because master_exp_id field changes on start by other experiment
-
-		// Check if set master
-		if(!empty($this->master_exp_id))
+		// Check access to edit Setup by owner
+		if(empty($this->session_key) || $this->session_key == $session->getKey() || $session->getUserLevel() == 3)
 		{
-			$experiment = (new Experiment())->load($this->master_exp_id);
-			if(!$experiment)
-			{
-				// Unknown/orphaned experiment - only admin can edit
-				if($session->getUserLevel() == 3)
-				{
-					return true;
-				}
-			}
-			else
-			{
-				// Check access to experiment edit
-				if($experiment->userCanEdit($session))
-				{
-					return true;
-				}
-			}
-		}
-		else
-		{
-			// Only admin can edit w/o master
-			if($session->getUserLevel() == 3)
-			{
-				return true;
-			}
+			return true;
 		}
 		return false;
 	}

@@ -313,7 +313,7 @@ class SensorsController extends Controller
 		// Check active state
 		if($setup->flag)
 		{
-			//Check access to control Setup
+			//Check access to control active Setup
 
 			// Access only if current experiment is master of Setup
 			if ($setup->master_exp_id != $experiment->id)
@@ -526,18 +526,14 @@ class SensorsController extends Controller
 			return false;
 		}
 
-
 		// Check access to control Setup
 		/*
-		if ($setup->master_exp_id != $experiment->id)
+		// Check private Setup flag
+		if ($setup->private)
 		{
-			// Check private Setup flag
-			//if ($setup->private)
-			//{
-				$this->error = L::ACCESS_DENIED;
+			$this->error = L::ACCESS_DENIED;
 
-				return false;
-			//}
+			return false;
 		}
 		*/
 

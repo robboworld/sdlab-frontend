@@ -139,7 +139,6 @@ class Session extends Model
 		{
 			return false;
 		}
-
 	}
 
 	/**

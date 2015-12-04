@@ -58,7 +58,7 @@ class SetupController extends Controller
 				System::go('experiment/view');
 			}
 
-			$setup = new Setup();
+			$setup = new Setup($this->session()->getKey());
 
 			// Check access to create
 			if(!$setup->userCanCreate($this->session()))
@@ -201,6 +201,10 @@ class SetupController extends Controller
 			$setup->set('interval', htmlspecialchars($interval));
 			$setup->set('number_error', htmlspecialchars(isset($_POST['number_error']) ? (int)$_POST['number_error'] : 0));
 			$setup->set('period_repeated_det', htmlspecialchars(isset($_POST['period_repeated_det']) ? (int)$_POST['period_repeated_det'] : 0));
+			if (empty($setup->session_key))
+			{
+				$setup->set('session_key', $this->session()->getKey());
+			}
 
 			// Setup sensors
 			if(isset($_POST['sensors']) && !empty($_POST['sensors']) && is_array($_POST['sensors']))

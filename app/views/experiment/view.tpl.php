@@ -2,8 +2,7 @@
 // Setup status
 $setup_exists    = isset($this->view->content->setup) && $this->view->content->setup;
 $setup_active    = $setup_exists && $this->view->content->setup->flag;  //#setup_status_active
-// TODO: check ownership of Setup by session_key field of Setup
-//$ownSetup        = $setup_exists && ($this->view->content->setup->session_key == $this->session()->session_key->getKey());
+$ownSetup        = $setup_exists && ($this->view->content->setup->session_key == $this->session()->getKey());
 $masterSetup     = $setup_exists && ($this->view->content->setup->master_exp_id == $this->view->content->experiment->id);
 $canSetupControl = $setup_exists && (!$setup_active || ($setup_active && $masterSetup));
 
@@ -246,6 +245,11 @@ if($setup_exists)
 						<? endif; ?>
 					</div>
 					<div class="setup-status">
+						<? if ($ownSetup) : ?>
+						<div id="setup_status_owner" class="col-md-2">
+							<span class="label label-info"><? echo L::setup_OWNER; ?></span>
+						</div>
+						<? endif; ?>
 						<? if ($setup_active) : ?>
 						<div id="setup_status_active" class="col-md-2">
 							<span class="label label-danger"><i class="glyphicon glyphicon-exclamation-sign" style="display:none;">&nbsp;</i><? 

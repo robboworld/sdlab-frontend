@@ -311,14 +311,7 @@ class SensorsController extends Controller
 		}
 
 		// Check active state
-		if(!$setup->flag)
-		{
-			// Now not set active state on strob requests
-			//$setup->set('flag', true);
-			//$setup->set('master_exp_id', $experiment->id);
-			//$setup->save();
-		}
-		else
+		if($setup->flag)
 		{
 			//Check access to control Setup
 
@@ -775,7 +768,7 @@ class SensorsController extends Controller
 // 			return false;
 // 		}
 
-		// Check access to control Setup
+		// Check access to control Setup from experiment
 		if ($setup->master_exp_id != $experiment->id)
 		{
 			$this->error = L::ACCESS_DENIED;

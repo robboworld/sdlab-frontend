@@ -218,7 +218,14 @@ class SetupController extends Controller
 				if($setup->save() && !empty($setup->id))
 				{
 					// Redirect to master experiment
-					System::go('experiment/view/'.$setup->master_exp_id);
+					if ($setup->master_exp_id)
+					{
+						System::go('experiment/view/'.$setup->master_exp_id);
+					}
+					else
+					{
+						System::go('experiment/view');
+					}
 				}
 			}
 		}

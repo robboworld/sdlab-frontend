@@ -88,7 +88,7 @@ class ExperimentController extends Controller
 					if($setup_id)
 					{
 						$setup = (new Setup())->load($setup_id);
-						if ($setup && !is_null($setup->id) && empty($setup->master_exp_id))
+						if ($setup && empty($setup->master_exp_id))
 						{
 							$setup->set('master_exp_id', $experiment->id);
 							$result = $setup->save();

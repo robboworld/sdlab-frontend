@@ -4,8 +4,8 @@ $setup_exists    = isset($this->view->content->setup) && $this->view->content->s
 $setup_active    = $setup_exists && $this->view->content->setup->flag;  //#setup_status_active
 // TODO: check ownership of Setup by session_key field of Setup
 //$ownSetup        = $setup_exists && ($this->view->content->setup->session_key == $this->session()->session_key->getKey());
-$ownSetup        = $setup_exists && ($this->view->content->setup->master_exp_id == $this->view->content->experiment->id);
-$canSetupControl = $setup_exists && (!$setup_active || ($setup_active && ($ownSetup  || $session->getUserLevel() == 3)));
+$masterSetup     = $setup_exists && ($this->view->content->setup->master_exp_id == $this->view->content->experiment->id);
+$canSetupControl = $setup_exists && (!$setup_active || ($setup_active && $masterSetup));
 
 // Init stats
 $amount          = 0;       //#setup_amount_cnt
@@ -163,7 +163,7 @@ if($setup_exists)
 <!--
     $(document).ready(function(){
         SDExperiment.exp_id = <? echo (int)$this->view->content->experiment->id; ?>;
-        <? if($setup_exists && $setup_active && ($finished === false)) : ?>
+        <? if($setup_exists && $setup_active && $masterSetup && ($finished === false)) : ?>
 
         // Monitoring status polling
         SDExperiment.stopTimer('MonId');
@@ -248,10 +248,12 @@ if($setup_exists)
 					<div class="setup-status">
 						<? if ($setup_active) : ?>
 						<div id="setup_status_active" class="col-md-2">
-							<span class="label label-danger"><i class="glyphicon glyphicon-exclamation-sign" style="display:none;">&nbsp;</i><? echo L::setup_ACTIVE; ?></span>
+							<span class="label label-danger"><i class="glyphicon glyphicon-exclamation-sign" style="display:none;">&nbsp;</i><? 
+								echo ($this->view->content->setup->master_exp_id == $this->view->content->experiment->id) ? L::setup_ACTIVE : L::setup_BUSY;
+							?></span>
 						</div>
 						<? endif; ?>
-						<? if ($ownSetup) : ?>
+						<? if ($masterSetup) : ?>
 						<div id="setup_status_master" class="col-md-2">
 							<span class="label label-info"><? echo L::experiment_MASTER; ?></span>
 						</div>

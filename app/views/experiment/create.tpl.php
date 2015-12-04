@@ -41,7 +41,7 @@ if ($this->view->form->id != 'create-experiment-form')
 			<select class="form-control" name="setup_id" <? if ($this->view->form->id != 'create-experiment-form' && !$canChangeSetup) echo 'disabled="disabled"';?>>
 				<option value=""><? echo L::setup_SELECT_OPTION; ?></option>
 				<? foreach ($this->view->form->setups as $setup): ?>
-					<option value="<? print (int)$setup->id; ?>" <? if ($setup->id == $this->view->form->experiment->setup_id) print 'selected="selected"'; ?>><? print ((($setup->flag)?'* ':'') . htmlspecialchars($setup->title, ENT_QUOTES, 'UTF-8')); ?></option>
+					<option value="<? print (int)$setup->id; ?>" <? if ($setup->id == $this->view->form->experiment->setup_id) print 'selected="selected"'; ?>><? print ((($setup->flag)?'[*] ':'') . htmlspecialchars($setup->title, ENT_QUOTES, 'UTF-8')); ?></option>
 				<? endforeach; ?>
 			</select>
 		</div>

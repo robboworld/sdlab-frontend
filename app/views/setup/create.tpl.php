@@ -218,9 +218,15 @@
 	<div class="col-md-offset-1 col-md-10 text-center">
 		<div class="btn-group" style="float: none;">
 			<a href="/?q=experiment/view" class="col-md-6 btn-default btn width-auto form-control"><? echo L::CANCEL; ?></a>
-		<? if($this->view->form->id == 'edit-setup-form') : ?>
-			<a href="/?q=setup/create" class="btn btn-primary width-auto form-control"><? echo L::CREATE; ?></a>
-		<? endif; ?>
+		<? if($this->view->form->id == 'edit-setup-form') : 
+			if((int)$this->view->form->setup->master_exp_id) :
+			// TODO: Create Setup w/o master for admin only?
+		?>
+
+			<a href="/?q=setup/create&master=<? echo (int)$this->view->form->setup->master_exp_id; ?>" class="btn btn-primary width-auto form-control"><? echo L::CREATE; ?></a>
+		<? endif;
+		endif; ?>
+
 			<input type="submit" class="btn btn-success width-auto form-control" value="<? print $this->view->form->submit->value; ?>" disabled="disabled" />
 		</div>
 	</div>

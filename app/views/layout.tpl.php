@@ -12,9 +12,9 @@
 	<link rel="stylesheet" href="assets/css/style.css">
 	<script src="assets/bootstrap/js/bootstrap.min.js"></script>
 	<script type="text/javascript">
-	$(function () {
-		$('[data-toggle="tooltip"]').tooltip()
-	})
+	$(document).ready(function(){
+		$('[data-toggle="tooltip"]').tooltip();
+	});
 	</script>
 	<? print $this->collectJs(); ?>
 

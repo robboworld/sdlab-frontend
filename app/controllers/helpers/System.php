@@ -69,6 +69,43 @@ class System
 	}
 
 	/**
+	 * Go to the destination url by request var
+	 * 
+	 * @param string $default_query  Default redirect query
+	 * @param string $method         Method (POST|GET)
+	 * @param string $query_var      Request var name
+	 */
+	static function goback($default_query = null, $method = "get", $query_var = "destination")
+	{
+		$method = strtolower($method);
+		switch ($method)
+		{
+			case 'post':
+				if(isset($_POST['destination']))
+				{
+					System::go(System::clean($_POST['destination'], 'path'));
+				}
+				else
+				{
+					System::go($default_query);
+				}
+				break;
+
+			case 'get':
+			default:
+				if(isset($_GET['destination']))
+				{
+					System::go(System::clean($_GET['destination'], 'path'));
+				}
+				else
+				{
+					System::go($default_query);
+				}
+				break;
+		}
+	}
+
+	/**
 	 * Convert number of seconds to nanoseconds
 	 * 
 	 * @param  interger|float  $var  Seconds

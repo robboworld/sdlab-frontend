@@ -56,6 +56,10 @@ class SensorsController extends Controller
 		}
 
 		$socket = new JSONSocket($this->config['socket']['path']);
+		if ($socket->error())
+		{
+			return false;
+		}
 		$result = $socket->call('Lab.ListSensors', array($rescan));
 		if (!$result)
 		{
@@ -83,7 +87,7 @@ class SensorsController extends Controller
 		$insert = $db->prepare('insert into sensors (sensor_id, sensor_val_id, sensor_name, value_name, si_notation, si_name, max_range, min_range, error, resolution)' .
 				' values (:sensor_id, :sensor_val_id, :sensor_name, :value_name, :si_notation, :si_name, :max_range, :min_range, :error, :resolution)');
 
-		foreach($result as $sensor_id => $obj)
+		foreach($result['result'] as $sensor_id => $obj)
 		{
 			$sensor_name = (string) preg_replace('/\-.*/i', '', $sensor_id);
 			if (strlen($sensor_name) == 0)
@@ -130,7 +134,7 @@ class SensorsController extends Controller
 		// Get additional sensors data
 		if(isset($params['getinfo']) && $params['getinfo'])
 		{
-			foreach($result as $sensor_id => $sensor)
+			foreach($result['result'] as $sensor_id => $sensor)
 			{
 				// Add additional data to main sensor data
 				$sensor->sensor_name = (string) preg_replace('/\-.*/i', '', $sensor_id);
@@ -162,7 +166,7 @@ class SensorsController extends Controller
 			}
 		}
 
-		return $result;
+		return $result['result'];
 	}
 
 
@@ -178,13 +182,23 @@ class SensorsController extends Controller
 	function getData($params)
 	{
 		$socket = new JSONSocket($this->config['socket']['path']);
+		if (!$socket->error())
+		{
+			return false;
+		}
+
 		$result = $socket->call('Lab.GetData', (object) array(
 				'Sensor'   => $params['Sensor'],
 				'ValueIdx' => (int) $params['ValueIdx']
 		));
 		unset($socket);
 
-		return $result;
+		if (!$result)
+		{
+			return false;
+		}
+
+		return $result['result'];
 	}
 
 
@@ -228,6 +242,11 @@ class SensorsController extends Controller
 			}
 
 			$socket = new JSONSocket($this->config['socket']['path']);
+			if (!$socket->error())
+			{
+				
+			}
+
 			$obj['result'] = $socket->call('Lab.GetData', (object) array(
 					'Sensor'   => $sensor['Sensor'],
 					'ValueIdx' => $idx

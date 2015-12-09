@@ -217,7 +217,6 @@ class DetectionsController extends Controller
 		// Get current timezone offset in seconds to correct timestamps
 		$tz_offset = (new DateTime())->format('Z');
 
-		// XXX: return time in milliseconds (Warning! >PHP_INT_MAX)
 		// Get time in milliseconds in local timezone
 		$query = //'select strftime(\'%Y.%m.%d %H:%M:%f\', time) as time, detection '
 				 'select (strftime(\'%s\',time) - strftime(\'%S\',time) + strftime(\'%f\',time)' . ($tz_offset>=0 ? ' + ' : ' ')  . $tz_offset . ')*1000 as time, detection '
@@ -249,7 +248,7 @@ class DetectionsController extends Controller
 				$data->data = $detections;
 				foreach ($data->data as $k => $val)
 				{
-					$t = (string)$val[0];
+					$t = (string)$val[0];  // XXX: return time in milliseconds (Warning! use string, int value > PHP_INT_MAX)
 					$dotpos = strpos($t,'.');
 					if ($dotpos !== false )
 					{

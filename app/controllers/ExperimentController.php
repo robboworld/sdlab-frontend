@@ -180,30 +180,39 @@ class ExperimentController extends Controller
 
 					// Send request for get monitor info
 					$socket = new JSONSocket($this->config['socket']['path']);
-					$result = $socket->call('Lab.GetMonInfo', $query_params);
-
-					// Get results
-					if($result)
+					if (!$socket->error())
 					{
-						//Prepare results
-						$nd = System::nulldate();
+						$res = $socket->call('Lab.GetMonInfo', $query_params);
 
-						if(isset($result->Created) && ($result->Created === $nd))
+						// Get results
+						if($res)
 						{
-							$result->Created = null;
-						}
+							$result = $res['result'];
 
-						if(isset($result->StopAt) && ($result->StopAt === $nd))
+							//Prepare results
+							$nd = System::nulldate();
+
+							if(isset($result->Created) && ($result->Created === $nd))
+							{
+								$result->Created = null;
+							}
+
+							if(isset($result->StopAt) && ($result->StopAt === $nd))
+							{
+								$result->StopAt = null;
+							}
+
+							if(isset($result->Last) && ($result->Last === $nd))
+							{
+								$result->Last = null;
+							}
+
+							$this->view->content->monitor->info = $result;
+						}
+						else
 						{
-							$result->StopAt = null;
+							// TODO: error get monitor data from backend api, may by need show error
 						}
-
-						if(isset($result->Last) && ($result->Last === $nd))
-						{
-							$result->Last = null;
-						}
-
-						$this->view->content->monitor->info = $result;
 					}
 					else
 					{
@@ -464,10 +473,17 @@ class ExperimentController extends Controller
 				// Send request for removing monitor
 				$query_params = array((string) $uuid);
 				$socket = new JSONSocket($this->config['socket']['path']);
-				$result = $socket->call('Lab.RemoveMonitor', $query_params);
-				if ($result)
+				if (!$socket->error())
 				{
-					$delmons[] = $uuid;
+					$result = $socket->call('Lab.RemoveMonitor', $query_params);
+					if ($result && $result['result'])
+					{
+						$delmons[] = $uuid;
+					}
+					else
+					{
+						$errmons[] = $uuid;
+					}
 				}
 				else
 				{

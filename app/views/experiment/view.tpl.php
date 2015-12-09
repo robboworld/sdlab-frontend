@@ -4,7 +4,7 @@ $setup_exists    = isset($this->view->content->setup) && $this->view->content->s
 $setup_active    = $setup_exists && $this->view->content->setup->flag;  //#setup_status_active
 $ownSetup        = $setup_exists && ($this->view->content->setup->session_key == $this->session()->getKey());
 $masterSetup     = $setup_exists && ($this->view->content->setup->master_exp_id == $this->view->content->experiment->id);
-$canSetupControl = $setup_exists && (!$setup_active || ($setup_active && $masterSetup));
+$canSetupControl = $setup_exists && $this->view->content->setup->userCanControl($this->session(), $this->view->content->experiment->id);
 
 // Init stats
 $amount          = 0;       //#setup_amount_cnt

@@ -204,6 +204,34 @@ class Setup extends Model
 		return false;
 	}
 
+	/**
+	 * @param $session
+	 * @param $exp_id
+	 * @return bool
+	 */
+	function userCanControl($session, $exp_id)
+	{
+		if(!$session || !$exp_id)
+		{
+			return false;
+		}
+
+		// Check active
+		if(!$this->flag)
+		{
+			if($this->master_exp_id == $exp_id)
+			{
+				return true;
+			}
+		}
+		else
+		{
+			return true;
+		}
+
+		return false;
+	}
+
 	function time()
 	{
 		if(!empty($this->amount))

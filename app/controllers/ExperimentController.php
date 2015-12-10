@@ -439,7 +439,6 @@ class ExperimentController extends Controller
 		{
 			// Error: experiment with active Setups
 			System::go('experiment/view');
-			return;
 		}
 
 		// Speed db operations within transaction
@@ -699,7 +698,6 @@ class ExperimentController extends Controller
 			if (empty($plot_id))
 			{
 				System::go('experiment/graph');
-				return;
 			}
 
 			// Get graph
@@ -708,7 +706,6 @@ class ExperimentController extends Controller
 			{
 				// Error: graph not found
 				System::go('experiment/graph');
-				return;
 			}
 
 			$edit = App::router(4);

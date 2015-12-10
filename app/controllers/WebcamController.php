@@ -323,8 +323,6 @@ class WebcamController extends Controller
 						// Error: do nothing
 						// Redirect to list
 						System::go('webcam/view');
-
-						return;
 					}
 
 					// Prepare parameters for api method
@@ -337,7 +335,6 @@ class WebcamController extends Controller
 						// Error
 						// Redirect back
 						System::goback('webcam/view', 'post');
-						return;
 					}
 
 					$result = $socket->call('Lab.StartVideoStream', $query_params);
@@ -349,14 +346,11 @@ class WebcamController extends Controller
 						// Error: cannot start stream, or camera not found
 						// Redirect back
 						System::goback('webcam/view', 'post');
-						return;
 					}
 				}
 
 				// Redirect back
 				System::goback('webcam/view', 'post');
-
-				return;
 			}
 			//else
 			//{
@@ -390,8 +384,6 @@ class WebcamController extends Controller
 						// Error: do nothing
 						// Redirect to list
 						System::go('webcam/view');
-
-						return;
 					}
 
 					// Prepare parameters for api method
@@ -404,7 +396,6 @@ class WebcamController extends Controller
 						// Error
 						// Redirect back
 						System::goback('webcam/view', 'post');
-						return;
 					}
 
 					$result = $socket->call('Lab.StopVideoStream', $query_params);
@@ -416,14 +407,11 @@ class WebcamController extends Controller
 						// Error: cannot stop stream, or camera not found
 						// Redirect back
 						System::goback('webcam/view', 'post');
-						return;
 					}
 				}
 
 				// Redirect back
 				System::goback('webcam/view', 'post');
-
-				return;
 			}
 			//else
 			//{
@@ -464,7 +452,6 @@ class WebcamController extends Controller
 					// Error
 					// Redirect back
 					System::goback('webcam/view', 'post');
-					return;
 				}
 
 				$result = $socket->call('Lab.StartVideoStreamAll', $query_params);
@@ -475,14 +462,11 @@ class WebcamController extends Controller
 				{
 					// Error: cannot start stream, or camera not found
 					System::goback('webcam/view', 'post');
-					return;
 				}
 			}
 
 			// Redirect back
 			System::goback('webcam/view', 'post');
-
-			return;
 		}
 		//else
 		//{
@@ -509,7 +493,6 @@ class WebcamController extends Controller
 					// Error
 					// Redirect back
 					System::goback('webcam/view', 'post');
-					return;
 				}
 
 				$result = $socket->call('Lab.StopVideoStreamAll', $query_params);
@@ -521,13 +504,11 @@ class WebcamController extends Controller
 					// Error: cannot stop streams, or cameras not found
 					// Redirect back
 					System::goback('webcam/view', 'post');
-					return;
 				}
 			}
 
 			// Redirect back
 			System::goback('webcam/view', 'post');
-			return;
 		}
 		//else
 		//{

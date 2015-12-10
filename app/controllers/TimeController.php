@@ -103,7 +103,6 @@ class TimeController extends Controller
 				{
 					// Error: Not save
 					System::go('time/edit');
-					exit;
 				}
 
 				// Check timezone
@@ -127,7 +126,6 @@ class TimeController extends Controller
 				{
 					// Error date format
 					System::go('time/edit');
-					exit;
 				}
 				//Reset seconds (default is current time)
 				$dt->setTime($dt->format('H'), $dt->format('i'), 0);
@@ -156,7 +154,6 @@ class TimeController extends Controller
 				{
 					// Error
 					System::go('time/edit');
-					exit;
 				}
 
 				// Get results
@@ -173,17 +170,14 @@ class TimeController extends Controller
 				{
 					// Error set date time
 					System::go('time/edit');
-					exit;
 				}
 
 				System::go('time/edit');
-				exit;
 			}
 		}
 		else
 		{
 			System::go();
-			exit;
 		}
 	}
 

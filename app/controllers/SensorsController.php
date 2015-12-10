@@ -18,6 +18,7 @@ class SensorsController extends Controller
 		$this->addJs('sensors');
 		// Add language translates for scripts
 		Language::script(array(
+				'ERROR',
 				'sensor_VALUE_NAME_TEMPERATURE',  // chart
 				'GRAPH', 'INFO'            // Sensor
 				                           // - sensors
@@ -40,7 +41,7 @@ class SensorsController extends Controller
 	 * 
 	 * @param  array  $params Array of parameters
 	 * 
-	 * @return array  The sensor list of objects or False on error
+	 * @return array  Result in form array('result' => sensor list of objects) or False on error
 	 */
 	function getSensors($params)
 	{
@@ -166,7 +167,7 @@ class SensorsController extends Controller
 			}
 		}
 
-		return $result['result'];
+		return $result;
 	}
 
 
@@ -177,12 +178,12 @@ class SensorsController extends Controller
 	 * 
 	 * @param  array  $params Array of parameters
 	 * 
-	 * @return array  The sensor data array (Time, Reading) or False on error
+	 * @return array  Result in form array('result' => sensor data object of (Time, Reading)) or False on error
 	 */
 	function getData($params)
 	{
 		$socket = new JSONSocket($this->config['socket']['path']);
-		if (!$socket->error())
+		if ($socket->error())
 		{
 			return false;
 		}
@@ -198,7 +199,7 @@ class SensorsController extends Controller
 			return false;
 		}
 
-		return $result['result'];
+		return $result;
 	}
 
 
@@ -209,7 +210,7 @@ class SensorsController extends Controller
 	 *
 	 * @param  array  $params Array of parameters
 	 *
-	 * @return array  The sensor array with data array (Sensor, ValueIdx, result(Time, Reading)) or False on error
+	 * @return array  Result in form array('result' => sensor array with data array (Sensor, ValueIdx, result(Time, Reading))) or False on error
 	 */
 	function getDataItems($params)
 	{
@@ -222,7 +223,7 @@ class SensorsController extends Controller
 
 		// TODO: Create backend method Lab.GetItemsData for read multiple sensors on once
 
-		$result = array();
+		$items = array();
 		foreach ($params as $sensor)
 		{
 			if(!isset($sensor['Sensor']))
@@ -241,29 +242,33 @@ class SensorsController extends Controller
 				$obj['ValueIdx'] = $idx;
 			}
 
+			$obj['result'] = false;
 			$socket = new JSONSocket($this->config['socket']['path']);
 			if (!$socket->error())
 			{
-				
+				$res = $socket->call('Lab.GetData', (object) array(
+						'Sensor'   => $sensor['Sensor'],
+						'ValueIdx' => $idx
+				));
+				if($res)
+				{
+					$obj['result'] = $res['result'];
+				}
 			}
 
-			$obj['result'] = $socket->call('Lab.GetData', (object) array(
-					'Sensor'   => $sensor['Sensor'],
-					'ValueIdx' => $idx
-			));
 			unset($socket);
 
-			$result[] = $obj;
+			$items[] = $obj;
 		}
 
-		if (empty($result))
+		if (empty($items))
 		{
 			$this->error = L::ERROR;
 
 			return false;
 		}
 
-		return $result;
+		return array('result' => $items);
 	}
 
 
@@ -365,14 +370,30 @@ class SensorsController extends Controller
 
 		// Send request for start series consists of one detection
 		$socket = new JSONSocket($this->config['socket']['path']);
-		$respond = $socket->call('Lab.StartSeries', (object) $query_params);
-
-		// If returned true try get results
-		if(!$respond)
+		if ($socket->error())
 		{
-			$this->error = L::setup_ERROR_SERIES_NOT_STARTED;
+			$this->error = L::ERROR;
 
 			return false;
+		}
+
+		$respond = $socket->call('Lab.StartSeries', (object) $query_params);
+		if(!$respond)
+		{
+			$this->error = L::ERROR;
+
+			return false;
+		}
+		else
+		{
+			// If returned true try get results
+			if(!$respond['result'])
+			{
+				$this->error = L::setup_ERROR_SERIES_NOT_STARTED;
+
+				return false;
+			}
+		
 		}
 
 		// Wait for results
@@ -381,9 +402,21 @@ class SensorsController extends Controller
 		// For results need new socket
 		unset($socket);
 		$socket = new JSONSocket($this->config['socket']['path']);
+		if ($socket->error())
+		{
+			$this->error = L::ERROR;
+
+			return false;
+		}
 
 		$result = $socket->call('Lab.GetSeries', null);
-		if(empty($result))
+		if(!$result)
+		{
+			$this->error = L::ERROR;
+
+			return false;
+		}
+		else if(empty($result['result']))
 		{
 			$this->error = L::setup_ERROR_EMPTY_RESPONSE;
 
@@ -400,27 +433,27 @@ class SensorsController extends Controller
 		{
 			// Check error value
 			$sensor_error = null;
-			if ($result[0]->Readings[$i] === 'NaN')
+			if ($result['result'][0]->Readings[$i] === 'NaN')
 			{
 				$sensor_error = 'NaN';
-				$result[0]->Readings[$i] = null;
+				$result['result'][0]->Readings[$i] = null;
 			}
 
 			//Check range
 			if (is_null($sensor_error))
 			{
-				if (isset($sensors[$i]->min_range) && ((float)$result[0]->Readings[$i] < (float)$sensors[$i]->min_range))
+				if (isset($sensors[$i]->min_range) && ((float)$result['result'][0]->Readings[$i] < (float)$sensors[$i]->min_range))
 				{
 					$sensor_error = 'NaN';
-					$result[0]->Readings[$i] = $sensors[$i]->min_range;
+					$result['result'][0]->Readings[$i] = $sensors[$i]->min_range;
 				}
 			}
 			if (is_null($sensor_error))
 			{
-				if (isset($sensors[$i]->max_range) && ((float)$result[0]->Readings[$i] > (float)$sensors[$i]->max_range))
+				if (isset($sensors[$i]->max_range) && ((float)$result['result'][0]->Readings[$i] > (float)$sensors[$i]->max_range))
 				{
 					$sensor_error = 'NaN';
-					$result[0]->Readings[$i] = $sensors[$i]->max_range;
+					$result['result'][0]->Readings[$i] = $sensors[$i]->max_range;
 				}
 			}
 
@@ -428,10 +461,10 @@ class SensorsController extends Controller
 			{
 				$res = $insert->execute(array(
 					':exp_id' => $experiment->id,
-					':time' => System::convertDatetimeToUTC($result[0]->Time),
+					':time' => System::convertDatetimeToUTC($result['result'][0]->Time),
 					':sensor_id' => $sensors[$i]->id,
 					':sensor_val_id' => $sensors[$i]->sensor_val_id,
-					':detection' => $result[0]->Readings[$i],
+					':detection' => $result['result'][0]->Readings[$i],
 					':error' => $sensor_error
 				));
 				if (!$res)
@@ -581,16 +614,24 @@ class SensorsController extends Controller
 		{
 			// Send request for removing monitor
 			$query_params = array((string) $mon->uuid);
-			$socket = new JSONSocket($this->config['socket']['path']);  // new socket because closed in call
-			$respond = $socket->call('Lab.RemoveMonitor', $query_params);
-			if ($respond)
+			$socket = new JSONSocket($this->config['socket']['path']);
+			if (!$socket->error())
 			{
-				$delmons[] = $mon->uuid;
+				$respond = $socket->call('Lab.RemoveMonitor', $query_params);
+				if ($respond && $respond['result'])
+				{
+					$delmons[] = $mon->uuid;
+				}
+				else
+				{
+					$errmons[] = $mon->uuid;
+				}
 			}
-			else 
+			else
 			{
 				$errmons[] = $mon->uuid;
 			}
+
 			unset($socket);
 		}
 		if (!empty($errmons))
@@ -668,15 +709,30 @@ class SensorsController extends Controller
 
 		// Send request for starting monitor
 		$socket = new JSONSocket($this->config['socket']['path']);
-		$result = $socket->call('Lab.StartMonitor', (object) $query_params);
-
-		// Try get uuid of created monitor
-		if (empty($result))
+		if ($socket->error())
 		{
-			$this->error = L::setup_ERROR_MONITORING_NOT_STARTED;
+			$this->error = L::ERROR;
 
 			return false;
 		}
+		$result = $socket->call('Lab.StartMonitor', (object) $query_params);
+		if (!$result)
+		{
+			$this->error = L::ERROR;
+
+			return false;
+		}
+		else
+		{
+			// Try get uuid of created monitor
+			if (empty($result['result']))
+			{
+				$this->error = L::setup_ERROR_MONITORING_NOT_STARTED;
+
+				return false;
+			}
+		}
+
 
 		// Set active state
 		$setup->set('flag', true);
@@ -687,7 +743,7 @@ class SensorsController extends Controller
 		$monitor = new Monitor();
 		$monitor->set('exp_id', (int)$experiment->id);
 		$monitor->set('setup_id', (int)$setup->id);
-		$monitor->set('uuid', (string)$result);
+		$monitor->set('uuid', (string)$result['result']);
 		$monitor->set('created', $nowutc->format(System::DATETIME_RFC3339_UTC));
 
 		$result = $monitor->save();
@@ -815,31 +871,37 @@ class SensorsController extends Controller
 
 			// Send request for get monitor info
 			$socket = new JSONSocket($this->config['socket']['path']);
+			if ($socket->error())
+			{
+				$this->error = L::ERROR;
+
+				return false;
+			}
 			$result = $socket->call('Lab.GetMonInfo', $query_params);
 
 			// Get results
-			if($result)
+			if($result && $result['result'])
 			{
 				//Prepare results
 				$nd = System::nulldate();
 
-				if(isset($result->Created) && ($result->Created === $nd))
+				if(isset($result['result']->Created) && ($result['result']->Created === $nd))
 				{
-					$result->Created = null;
+					$result['result']->Created = null;
 				}
 
-				if(isset($result->StopAt) && ($result->StopAt === $nd))
+				if(isset($result['result']->StopAt) && ($result['result']->StopAt === $nd))
 				{
-					$result->StopAt = null;
+					$result['result']->StopAt = null;
 				}
 
-				if(isset($result->Last) && ($result->Last === $nd))
+				if(isset($result['result']->Last) && ($result['result']->Last === $nd))
 				{
-					$result->Last = null;
+					$result['result']->Last = null;
 				}
 
 				// Set info
-				$mon->info = $result;
+				$mon->info = $result['result'];
 			}
 
 			unset($socket);
@@ -852,11 +914,23 @@ class SensorsController extends Controller
 
 				// Send request for stopping monitor
 				$socket = new JSONSocket($this->config['socket']['path']);
+				if ($socket->error())
+				{
+					$this->error = L::ERROR;
+
+					return false;
+				}
 				$result = $socket->call('Lab.StopMonitor', $query_params);
+				if (!$socket)
+				{
+					$this->error = L::ERROR;
+				
+					return false;
+				}
 
 				// Check stopping result
 				// XXX: may be errors with messages as "Monitor xxxxxxxx is inactive"
-				if ($result)
+				if ($result && $result['result'])
 				{
 				}
 				else
@@ -959,9 +1033,17 @@ class SensorsController extends Controller
 
 			// Send request for getting data of monitoring
 			$socket = new JSONSocket($this->config['socket']['path']);
-			$data = $socket->call('Lab.GetMonData', (object)$query_params);
+			if ($socket->error())
+			{
+				//$this->error = L::ERROR;
 
-			if (!empty($data))
+				//return false;
+				unset($socket);
+				continue;  // skip on errors
+			}
+
+			$data = $socket->call('Lab.GetMonData', (object)$query_params);
+			if ($data && !empty($data['result']))
 			{
 				$insert_values = array();
 				$insert_block_size = 30;  // Number of blocks of values in INSERT query (be careful with long sql queries)
@@ -974,7 +1056,7 @@ class SensorsController extends Controller
 				$db->beginTransaction();  // speed up inserts within transaction
 
 				$j = 0;
-				foreach($data as $d)
+				foreach($data['result'] as $d)
 				{
 					for ($i = 0; $i < $cnt_sensors; $i++)
 					{
@@ -1088,6 +1170,8 @@ class SensorsController extends Controller
 
 				$db->commit();
 			}
+
+			unset($socket);
 		}
 
 		// Set active state
@@ -1245,30 +1329,36 @@ class SensorsController extends Controller
 
 			// Send request for get monitor info
 			$socket = new JSONSocket($this->config['socket']['path']);
-			$result = $socket->call('Lab.GetMonInfo', $query_params);
+			if($socket->error())
+			{
+				$this->error = L::ERROR;
+
+				return false;
+			}
 
 			// Get results
-			if($result)
+			$result = $socket->call('Lab.GetMonInfo', $query_params);
+			if($result && $result['result'])
 			{
 				//Prepare results
 				$nd = System::nulldate();
 
-				if(isset($result->Created) && ($result->Created === $nd))
+				if(isset($result['result']->Created) && ($result['result']->Created === $nd))
 				{
-					$result->Created = null;
+					$result['result']->Created = null;
 				}
 
-				if(isset($result->StopAt) && ($result->StopAt === $nd))
+				if(isset($result['result']->StopAt) && ($result['result']->StopAt === $nd))
 				{
-					$result->StopAt = null;
+					$result['result']->StopAt = null;
 				}
 
-				if(isset($result->Last) && ($result->Last === $nd))
+				if(isset($result['result']->Last) && ($result['result']->Last === $nd))
 				{
-					$result->Last = null;
+					$result['result']->Last = null;
 				}
 
-				$monitor->info = $result;
+				$monitor->info = $result['result'];
 			}
 			else
 			{

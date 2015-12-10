@@ -52,8 +52,8 @@ function updateSensorsList(data){
 
     if(typeof data.error === 'undefined'){
         $('#sensor-list-table tbody').empty();
-        for (id in data){
-            var sensor = data[id];
+        for (id in data.result){
+            var sensor = data.result[id];
             sensor.id = id;
             var info = (typeof sensor.sensor_name !== 'undefined') ? true : false;
             for (var i=0;i<sensor.Values.length;i++){

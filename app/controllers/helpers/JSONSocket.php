@@ -128,7 +128,7 @@ class JSONSocket
 
 	function error()
 	{
-		if (is_null($this->errorno))
+		if (!$this->errorno)
 		{
 			return null;
 		}

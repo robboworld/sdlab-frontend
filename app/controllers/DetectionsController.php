@@ -118,7 +118,7 @@ class DetectionsController extends Controller
 				}
 			}
 
-			return isset($result) ? $result : false;
+			return isset($result) ? array('result' => $result) : false;
 		}
 
 		return false;

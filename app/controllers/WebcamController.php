@@ -45,7 +45,22 @@ class WebcamController extends Controller
 
 			// Send request for list cameras
 			$socket = new JSONSocket($this->config['socket']['path']);
-			$result = $socket->call('Lab.ListVideos', $query_params);
+			if (!$socket->error())
+			{
+				$res = $socket->call('Lab.ListVideos', $query_params);
+				if ($res)
+				{
+					$result = $res['result'];
+				}
+				else
+				{
+					$result = false;
+				}
+			}
+			else
+			{
+				$result = false;
+			}
 			unset($socket);
 
 			// Get results
@@ -82,7 +97,22 @@ class WebcamController extends Controller
 
 							// Send request for get info about camera stream
 							$socket = new JSONSocket($this->config['socket']['path']);
-							$data = $socket->call('Lab.GetVideoStream', $query_params);
+							if (!$socket->error())
+							{
+								$res = $socket->call('Lab.GetVideoStream', $query_params);
+								if ($res)
+								{
+									$data = $res['result'];
+								}
+								else
+								{
+									$data = false;
+								}
+							}
+							else
+							{
+								$data = false;
+							}
 
 							// Get results
 							if ($data)
@@ -158,7 +188,22 @@ class WebcamController extends Controller
 
 			// Send request for list cameras
 			$socket = new JSONSocket($this->config['socket']['path']);
-			$result = $socket->call('Lab.ListVideos', $query_params);
+			if (!$socket->error())
+			{
+				$res = $socket->call('Lab.ListVideos', $query_params);
+				if ($res)
+				{
+					$result = $res['result'];
+				}
+				else
+				{
+					$result = false;
+				}
+			}
+			else
+			{
+				$result = false;
+			}
 			unset($socket);
 //error_log('Lab.ListVideos:'.var_export($result,true)); //DEBUG
 			// Get results
@@ -192,7 +237,23 @@ class WebcamController extends Controller
 
 						// Send request for get info about camera stream
 						$socket = new JSONSocket($this->config['socket']['path']);
-						$data = $socket->call('Lab.GetVideoStream', $query_params);
+						if (!$socket->error())
+						{
+							$res = $socket->call('Lab.GetVideoStream', $query_params);
+							if ($res)
+							{
+								$data = $res['result'];
+							}
+							else
+							{
+								$data = false;
+							}
+						}
+						else
+						{
+							$data = false;
+						}
+
 //error_log('Lab.GetVideoStream:'.var_export($data,true)); //DEBUG
 						// Get results
 						if ($data)
@@ -271,11 +332,19 @@ class WebcamController extends Controller
 
 					// Send request for list cameras
 					$socket = new JSONSocket($this->config['socket']['path']);
+					if ($socket->error())
+					{
+						// Error
+						// Redirect back
+						System::goback('webcam/view', 'post');
+						return;
+					}
+
 					$result = $socket->call('Lab.StartVideoStream', $query_params);
 					unset($socket);
 
 					// Check result
-					if (!$result)
+					if (!$result || !$result['result'])
 					{
 						// Error: cannot start stream, or camera not found
 						// Redirect back
@@ -330,11 +399,19 @@ class WebcamController extends Controller
 
 					// Send request for list cameras
 					$socket = new JSONSocket($this->config['socket']['path']);
+					if ($socket->error())
+					{
+						// Error
+						// Redirect back
+						System::goback('webcam/view', 'post');
+						return;
+					}
+
 					$result = $socket->call('Lab.StopVideoStream', $query_params);
 					unset($socket);
 
 					// Check result
-					if (!$result)
+					if (!$result || !$result['result'])
 					{
 						// Error: cannot stop stream, or camera not found
 						// Redirect back
@@ -382,11 +459,19 @@ class WebcamController extends Controller
 
 				// Send request for list cameras
 				$socket = new JSONSocket($this->config['socket']['path']);
+				if ($socket->error())
+				{
+					// Error
+					// Redirect back
+					System::goback('webcam/view', 'post');
+					return;
+				}
+
 				$result = $socket->call('Lab.StartVideoStreamAll', $query_params);
 				unset($socket);
 
 				// Check result
-				if (!$result)
+				if (!$result || !$result['result'])
 				{
 					// Error: cannot start stream, or camera not found
 					System::goback('webcam/view', 'post');
@@ -419,11 +504,19 @@ class WebcamController extends Controller
 
 				// Send request for list cameras
 				$socket = new JSONSocket($this->config['socket']['path']);
+				if ($socket->error())
+				{
+					// Error
+					// Redirect back
+					System::goback('webcam/view', 'post');
+					return;
+				}
+
 				$result = $socket->call('Lab.StopVideoStreamAll', $query_params);
 				unset($socket);
 
 				// Check result
-				if (!$result)
+				if (!$result || !$result['result'])
 				{
 					// Error: cannot stop streams, or cameras not found
 					// Redirect back

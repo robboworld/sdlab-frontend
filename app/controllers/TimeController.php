@@ -152,9 +152,16 @@ class TimeController extends Controller
 
 				// Send request for setting time
 				$socket = new JSONSocket($this->config['socket']['path']);
-				$result = $socket->call('Lab.SetDatetime', (object) $query_params);
+				if ($socket->error())
+				{
+					// Error
+					System::go('time/edit');
+					exit;
+				}
+
 				// Get results
-				if ($result)
+				$result = $socket->call('Lab.SetDatetime', (object) $query_params);
+				if ($result && $result['result'])
 				{
 					if ($reboot)
 					{

@@ -37,7 +37,7 @@ function showRescanResults(data) {
     if(typeof data.error === 'undefined'){
         $('.sensors-list').empty();
         var i, c, sensor, info, vals = '';
-        for (id in data){
+        for (id in data.result){
             $('.sensors-list').append('\
                 <div class="alert alert-info alert-dismissible" role="alert">\
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>\
@@ -45,8 +45,8 @@ function showRescanResults(data) {
             c = $('.sensors-list .alert').first();
             break;
         }
-        for (id in data){
-            sensor = data[id];
+        for (id in data.result){
+            sensor = data.result[id];
             sensor.id = id;
             info = (typeof sensor.sensor_name !== 'undefined') ? true : false;
             vals = '';

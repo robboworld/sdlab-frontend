@@ -89,14 +89,13 @@ function updateSensorValue(id, onalways){
         Sensor: sid,
         ValueIdx: idx
     }, function(data){
-        if(typeof data.Reading !== 'undefined'){
-            $('.sensor-widget[data-sensor-id="'+id+'"]').find('.sensor-value').html(data.Reading);
+        if(typeof data.result !== 'undefined' && typeof data.result.Reading !== 'undefined'){
+            $('.sensor-widget[data-sensor-id="'+id+'"]').find('.sensor-value').html(data.result.Reading);
             $('.sensor-widget[data-sensor-id="'+id+'"]').find('.panel-body').removeClass('bg-danger');
         }else{
             $('.sensor-widget[data-sensor-id="'+id+'"]').find('.sensor-value').html('--');
             $('.sensor-widget[data-sensor-id="'+id+'"]').find('.panel-body').addClass('bg-danger');
         }
-
     });
     if(typeof onalways === "function"){
         rq.always(function(d,textStatus,err) {onalways();});
@@ -122,15 +121,15 @@ function updateSensorsValues(ids, onalways){
 
     var rq = coreAPICall('Sensors.GetDataItems', items, function(data, status, jqxhr){
         if(typeof data.error === 'undefined'){
-            for(var i=0;i<data.length;i++){
+            for(var i=0;i<data.result.length;i++){
                 var sel;
-                if(typeof data[i].ValueIdx !== 'undefined'){
-                    sel = '.sensor-widget[data-sensor-id="'+data[i].Sensor +'#'+data[i].ValueIdx+'"]';
+                if(typeof data.result[i].ValueIdx !== 'undefined'){
+                    sel = '.sensor-widget[data-sensor-id="'+data.result[i].Sensor +'#'+data.result[i].ValueIdx+'"]';
                 }else{
-                    sel =  '.sensor-widget[data-sensor-id="'+data[i].Sensor +'"]';
+                    sel =  '.sensor-widget[data-sensor-id="'+data.result[i].Sensor +'"]';
                 }
-                if((typeof data[i].result.error === 'undefined') && (typeof data[i].result.Reading !== 'undefined')){
-                    $(sel).find('.sensor-value').html(data[i].result.Reading);
+                if(data.result[i].result && (typeof data.result[i].result.Reading !== 'undefined')){
+                    $(sel).find('.sensor-value').html(data.result[i].result.Reading);
                     $(sel).find('.panel-body').removeClass('bg-danger');
                 }else{
                     $(sel).find('.sensor-value').html('--');
@@ -156,7 +155,7 @@ function getExperimentStrob(experiment_id){
         experiment: experiment_id
     }, function(data){
         //console.log('Sensors.experimentStrob'+experiment_id);console.log(data);
-        if(data.result == true){
+        if(typeof data.result !== 'undefined' && data.result == true){
             $('#experiment-strob').attr('disabled', false).text(SDLab.Language._('STROBE'));
         }else{
             $('#experiment-strob').attr('disabled', false).text(SDLab.Language._('STROBE') + ': ' + SDLab.Language._('ERROR_NOT_COMPLETED')).addClass('btn-warning');

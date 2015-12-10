@@ -138,6 +138,7 @@ class ExperimentController extends Controller
 			self::addJs('experiment/view');
 			// Add language translates for scripts
 			Language::script(array(
+					'ERROR',
 					'GRAPH', 'INFO',  // class/Sensor
 					'RUNNING_', 'STROBE', 'ERROR_NOT_COMPLETED', 'experiment_ERROR_CONFIGURATION_ORPHANED'  // experiment/view
 			));
@@ -690,6 +691,7 @@ class ExperimentController extends Controller
 			self::addJs('chart');
 			// Add language translates for scripts
 			Language::script(array(
+					'ERROR',
 					'sensor_VALUE_NAME_TEMPERATURE'  // chart
 			));
 
@@ -756,6 +758,7 @@ class ExperimentController extends Controller
 			self::addJs('chart');
 			// Add language translates for scripts
 			Language::script(array(
+					'ERROR',
 					'sensor_VALUE_NAME_TEMPERATURE'  // chart
 			));
 

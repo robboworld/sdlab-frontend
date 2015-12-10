@@ -17,6 +17,19 @@ class ApiController extends Controller
 		$this->params = isset($_GET['params']) ? $_GET['params'] : array();
 	}
 
+
+	/**
+	 * Execute controllers API methods
+	 * Prepare results in json in format:
+	 *     {result:data,...} on success
+	 *     OR
+	 *     {error:text} on error
+	 * 
+	 * Fields:
+	 *     - result: Data in json format
+	 *     - error: Error text, may be empty text
+	 * Other fields optional.
+	 */
 	function api()
 	{
 		if(method_exists($this->controller, $this->method))
@@ -29,7 +42,7 @@ class ApiController extends Controller
 			// Call method
 			$result = $this->controller->{$this->method}($this->params);
 
-			if($result)
+			if($result && isset($result['result']))
 			{
 				$this->json_result = json_encode($result);
 			}
@@ -49,7 +62,6 @@ class ApiController extends Controller
 			);
 			$this->json_error = json_encode($api_error);
 		}
-
 	}
 
 	/**
@@ -57,8 +69,10 @@ class ApiController extends Controller
 	 */
 	function renderView()
 	{
-		/* execute */
+		// Execute
 		$this->api();
+
+		// Output json
 		header('Content-Type: application/json');
 		if(!isset($this->json_error) && isset($this->json_result))
 		{

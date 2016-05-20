@@ -236,7 +236,17 @@ class System
 						'value_name'    => 'illuminance',
 						'si_name'       => 'lux',
 						'si_notation'   => 'lx'
-				)
+				),
+				'current' => array(
+						'value_name'    => 'current',
+						'si_name'       => 'ampere',
+						'si_notation'   => 'A'
+				),
+				'altitude' => array(
+						'value_name'    => 'altitude',
+						'si_name'       => 'meter',
+						'si_notation'   => 'm'
+				),
 		);
 
 		if (is_string($field) && isset($cat[$name]))

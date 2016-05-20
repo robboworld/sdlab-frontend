@@ -281,7 +281,7 @@ class System
 				),
 				'altitude' => array(
 						'value_name'    => 'altitude',
-						'si_name'       => 'meters',
+						'si_name'       => 'meter',
 						'si_notation'   => 'm'
 				),
 		);

@@ -242,6 +242,11 @@ class System
 						'si_name'       => 'ampere',
 						'si_notation'   => 'A'
 				),
+				'altitude' => array(
+						'value_name'    => 'altitude',
+						'si_name'       => 'meters',
+						'si_notation'   => 'm'
+				),
 		);
 
 		if (is_string($field) && isset($cat[$name]))

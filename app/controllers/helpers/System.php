@@ -239,7 +239,7 @@ class System
 				),
 				'current' => array(
 						'value_name'    => 'current',
-						'si_name'       => 'amper',
+						'si_name'       => 'ampere',
 						'si_notation'   => 'A'
 				),
 		);

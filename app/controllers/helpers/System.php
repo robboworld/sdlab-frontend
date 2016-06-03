@@ -106,6 +106,47 @@ class System
 	}
 
 	/**
+	 * Output error/status and exit (404,403,500 and etc).
+	 * @param integer $errcode
+	 * @param string  $str
+	 */
+	static function goerror($code = 500, $str = null)
+	{
+		// Clean output buffer
+		while (@ob_end_clean()) {
+			// do nothing
+		}
+
+		switch ($code)
+		{
+			case 404:
+				header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found', true, 404);
+				if(!empty($str))
+				{
+					echo $str;
+				}
+				break;
+
+			case 403:
+				{
+					header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
+					if(!empty($str))
+					{
+						echo $str;  //'You are forbidden!';
+					}
+				}
+				break;
+
+			case 500:
+			default:
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+				break;
+		}
+
+		exit();
+	}
+
+	/**
 	 * Convert number of seconds to nanoseconds
 	 * 
 	 * @param  interger|float  $var  Seconds
@@ -915,5 +956,35 @@ class System
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Convert array of fields to CSV string.
+	 *
+	 * @param   array    $fields      Array with fields.
+	 * @param   string   $delimiter
+	 * @param   string   $enclosure
+	 * @param   boolean  $mysql_null  MySQL nulls mode
+	 *
+	 * @return  string
+	 */
+	public static function strtocsv(array $fields, $delimiter = ',', $enclosure = '"', $mysql_null = false)
+	{
+		$delimiter_esc = preg_quote($delimiter, '/');
+		$enclosure_esc = preg_quote($enclosure, '/');
+
+		$output = array();
+		foreach ($fields as $field) {
+			if ($field === null && $mysql_null) {
+				$output[] = 'NULL';
+				continue;
+			}
+
+			$output[] = preg_match("/(?:${delimiter_esc}|${enclosure_esc}|\s)/", $field) ? (
+					$enclosure . str_replace($enclosure, $enclosure . $enclosure, $field) . $enclosure
+					) : $field;
+		}
+
+		return implode($delimiter, $output);
 	}
 }

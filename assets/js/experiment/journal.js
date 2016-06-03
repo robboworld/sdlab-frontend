@@ -6,15 +6,49 @@ $(document).ready(function(){
 		//var rq = coreAPICall('Detections.export', {exp_id: form.exp_id.value/*,dtfrom: null,dtto: null*/}, exportDetection);
 
 		var mode = 'post';    // ajax'ed POST or simple POST method (simple POST use jQuery.fileDownload plugin and injected <form> submit)
-		var ajax_url_export = '?q=experiment/download/'+form.exp_id.value;
+		if (isMobile.Android()){
+			mode = 'get';
+		}
 		var doc_type = 'csv';
-		var rqdata = {
-			"exp_id": form.exp_id.value,
-			"type": doc_type
-			/*,dtfrom: null, dtto: null*/
+
+		// Get filtered sensors list
+		var sens = [];
+		$.each(form.elements.namedItem('show-sensor[]'), function(i, field){
+			if (field.checked){
+				sens.push(field.value);
+			}
+		});
+
+		// Ajax post data
+		var ajax_url_export = '?q=api';
+		var ajax_rqdata = {
+				"method": 'Detections.download',
+				"params": {
+					"exp_id":  form.exp_id.value,
+					"form-id": form.elements.namedItem('form-id').value,
+					"show-sensor": form.elements.namedItem('form-id').value,
+					"type":    doc_type
+					//,"dtfrom": null, "dtto": null,
+				}
 		};
+		if (sens.length){
+			ajax_rqdata.params["show-sensor"] = sens;
+		}
+
+		// Post/get data
+		var url_export = '?q=experiment/download/'+form.exp_id.value;
+		var rqdata = {
+			"exp_id":  form.exp_id.value,
+			"form-id": form.elements.namedItem('form-id').value,
+			"type":    doc_type
+			//,"dtfrom": null, "dtto": null
+		};
+		if (sens.length){
+			rqdata["show-sensor"] = sens;
+		}
 
 		switch (mode) {
+			case 'get':
 			case 'post':
 				// POST Request: with jquery.fileDownload.js (& jQuery UI Dialog)
 				// uses data "options" argument to create a POST request from a form to initiate a file download
@@ -24,10 +58,10 @@ $(document).ready(function(){
 					return false;
 				}
 				document.body.style.cursor = 'wait';
-				$.fileDownload(ajax_url_export, {
+				$.fileDownload(url_export, {
 					//preparingMessageHtml: "We are preparing your report, please wait...",
 					//failMessageHtml: "There was a problem generating your report, please try again.",
-					httpMethod: "POST",
+					httpMethod: mode.toUpperCase(),
 					data: rqdata,
 					successCallback: function (url) {
 						document.body.style.cursor = 'default';
@@ -43,13 +77,13 @@ $(document).ready(function(){
 			case 'ajax':
 				// Use jquery ajax POST request
 				// XXX: Warning not correctly works on old browsers and android stock android browser
-				rqdata.base64 = 1;  // XXX: temporary use encode document to base64 on server and decode on client (ONLY for mode=ajax)
+				ajax_rqdata.base64 = 1;  // XXX: temporary use encode document to base64 on server and decode on client (ONLY for mode=ajax)
 				document.body.style.cursor = 'wait';
 
 				var rq = $.ajax(
 				{
 					url: ajax_url_export,
-					data: rqdata,
+					data: ajax_rqdata,
 					type: 'POST',
 					processData: true,
 					cache: false,
@@ -79,11 +113,11 @@ $(document).ready(function(){
 						else if (ct.indexOf('application/octet-stream') > -1) {
 						//Get binary data of document
 							var blob, ab = null;
-							if (rqdata.base64) {
+							if (ajax_rqdata.base64) {
 								ab = base64DecToArr(response);
 							}
 
-							blob = new Blob([rqdata.base64 ? ab : response], { type: ct, endings: 'transparent'});
+							blob = new Blob([ajax_rqdata.base64 ? ab : response], { type: ct, endings: 'transparent'});
 
 							if (typeof window.navigator.msSaveBlob !== 'undefined') {
 								// IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."

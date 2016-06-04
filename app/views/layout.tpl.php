@@ -25,7 +25,7 @@
 </head>
 <body>
 	<div class="container" id="navigation">
-		<div class="navbar navbar-fixed-top navbar-inverse">
+		<div class="navbar navbar-inverse">
 			<div class="navbar-text">
 				<div class="text-center" data-toggle="tooltip" data-placement="auto" data-delay="100" data-trigger="click hover focus" title="<? print (new DateTime())->format(System::DATETIME_FORMAT3); ?>">
 					<span class="glyphicon glyphicon-time"></span>&nbsp;<? print (new DateTime())->format('H:i'); ?>

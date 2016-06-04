@@ -19,12 +19,16 @@
 		<? if(is_object($this->session()) && $this->session()->getUserLevel() == 3) : ?>
 
 		<div>
-			<a href="?q=time/edit" class="btn btn-primary">
-				<span class="glyphicon glyphicon-cog"></span>&nbsp;<? echo L::time_SETTINGS; ?>
-			</a>
-			<a href="?q=webcam/view" class="btn btn-primary">
-				<span class="glyphicon glyphicon-facetime-video"></span>&nbsp;<? echo L::webcam_WEB_CAMERAS; ?>
-			</a>
+			<div class="btn-group mrg-bot-5px" role="group">
+				<a href="?q=time/edit" class="btn btn-primary">
+					<span class="glyphicon glyphicon-cog"></span>&nbsp;<? echo L::time_SETTINGS; ?>
+				</a>
+			</div>
+			<div class="btn-group mrg-bot-5px" role="group">
+				<a href="?q=webcam/view" class="btn btn-primary">
+					<span class="glyphicon glyphicon-facetime-video"></span>&nbsp;<? echo L::webcam_WEB_CAMERAS; ?>
+				</a>
+			</div>
 		</div>
 		<? endif; ?>
 	</div>

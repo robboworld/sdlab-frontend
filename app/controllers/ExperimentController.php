@@ -899,17 +899,30 @@ class ExperimentController extends Controller
 		}
 
 		$method = strtoupper($_SERVER['REQUEST_METHOD']);
-error_log($method);
+
 		// Check access to experiment
-		if($method != 'POST' && $method != 'GET')
+		if($method == 'POST')
+		{
+			if (isset($_POST))
+			{
+				$request = &$_POST;
+			}
+		}
+		else if ($method == 'GET')
+		{
+			if (isset($_GET))
+			{
+				$request = &$_GET;
+			}
+		}
+		else 
 		{
 			System::goerror(500);
 		}
-		$methodVar = ${'_'.$method};
-error_log(var_export($$methodVar,true));
-		if(isset(${$methodVar}) && isset(${$methodVar}['form-id']) && ${$methodVar}['form-id'] === 'experiment-journal-form')
+
+		if(isset($request) && isset($request['form-id']) && $request['form-id'] === 'experiment-journal-form')
 		{
-			// Make clean
+			// Prepare data for download
 
 			$db = new DB();
 
@@ -937,9 +950,9 @@ error_log(var_export($$methodVar,true));
 
 			// If requested sensors for showing prepare displayed list by intersection
 			$sensors_show = array();
-			if(isset(${$methodVar}['show-sensor']) && !empty(${$methodVar}['show-sensor']) && is_array(${$methodVar}['show-sensor']))
+			if(isset($request['show-sensor']) && !empty($request['show-sensor']) && is_array($request['show-sensor']))
 			{
-				foreach(${$methodVar}['show-sensor'] as $sensor_show_id)
+				foreach($request['show-sensor'] as $sensor_show_id)
 				{
 					$sensors_show[$sensor_show_id] = $sensor_show_id;
 				}
@@ -1026,7 +1039,7 @@ error_log(var_export($$methodVar,true));
 			}
 
 			// Get requested document type
-			$doc_type = (isset(${$methodVar}['type']) && in_array(${$methodVar}['type'], array('csv'))) ? ${$methodVar}['type'] : 'csv';
+			$doc_type = (isset($request['type']) && in_array($request['type'], array('csv'))) ? $request['type'] : 'csv';
 			$filename = 'detections-exp' . (int)$experiment->id . '-' . System::datemsecformat(null, 'YmdHisu' /*U*/, 'now') . '.' . $doc_type;
 
 			switch ($doc_type)
@@ -1089,8 +1102,8 @@ error_log(var_export($$methodVar,true));
 		}
 		else
 		{
-			// No view page fo clean
-			System::goerror(404);
+			// Incorrect request
+			System::goerror(500);
 		}
 
 		return;

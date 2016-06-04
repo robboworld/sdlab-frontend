@@ -1,9 +1,7 @@
 $(document).ready(function(){
 	$('#exportDetections').click(function(){
 		var form = $('#journalForm').get(0);
-		//form.setAttribute('action', '?q=experiment/clean/'+form.exp_id.value);
-		//form.submit();
-		//var rq = coreAPICall('Detections.export', {exp_id: form.exp_id.value/*,dtfrom: null,dtto: null*/}, exportDetection);
+		//var rq = coreAPICall('Detections.download', {exp_id: form.exp_id.value/*,dtfrom: null,dtto: null*/}, exportDetection);
 
 		var mode = 'post';    // ajax'ed POST or simple POST method (simple POST use jQuery.fileDownload plugin and injected <form> submit)
 		if (isMobile.Android()){
@@ -13,8 +11,8 @@ $(document).ready(function(){
 
 		// Get filtered sensors list
 		var sens = [];
-		$.each(form.elements.namedItem('show-sensor[]'), function(i, field){
-			if (field.checked){
+		$(form).find('input[type="checkbox"][name^="show-sensor"]').each(function(i, field){
+			if ($(field).prop("checked")){
 				sens.push(field.value);
 			}
 		});
@@ -25,8 +23,7 @@ $(document).ready(function(){
 				"method": 'Detections.download',
 				"params": {
 					"exp_id":  form.exp_id.value,
-					"form-id": form.elements.namedItem('form-id').value,
-					"show-sensor": form.elements.namedItem('form-id').value,
+					"form-id": form['form-id'].value,
 					"type":    doc_type
 					//,"dtfrom": null, "dtto": null,
 				}
@@ -39,7 +36,7 @@ $(document).ready(function(){
 		var url_export = '?q=experiment/download/'+form.exp_id.value;
 		var rqdata = {
 			"exp_id":  form.exp_id.value,
-			"form-id": form.elements.namedItem('form-id').value,
+			"form-id": form['form-id'].value,
 			"type":    doc_type
 			//,"dtfrom": null, "dtto": null
 		};

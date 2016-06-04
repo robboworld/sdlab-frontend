@@ -64,7 +64,7 @@ $(document).ready(function(){
 						document.body.style.cursor = 'default';
 						//alert('You just got a file download dialog or ribbon for this URL :' + url);
 					},
-					failCallback: function (html, url) {
+					failCallback: function (html, url, error) {
 						document.body.style.cursor = 'default';
 						//alert('Your file download just failed for this URL:' + url + '\r\n' + 'Here was the resulting error HTML: \r\n' + html);
 						alert(SDLab.Language._('ERROR_DETECTIONS_EXPORT_DOWNLOAD'));

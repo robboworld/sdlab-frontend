@@ -11,6 +11,9 @@
 	<div class="col-md-9">
 		<h3><? print htmlspecialchars($this->view->content->title, ENT_QUOTES, 'UTF-8'); ?></h3>
 		<p>
+			<button type="button" id="exportDetections" class="btn btn-primary">
+				<span class="glyphicon glyphicon-download"></span> <? echo L::DOWNLOAD; ?>
+			</button>
 			<button type="button" id="cleanDetections" class="btn btn-danger">
 				<span class="glyphicon glyphicon-trash"></span> <? echo L::CLEAN; ?>
 			</button>

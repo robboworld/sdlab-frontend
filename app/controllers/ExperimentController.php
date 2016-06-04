@@ -588,9 +588,12 @@ class ExperimentController extends Controller
 		self::setContentTitle(L::journal_TITLE_JOURNAL_OF_2($experiment->title));
 		self::addJs('functions');
 		self::addJs('experiment/journal');
+		//self::addJs('lib/jquery.fileDownload');
+		self::addJs('lib/jquery.fileDownload.min');
+
 		// Add language translates for scripts
 		Language::script(array(
-				'journal_QUESTION_CLEAN_JOURNAL', 'ERROR'  // experiment/journal
+				'journal_QUESTION_CLEAN_JOURNAL', 'ERROR', 'ERROR_DETECTIONS_EXPORT_DOWNLOAD'  // experiment/journal
 		));
 
 		// Form object
@@ -866,6 +869,245 @@ class ExperimentController extends Controller
 		return;
 	}
 
+	/**
+	 * Action: Download
+	 * Export detections journal data.
+	 * Exports detections data related to experiment in requested format:
+	 *   - CSV
+	 */
+	function download()
+	{
+		// TODO: Fix access check, because this controller cannot execute actions if not logged on, App controller start other controller with html output. Need raw variant controller with public access
+
+		if (empty($this->id) || !is_numeric($this->id))
+		{
+			// Error: incorrect experiment id
+			System::goerror(404);
+		}
+
+		// Load experiment
+		$experiment = (new Experiment())->load($this->id);
+		if(!$experiment)
+		{
+			System::goerror(404);
+		}
+
+		// Check access to experiment
+		if(!$experiment->userCanView($this->session()))
+		{
+			System::goerror(403);
+		}
+
+		$method = strtoupper($_SERVER['REQUEST_METHOD']);
+
+		// Check access to experiment
+		if($method == 'POST')
+		{
+			if (isset($_POST))
+			{
+				$request = &$_POST;
+			}
+		}
+		else if ($method == 'GET')
+		{
+			if (isset($_GET))
+			{
+				$request = &$_GET;
+			}
+		}
+		else 
+		{
+			System::goerror(500);
+		}
+
+		if(isset($request) && isset($request['form-id']) && $request['form-id'] === 'experiment-journal-form')
+		{
+			// Prepare data for download
+
+			$db = new DB();
+
+			// Get detections
+			//TODO: add support filter POST 'dtfrom' and 'dtto' for dates range
+			$query = 'select id, strftime(\'%Y-%m-%dT%H:%M:%fZ\', time) as time, sensor_id, sensor_val_id, detection, error'
+					. ' from detections'
+					. ' where exp_id = ' . (int)$experiment->id
+					. ' order by strftime(\'%s\', time),strftime(\'%f\', time)';
+			$detections = $db->query($query, PDO::FETCH_OBJ);
+
+			// Prepare output depends on sensors in Setup
+			$sensors = SetupController::getSensors($experiment->setup_id, true);
+			$available_sensors = $displayed_sensors = array();
+
+			// Get list of available sensors
+			foreach($sensors as $sensor)
+			{
+				$key = '' . $sensor->id . '#' . (int)$sensor->sensor_val_id;
+				if(!array_key_exists($key, $available_sensors))
+				{
+					$available_sensors[$key] = $sensor;
+				}
+			}
+
+			// If requested sensors for showing prepare displayed list by intersection
+			$sensors_show = array();
+			if(isset($request['show-sensor']) && !empty($request['show-sensor']) && is_array($request['show-sensor']))
+			{
+				foreach($request['show-sensor'] as $sensor_show_id)
+				{
+					$sensors_show[$sensor_show_id] = $sensor_show_id;
+				}
+			}
+			if(!empty($sensors_show))
+			{
+				$displayed_sensors = array_intersect_key($available_sensors, $sensors_show);
+			}
+			else
+			{
+				$displayed_sensors = $available_sensors;
+			}
+
+			// Array of values grouped by timestamps (UTC datetime!)
+			$journal = array();
+			foreach($detections as $row)
+			{
+				// if sensor+value is available than add to journal output
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(array_key_exists($key, $displayed_sensors))
+				{
+					$journal[$row->time][$key] = $row;
+				}
+			}
+
+			// Prepare data as array of array (rows and columns)
+			$result = array();
+
+			// Header
+			$data_header = array();
+			$data_header[] = 'N';
+			$data_header[] = L::TIME;
+			foreach ($displayed_sensors as $skey => $sensor)
+			{
+				$data_header[] = $sensor->name
+					. ' ' .  constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name))
+						. ', ' . constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation))
+					. ' ' . '(id: ' . $skey . ')';
+			}
+			$result[] = $data_header;
+
+			// Locale number format settings
+			// xxx: hack to convert decimal point of floats for some locales
+			$decimal_point = '.';
+			if (is_object($this->app->lang))
+			{
+				$activeLang = $this->app->lang->getAppliedLang();
+				if (strtolower(substr($activeLang,0,2)) === 'ru')
+				{
+					$decimal_point_new = ',';
+				}
+			}
+			//if (false !== setlocale(LC_NUMERIC, 'ru_RU.UTF-8')) {
+			//	$locale_info = localeconv();
+			//	$decimal_point = $locale_info['decimal_point'];
+			//}
+
+			// Data rows
+			$i = 0;
+			foreach($journal as $time => $row)
+			{
+				$i++;
+				$data_row = array();
+				$data_row[] = (int)$i;
+				$data_row[] = System::datemsecformat($time, System::DATETIME_FORMAT1NANO, 'now');
+				foreach ($displayed_sensors as $skey => $sensor)
+				{
+					if (isset($row[$skey]) && ($row[$skey]->error !== 'NaN'))
+					{
+						if (isset($decimal_point_new))
+						{
+							$data_row[] = str_replace($decimal_point, $decimal_point_new, (float)$row[$skey]->detection);
+						}
+						else
+						{
+							$data_row[] = (float)$row[$skey]->detection;
+						}
+					}
+					else {
+						$data_row[] = '';
+					}
+				}
+				$result[] = $data_row;
+			}
+
+			// Get requested document type
+			$doc_type = (isset($request['type']) && in_array($request['type'], array('csv'))) ? $request['type'] : 'csv';
+			$filename = 'detections-exp' . (int)$experiment->id . '-' . System::datemsecformat(null, 'YmdHisu' /*U*/, 'now') . '.' . $doc_type;
+
+			switch ($doc_type)
+			{
+				case 'csv':
+				default:
+					{
+						/*
+						Examples of CSV:
+
+						field_name;field_name;field_name CRLF
+						aaa;bbb;ccc CRLF
+						zzz;yyy;xxx CRLF
+
+						a;b;c
+						1;2;3
+						4;";";5
+						77;""";""";88
+						6;,;7
+						8;.;9
+						*/
+
+						$output = array();
+						foreach ($result as $r)
+						{
+							$output[] = System::strtocsv($r, ';');
+						}
+
+						$output = implode("\n", $output);
+						// XXX: convert from utf-8 to ansi for ms office
+						$output = iconv("UTF-8", "Windows-1251", $output);
+
+						// Send response headers to the browser
+						header('Content-Type: text/csv');
+						header("Content-Length: " . strlen($output));
+						header("Content-Disposition: attachment; filename=\"" . $filename . "\";");
+						//header("Content-Transfer-Encoding: Binary");  // only for MIME in email protocols
+						//header('Connection: Keep-Alive');
+						//header('Expires: 0');
+						header('Cache-Control: no-cache');
+						//header('Cache-Control: max-age=60, must-revalidate');
+						//header('Pragma: public');
+						header('Set-Cookie: fileDownload=true; path=/');
+
+						// Write data to output
+						$fp = fopen('php://output', 'w');
+						//foreach ($result as $r){
+						//	fputcsv($fp, $r);
+						//}
+						fwrite($fp, $output);
+						fclose($fp);
+					}
+					break;
+
+				// TODO: add other export formats (xlsx, pdf, ...)
+
+			}
+
+			exit();
+		}
+		else
+		{
+			// Incorrect request
+			System::goerror(500);
+		}
+
+		return;
+	}
 
 	/**
 	 * Check if some Setup is active in experiment.

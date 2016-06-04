@@ -1017,7 +1017,7 @@ class ExperimentController extends Controller
 				$i++;
 				$data_row = array();
 				$data_row[] = (int)$i;
-				$data_row[] = System::datemsecformat($time, System::DATETIME_FORMAT1NANO, 'now');
+				$data_row[] = System::datemsecformat($time, System::DATETIME_FORMAT1NANOXSL, 'now');
 				foreach ($displayed_sensors as $skey => $sensor)
 				{
 					if (isset($row[$skey]) && ($row[$skey]->error !== 'NaN'))

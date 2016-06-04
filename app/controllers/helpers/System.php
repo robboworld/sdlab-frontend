@@ -14,6 +14,7 @@ class System
 	const DATETIME_RFC3339NANO_UTC = 'Y-m-d\TH:i:s.u\Z';
 	const DATETIME_FORMAT1         = 'Y.m.d H:i:s';
 	const DATETIME_FORMAT1NANO     = 'Y.m.d H:i:s.u';
+	const DATETIME_FORMAT1NANOXSL  = 'Y.m.d H:i:s,u';
 	const DATETIME_FORMAT2         = 'd.m.Y H:i:s';
 	const DATETIME_FORMAT3         = 'Y.m.d H:i:s e';
 

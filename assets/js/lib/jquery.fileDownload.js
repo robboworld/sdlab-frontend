@@ -303,6 +303,7 @@ $.extend({
 
                 $form = $("<form>").appendTo("body");
                 $form.hide()
+                    .prop('accept-charset', "UTF-8")
                     .prop('method', settings.httpMethod)
                     .prop('action', fileUrl)
                     .html(formInnerHtml);
@@ -322,7 +323,7 @@ $.extend({
                     formDoc = getiframeDocument($iframe);
                 }
 
-                formDoc.write("<html><head></head><body><form method='" + settings.httpMethod + "' action='" + fileUrl + "'>" + formInnerHtml + "</form>" + settings.popupWindowTitle + "</body></html>");
+                formDoc.write("<html><head></head><body><form method='" + settings.httpMethod + "' action='" + fileUrl + "' accept-charset='UTF-8'>" + formInnerHtml + "</form>" + settings.popupWindowTitle + "</body></html>");
                 $form = $(formDoc).find('form');
             }
 

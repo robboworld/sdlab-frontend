@@ -7,15 +7,6 @@
 		<span class="text-danger"><? print $this->session()->getKey(); ?></span>
 	</h3>
 </div>
-<? if($this->session()->getUserLevel() == 3) : ?>
-
-<div class="col-md-offset-1 col-md-10">
-	<a href="?q=users/list" class="btn btn-primary">
-		<span class="glyphicon glyphicon-list"></span>&nbsp;<? echo L::session_LIST; ?>
-	</a>
-</div>
-<? endif; ?>
-
 <div class="col-md-offset-1 col-md-10">
 	<form class="row" action="?<? print $_SERVER['QUERY_STRING'];?>" method="post">
 		<input type="hidden" name="form-id" value="edit-session-form">
@@ -44,6 +35,15 @@
 		</div>
 	</form>
 </div>
+<? if($this->session()->getUserLevel() == 3) : ?>
+
+<div class="col-md-offset-1 col-md-10">
+	<a href="?q=users/list" class="btn btn-primary">
+		<span class="glyphicon glyphicon-list"></span>&nbsp;<? echo L::users_LIST; ?>
+	</a>
+</div>
+<? endif; ?>
+
 <?
 /*
 <div class="col-lg-12">

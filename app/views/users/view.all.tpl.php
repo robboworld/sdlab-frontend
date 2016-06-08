@@ -9,33 +9,33 @@
 	</div>
 	<form id="sdform" method="post" action="?<?php echo $_SERVER['QUERY_STRING']?>" >
 	<?php if(isset($this->view->content->list )) : ?>
-		<table class="table">
+		<table class="table table-condensed table-striped">
 			<thead>
 			<tr>
-				<td class="text-left">
+				<th class="text-left">
 					<?php echo L::session_ID; ?>
-				</td>
-				<td>
+				</th>
+				<th>
 					<?php echo L::MEMBER; ?>
-				</td>
-				<td>
+				</th>
+				<th>
 					<?php echo L::NAME; ?>
-				</td>
-				<td>
+				</th>
+				<th>
 					<?php echo L::session_KEY; ?>
-				</td>
-				<td class="text-left">
+				</th>
+				<th class="text-left">
 					<?php echo L::session_DATE_START; ?>
-				</td>
-				<td class="text-left">
+				</th>
+				<th class="text-left">
 					<?php echo L::session_DATE_END; ?>
-				</td>
-				<td>
+				</th>
+				<th>
 					<?php echo L::COMMENT; ?>
-				</td>
-				<td class="text-right">
+				</th>
+				<th class="text-right">
 					<?php echo L::session_EXPIRES_TIME_DAYS; ?>
-				</td>
+				</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -43,7 +43,7 @@
 				<tr class="row-session <?php
 						if($item->id == 1 ) // TODO: Test for user level field for admin/registered and other
 						{
-							echo 'error';
+							echo 'danger';
 						}
 						elseif ($item->id > 1)
 						{
@@ -51,14 +51,14 @@
 						}
 						else
 						{
-							//echo 'warning';
+							//echo 'info';
 						}
 
 						// TODO: check expire
 						/*
 						if($item->expiry
 						{
-							echo 'error';
+							echo 'danger';
 						}
 						*/
 					?>">

@@ -11,57 +11,68 @@ class UsersController extends Controller
 		parent::__construct($action);
 
 		// Get id from request query string users/edit/%id
-		//$this->id = App::router(2);
+		$this->id = App::router(2);
 		$this->config = App::config();
 	}
 
 	function index()
 	{
-		System::go('users/list');
+		System::go('users/view');
 	}
 
 	/**
 	 * Action: View
-	 * View single experiment or all
+	 * View single user profile or list all
 	 */
-	function list()
+	function view()
 	{
-		// List of users
-
-		// XXX: Only admin can view now!
-		$session = $this->session();
-		if(!$session)
+		if(!is_null($this->id) && is_numeric($this->id))
 		{
-			// TODO: go error 403
-			System::go();
+			// Single user page
+
+			// TODO: implement single user profile view
+
+			System::go('users/list');
 		}
-		if($session->getUserLevel() != 3)
+		else
 		{
-			// TODO: go error 403
-			System::go();
+			// List of users
+
+			// XXX: Only admin can view now!
+			$session = $this->session();
+			if(!$session)
+			{
+				// TODO: go error 403
+				System::go();
+			}
+			if($session->getUserLevel() != 3)
+			{
+				// TODO: go error 403
+				System::go();
+			}
+
+			// Filter users list by current user level
+			$user_level = $this->session()->getUserLevel();
+			$filter_user_level = null;
+			if ($user_level != 3)
+			{
+				// Only registered for non admins
+				$filter_user_level = array(1);
+			}
+
+			self::setViewTemplate('view.all');
+			self::setTitle(L::users_TITLE_ALL);
+
+			self::addJs('functions');
+			//self::addJs('users/view.all');
+			// Add language translates for scripts
+			//Language::script(array(
+			//		'ERROR'  // users/view.all
+			//));
+
+			//View users in this session
+			$this->view->content->list = $this->usersList($filter_user_level);
 		}
-
-		// Filter users list by current user level
-		$user_level = $this->session()->getUserLevel();
-		$filter_user_level = null;
-		if ($user_level != 3)
-		{
-			// Only registered for non admins
-			$filter_user_level = array(1);
-		}
-
-		self::setViewTemplate('view.all');
-		self::setTitle(L::users_TITLE_ALL);
-
-		self::addJs('functions');
-		//self::addJs('users/view.all');
-		// Add language translates for scripts
-		//Language::script(array(
-		//		'ERROR'  // users/view.all
-		//));
-
-		//View users in this session
-		$this->view->content->list = $this->usersList($filter_user_level);
 	}
 
 	/**

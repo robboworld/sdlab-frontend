@@ -11,11 +11,20 @@ class Session extends Model
 	protected $comments;
 	protected $expiry;
 
+
 	/**
-	 * User level
+	 * Available user levels
 	 *   0   - guest
 	 *   >=1 - registered
 	 *   3   - admin (only for session with ID = 1)
+	 *
+	 * @var array
+	 */
+	private static $user_levels = array(0,1,2,3);
+
+	/**
+	 * User level
+	 *
 	 * @var integer
 	 */
 	private $user_level = 1;
@@ -163,5 +172,38 @@ class Session extends Model
 	static function destroySession()
 	{
 		unset($_SESSION['sdlab']);
+	}
+
+
+	/**
+	 * Get available user levels list
+	 * 
+	 * @param   boolean  $used  Get only used levels (true) or all available (false)
+	 * 
+	 * @return  array
+	 */
+	public static function getUserLevels($used = false)
+	{
+		$levels = array();
+
+		if ($used)
+		{
+			// TODO: add new level field to sessions table
+			/*
+			$db = (new DB())->query("select distinct level from sessions");
+			$rows = $db->fetch(PDO::FETCH_COLUMN);
+			if(!empty($rows))
+			{
+				$levels = $rows;
+			}
+			*/
+			$levels = array(1,3);
+		}
+		else
+		{
+			$levels = self::$user_levels;
+		}
+
+		return $levels;
 	}
 }

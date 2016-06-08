@@ -15,6 +15,7 @@ return array(
 	'Html' => CONTROLLERS.'/helpers/Html.php',
 	'PageController' => CONTROLLERS.'/PageController.php',
 	'SessionController' => CONTROLLERS.'/SessionController.php',
+	'UsersController' => CONTROLLERS.'/UsersController.php',
 	'SensorsController' => CONTROLLERS.'/SensorsController.php',
 	'DetectionsController' => CONTROLLERS.'/DetectionsController.php',
 	'ExperimentController' => CONTROLLERS.'/ExperimentController.php',

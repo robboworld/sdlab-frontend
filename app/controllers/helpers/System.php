@@ -84,7 +84,7 @@ class System
 			case 'post':
 				if(isset($_POST['destination']))
 				{
-					System::go(System::clean($_POST['destination'], 'path'));
+					System::go(System::cleanVar($_POST['destination'], 'path'));
 				}
 				else
 				{
@@ -96,7 +96,7 @@ class System
 			default:
 				if(isset($_GET['destination']))
 				{
-					System::go(System::clean($_GET['destination'], 'path'));
+					System::go(System::cleanVar($_GET['destination'], 'path'));
 				}
 				else
 				{

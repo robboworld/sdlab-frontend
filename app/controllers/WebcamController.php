@@ -418,7 +418,7 @@ class WebcamController extends Controller
 			//	// Redirect back
 			//	if(isset($_GET['destination']) && $_GET['destination'] != $_GET['q'])
 			//	{
-			//		System::go(System::clean($_GET['destination'], 'path'));
+			//		System::go(System::cleanVar($_GET['destination'], 'path'));
 			//	}
 			//	else
 			//	{

@@ -308,6 +308,7 @@ class SensorsController extends Controller
 					}
 
 					// Prepare sensors list for API method
+					$period = System::nano(1);  // 1 second by default
 					$params_array = array();
 					foreach($sensors as $sensor)
 					{
@@ -315,12 +316,21 @@ class SensorsController extends Controller
 								'Sensor'   => $sensor->id,
 								'ValueIdx' => (int) $sensor->sensor_val_id
 						);
+						// Get period from slower sensor
+						if (isset($sensor->resolution))
+						{
+							$r = floatval($sensor->resolution);
+							if (($r > 0) && ($r > $period))
+							{
+								$period = $r;
+							}
+						}
 					}
 
 					// Prepare array of parameters for API method
 					$query_params = array(
 						'Values' => $params_array,
-						'Period' => System::nano(1),
+						'Period' => $period,
 						'Count'  => 1
 					);
 
@@ -332,7 +342,7 @@ class SensorsController extends Controller
 					if($respond)
 					{
 						// Wait for results
-						sleep(2);
+						sleep(1 + (int)ceil((float)$period/1000000000));
 
 						// For results need new socket
 						unset($socket);

@@ -326,6 +326,11 @@ class System
 						'si_name'       => 'meter',
 						'si_notation'   => 'm'
 				),
+				'voltage' => array(
+						'value_name'    => 'voltage',
+						'si_name'       => 'volt',
+						'si_notation'   => 'V'
+				),
 		);
 
 		if (is_string($field) && isset($cat[$name]))

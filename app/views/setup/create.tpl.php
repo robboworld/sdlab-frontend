@@ -1,3 +1,10 @@
+<?php 
+$setup_type = 'length';
+if (!empty($this->view->form->setup->time_det))
+{
+	$setup_type = 'amount';
+}
+?>
 <div class="row">
 	<div class="col-md-offset-1 col-md-10">
 		<h3><? print htmlspecialchars($this->view->content->title, ENT_QUOTES, 'UTF-8'); ?></h3>
@@ -25,12 +32,12 @@
 		<div class="row">
 			<div class="col-md-12 form-group form-horizontal">
 				<div class="btn-group btn-group-justified">
-					<label class="btn btn-default <?if(!empty($this->view->form->setup->time_det)) print 'active';?>">
-						<input type="radio" name="setup-type" data-id="setup-type-length" value="setup-type-length" <?if(!empty($this->view->form->setup->time_det)) print 'checked="checked"';?>>
+					<label class="btn btn-default <?if($setup_type == 'length') print 'active';?>">
+						<input type="radio" name="setup-type" data-id="setup-type-length" value="setup-type-length" <?if($setup_type == 'length') print 'checked="checked"';?>>
 						<? echo L::setup_DURATION; ?>
 					</label>
-					<label class="btn btn-default <?if(!empty($this->view->form->setup->amount)) print 'active';?>">
-						<input type="radio" name="setup-type" data-id="setup-type-amount" value="setup-type-amount" <?if(!empty($this->view->form->setup->amount)) print 'checked="checked"';?>>
+					<label class="btn btn-default <?if($setup_type == 'amount') print 'active';?>">
+						<input type="radio" name="setup-type" data-id="setup-type-amount" value="setup-type-amount" <?if($setup_type == 'amount') print 'checked="checked"';?>>
 						<? echo L::setup_DETECTIONS_COUNT; ?>
 					</label>
 					<!--
@@ -44,7 +51,7 @@
 				<div class="alert alert-warning" id="setup-type-alert">
 					<? echo L::setup_MSG_SELECT_DETECTION_MODE; ?>
 				</div>
-				<div id="setup-type-length" class="setup-type well">
+				<div id="setup-type-length" class="setup-type well" style="<?if($setup_type != 'length') print 'display:none;';?>">
 					<div class="row form-group">
 						<div class="col-xs-12 col-md-6 col-sm-5 setup-label-long">
 							<? echo L::setup_DURATION_DETECTIONS; ?>
@@ -58,7 +65,7 @@
 						</div>
 					</div>
 				</div>
-				<div id="setup-type-amount" class="setup-type well">
+				<div id="setup-type-amount" class="setup-type well" style="<?if($setup_type != 'amount') print 'display:none;';?>">
 					<div class="row form-group">
 						<div class="col-xs-6 col-md-6 col-sm-6 setup-label">
 							<? echo L::setup_DETECTIONS_COUNT; ?>

@@ -1,7 +1,7 @@
 $(document).ready(function(){
     console.log('Edit setup.');
 
-    if($('input[name="setup-type"]:checked').size() > 0){
+    if($('input[name="setup-type"]:checked').length > 0){
         $('.setup-type, #setup-type-alert').hide();
         $('input[type="submit"]').removeAttr('disabled');
         $('#'+$('input[name="setup-type"]:checked').attr('data-id')).show();

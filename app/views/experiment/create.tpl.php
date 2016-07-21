@@ -24,16 +24,16 @@ if ($this->view->form->id != 'create-experiment-form')
 	<? else: ?>
 	<div class="col-md-offset-1 col-md-10">
 		<a href="/?q=experiment/view/<? print (int)$this->view->form->experiment->id; ?>" class="btn btn-sm btn-default">
-			<span class="glyphicon glyphicon-chevron-left"></span> <? print $this->view->form->experiment->title; ?>
+			<span class="glyphicon glyphicon-chevron-left"></span> <? print htmlspecialchars($this->view->form->experiment->title, ENT_QUOTES, 'UTF-8'); ?>
 		</a>
 	</div>
 <? endif; ?>
 </div>
 
 <div class="row">
-	<h1 class="col-md-offset-1 col-md-10"><? print $this->view->content->title; ?></h1>
+	<h1 class="col-md-offset-1 col-md-10"><? print htmlspecialchars($this->view->content->title, ENT_QUOTES, 'UTF-8'); ?></h1>
 	<form method="post" action="?<? print $_SERVER['QUERY_STRING']?>">
-		<input type="hidden" name="form-id" value="<?print $this->view->form->id;?>"/>
+		<input type="hidden" name="form-id" value="<?print htmlspecialchars($this->view->form->id, ENT_QUOTES, 'UTF-8');?>"/>
 		<div class="col-md-offset-1 form-group col-md-5">
 			<input class="form-control" maxlength="80" type="text" name="experiment_title" placeholder="<? echo L::experiment_NAME; ?>" required="required" value="<? print htmlspecialchars($this->view->form->experiment->title, ENT_QUOTES, 'UTF-8');?>"/>
 		</div>
@@ -71,7 +71,7 @@ if ($this->view->form->id != 'create-experiment-form')
 			<? if($this->view->form->id == 'edit-experiment-form') : ?>
 				<a href="?q=experiment/view/<?print (int)$this->view->form->experiment->id; ?>" class="btn btn-default"><? echo L::CANCEL; ?></a>
 			<? endif;?>
-			<input type="submit" class="btn btn-success" value="<?print $this->view->form->submit->value;?>"/>
+			<input type="submit" class="btn btn-success" value="<?print htmlspecialchars($this->view->form->submit->value, ENT_QUOTES, 'UTF-8');?>"/>
 		</div>
 	</form>
 </div>

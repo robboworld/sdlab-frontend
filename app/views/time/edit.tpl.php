@@ -12,7 +12,7 @@
 	</div>
 <? else : ?>
 	<div class="col-md-offset-1 col-md-10">
-		<h3><? echo $this->view->content->title; ?></h3>
+		<h3><? echo htmlspecialchars($this->view->content->title, ENT_QUOTES, 'UTF-8'); ?></h3>
 	</div>
 	<div class="col-md-offset-1 col-md-10">
 		<form class="row" action="?<? echo $_SERVER['QUERY_STRING'];?>" method="post">
@@ -34,7 +34,7 @@
 			<div class="clearfix"></div>
 			<div class="col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4 text-center">
 				<div class="btn-group" style="float:none;">
-					<input type="submit" class="form-control btn btn-success" value="<? echo $this->view->form->submit->value; ?>"/>
+					<input type="submit" class="form-control btn btn-success" value="<? echo htmlspecialchars($this->view->form->submit->value, ENT_QUOTES, 'UTF-8'); ?>"/>
 				</div>
 			</div>
 		</form>

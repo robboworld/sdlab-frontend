@@ -12,7 +12,7 @@ $(document).ready(function(){
 	<a href="?q=page/view/experiment">Измерение температуры и атмосферного давления</a>
 </div>
 <div class="col-md-3">
-	<? print $this->session()->name; ?>
+	<? print htmlspecialchars($this->session()->name, ENT_QUOTES, 'UTF-8'); ?>
 </div>
 <!--
 <div class="col-md-3">

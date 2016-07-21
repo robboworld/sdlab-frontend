@@ -6,12 +6,12 @@
 			<tbody>
 			<tr>
 				<td><? echo L::DEVICE_NAME; ?>: </td>
-				<td><? print $this->app->config['lab']['name']?></td>
+				<td><? print htmlspecialchars($this->app->config['lab']['name'], ENT_QUOTES, 'UTF-8')?></td>
 			</tr>
 			<? if(isset($this->view->ip_address)) : ?>
 			<tr>
 				<td><? echo L::NETWORK_INTERFACES; ?>: </td>
-				<td><? echo 'eth0 : ' . (empty($this->view->ip_address) ? L::ERROR_NETWORK_ADDRESS_UNKNOWN : $this->view->ip_address); ?></td>
+				<td><? echo 'eth0 : ' . (empty($this->view->ip_address) ? L::ERROR_NETWORK_ADDRESS_UNKNOWN : htmlspecialchars($this->view->ip_address, ENT_QUOTES, 'UTF-8')); ?></td>
 			</tr>
 			<? endif; ?>
 			</tbody>

@@ -13,7 +13,7 @@ if (!empty($this->view->form->setup->time_det))
 <form action="<? print htmlspecialchars($_SERVER['REQUEST_URI'], ENT_QUOTES, 'UTF-8'); ?>" method="post">
 <div class="row setup-create">
 	<div class="col-md-offset-1 col-md-10">
-		<input type="hidden" name="form-id" value="<? print $this->view->form->id; ?>">
+		<input type="hidden" name="form-id" value="<? print htmlspecialchars($this->view->form->id, ENT_QUOTES, 'UTF-8'); ?>">
 		<div class="form-group setup-title">
 			<input class="form-control" name="setup_title" type="text" required="required" placeholder="<? echo L::setup_NAME; ?>" value="<? print htmlspecialchars($this->view->form->setup->title, ENT_QUOTES, 'UTF-8'); ?>"/>
 		</div>
@@ -71,7 +71,7 @@ if (!empty($this->view->form->setup->time_det))
 							<? echo L::setup_DETECTIONS_COUNT; ?>
 						</div>
 						<div class="col-xs-6 col-md-6 col-sm-6 form-inline">
-							<input type="text" name="amount" class="form-control" size="10" placeholder="1" value="<? print $this->view->form->setup->amount; ?>">
+							<input type="text" name="amount" class="form-control" size="10" placeholder="1" value="<? print htmlspecialchars($this->view->form->setup->amount, ENT_QUOTES, 'UTF-8'); ?>">
 						</div>
 					</div>
 
@@ -101,7 +101,7 @@ if (!empty($this->view->form->setup->time_det))
 							<input type="text" class="form-control" size="4" placeholder="0"> <? echo L::DAYS_SHORT; ?>
 							<input type="text" class="form-control" size="4" placeholder="0"> <? echo L::HOURS_SHORT2; ?>
 							-->
-							<input type="text" name="interval" class="form-control" required="required" size="10" placeholder="10" value="<? print $this->view->form->setup->interval; ?>"> <? echo L::SECONDS_SHORT; ?>
+							<input type="text" name="interval" class="form-control" required="required" size="10" placeholder="10" value="<? print htmlspecialchars($this->view->form->setup->interval, ENT_QUOTES, 'UTF-8'); ?>"> <? echo L::SECONDS_SHORT; ?>
 						</div>
 					</div>
 					<?
@@ -112,7 +112,7 @@ if (!empty($this->view->form->setup->time_det))
 							<? echo L::setup_DETECTIONS_COUNT_REP; ?>
 						</div>
 						<div class="col-xs-6 col-md-6 col-sm-6 form-inline">
-							<input type="text" name="number_error" class="form-control" size="10" placeholder="0" value="<? print $this->view->form->setup->number_error; ?>">
+							<input type="text" name="number_error" class="form-control" size="10" placeholder="0" value="<? print htmlspecialchars($this->view->form->setup->number_error, ENT_QUOTES, 'UTF-8'); ?>">
 						</div>
 					</div>
 					<div class="row form-group" style="display:none;">
@@ -120,7 +120,7 @@ if (!empty($this->view->form->setup->time_det))
 							<? echo L::setup_DETECTIONS_PERIOD_REP; ?>
 						</div>
 						<div class="col-xs-6 col-md-6 col-sm-6 form-inline">
-							<input type="text" name="period_repeated_det" class="form-control" size="10" placeholder="0" value="<? print $this->view->form->setup->period_repeated_det; ?>"> <? echo L::SECONDS_SHORT; ?>
+							<input type="text" name="period_repeated_det" class="form-control" size="10" placeholder="0" value="<? print htmlspecialchars($this->view->form->setup->period_repeated_det, ENT_QUOTES, 'UTF-8'); ?>"> <? echo L::SECONDS_SHORT; ?>
 						</div>
 					</div>
 				</div>
@@ -234,7 +234,7 @@ if (!empty($this->view->form->setup->time_det))
 		<? endif;
 		endif; ?>
 
-			<input type="submit" class="btn btn-success width-auto form-control" value="<? print $this->view->form->submit->value; ?>" disabled="disabled" />
+			<input type="submit" class="btn btn-success width-auto form-control" value="<? print htmlspecialchars($this->view->form->submit->value, ENT_QUOTES, 'UTF-8'); ?>" disabled="disabled" />
 		</div>
 	</div>
 </div>

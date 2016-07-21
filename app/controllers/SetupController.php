@@ -66,7 +66,7 @@ class SetupController extends Controller
 				System::go('experiment/view');
 			}
 
-			$setup->set('title', htmlspecialchars(isset($_POST['setup_title']) ? $_POST['setup_title'] : ''));
+			$setup->set('title', isset($_POST['setup_title']) ? $_POST['setup_title'] : '');
 
 			// Set Setup mode
 			$setup_type = isset($_POST['setup-type']) ? $_POST['setup-type'] : '';
@@ -74,7 +74,7 @@ class SetupController extends Controller
 			{
 				$amount = isset($_POST['amount']) ? (int)$_POST['amount'] : 0;
 				$amount = $amount > 0 ? $amount : null;
-				$setup->set('amount', htmlspecialchars($amount));
+				$setup->set('amount', $amount);
 			}
 			else if($setup_type === 'setup-type-length')
 			{
@@ -84,9 +84,9 @@ class SetupController extends Controller
 			// Common fields for all kinds of detections
 			$interval = isset($_POST['interval']) ? (int)$_POST['interval'] : 0;
 			$interval = $interval > 0 ? $interval : null;
-			$setup->set('interval', htmlspecialchars($interval));
-			$setup->set('number_error', htmlspecialchars(isset($_POST['number_error']) ? (int)$_POST['number_error'] : 0));
-			$setup->set('period_repeated_det', htmlspecialchars(isset($_POST['period_repeated_det']) ? (int)$_POST['period_repeated_det'] : 0));
+			$setup->set('interval', $interval);
+			$setup->set('number_error', isset($_POST['number_error']) ? (int)$_POST['number_error'] : 0);
+			$setup->set('period_repeated_det', isset($_POST['period_repeated_det']) ? (int)$_POST['period_repeated_det'] : 0);
 			$setup->set('master_exp_id', $master_exp->id);
 
 			// Validate
@@ -178,7 +178,7 @@ class SetupController extends Controller
 		{
 			// Save Setup
 
-			$setup->set('title', htmlspecialchars(isset($_POST['setup_title']) ? $_POST['setup_title'] : ''));
+			$setup->set('title', isset($_POST['setup_title']) ? $_POST['setup_title'] : '');
 
 			// Set Setup mode
 			$setup_type = isset($_POST['setup-type']) ? $_POST['setup-type'] : '';
@@ -186,7 +186,7 @@ class SetupController extends Controller
 			{
 				$amount = isset($_POST['amount']) ? (int)$_POST['amount'] : 0;
 				$amount = $amount > 0 ? $amount : 1;
-				$setup->set('amount', htmlspecialchars($amount));
+				$setup->set('amount', $amount);
 				$setup->set('time_det', null);
 			}
 			else if ($setup_type === 'setup-type-length')
@@ -198,9 +198,9 @@ class SetupController extends Controller
 			// Common fields for all kinds of detections
 			$interval = isset($_POST['interval']) ? (int)$_POST['interval'] : 0;
 			$interval = $interval > 0 ? $interval : 10;
-			$setup->set('interval', htmlspecialchars($interval));
-			$setup->set('number_error', htmlspecialchars(isset($_POST['number_error']) ? (int)$_POST['number_error'] : 0));
-			$setup->set('period_repeated_det', htmlspecialchars(isset($_POST['period_repeated_det']) ? (int)$_POST['period_repeated_det'] : 0));
+			$setup->set('interval', $interval);
+			$setup->set('number_error', isset($_POST['number_error']) ? (int)$_POST['number_error'] : 0);
+			$setup->set('period_repeated_det', isset($_POST['period_repeated_det']) ? (int)$_POST['period_repeated_det'] : 0);
 			if (empty($setup->session_key))
 			{
 				$setup->set('session_key', $this->session()->getKey());

@@ -61,15 +61,15 @@
 
 
 <div class="col-md-12">
-	<a href="/?q=experiment/graph/<? print $this->view->content->experiment->id; ?>" class="btn btn-sm btn-default">
-		<span class="glyphicon glyphicon-chevron-left"></span> <? echo L::graph_TITLE_ALL_GRAPHS_FOR_2($this->view->content->experiment->title) ?>
+	<a href="/?q=experiment/graph/<? print (int)$this->view->content->experiment->id; ?>" class="btn btn-sm btn-default">
+		<span class="glyphicon glyphicon-chevron-left"></span> <? echo L::graph_TITLE_ALL_GRAPHS_FOR_2(htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8')) ?>
 	</a>
 </div>
 <br><br>
 <div class="col-md-12">
 	<div class="col-md-10 well">
 		<form class="form-inline">
-			<input type="hidden" name="form-id" value="<? print $this->view->form->id; ?>">
+			<input type="hidden" name="form-id" value="<? print htmlspecialchars($this->view->form->id, ENT_QUOTES, 'UTF-8'); ?>">
 			<div class="form-group col-md-6">
 				<label for="x-axis" class="col-md-12">
 					<? echo L::graph_ABSCISSA; ?>:
@@ -98,7 +98,7 @@
 		</form>
 	</div>
 	<div class="col-md-2">
-		<input class="btn btn-default" value="<? print $this->view->form->submit->value; ?>">
+		<input class="btn btn-default" value="<? print htmlspecialchars($this->view->form->submit->value, ENT_QUOTES, 'UTF-8'); ?>">
 	</div>
 </div>
 

@@ -1,7 +1,7 @@
 <div class="row">
 	<div class="col-md-12">
 		<a href="/?q=experiment/view/<? print (int)$this->view->form->experiment->id; ?>" class="btn btn-sm btn-default">
-			<span class="glyphicon glyphicon-chevron-left"></span> <? print $this->view->form->experiment->title; ?>
+			<span class="glyphicon glyphicon-chevron-left"></span> <? print htmlspecialchars($this->view->form->experiment->title, ENT_QUOTES, 'UTF-8'); ?>
 		</a>
 	</div>
 </div>

@@ -30,7 +30,7 @@ if($setup_exists)
 {
 	// Amount of detections
 	// Check Setup mode
-	$amount = $this->view->content->setup->amount ? $this->view->content->setup->amount : '*';
+	$amount = $this->view->content->setup->amount ? (int)$this->view->content->setup->amount : '*';
 
 	// Get already done count of detections
 	if ($this->view->content->monitor && isset($this->view->content->monitor->info))
@@ -203,7 +203,7 @@ if($setup_exists)
 			<tr>
 				<td class="col-md-12 padng-3px">
 					<h3 class="exp-title">
-						<a href="/?q=experiment/edit/<? print $this->view->content->experiment->id; ?>" class="btn btn-edit btn-sm btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
+						<a href="/?q=experiment/edit/<? print (int)$this->view->content->experiment->id; ?>" class="btn btn-edit btn-sm btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
 						<span><? print htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8'); ?></span>
 					</h3>
 					<div class="period-work">
@@ -241,7 +241,7 @@ if($setup_exists)
 					<div class="">
 						<? echo L::SETUP; ?>: <b><? print htmlspecialchars($this->view->content->setup->title, ENT_QUOTES, 'UTF-8'); ?></b>
 						<? if($this->view->content->setup->userCanEdit($this->session())) :?>
-							<a href="/?q=setup/edit/<? print $this->view->content->setup->id; ?>" title="<? echo L::setup_EDIT; ?>" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
+							<a href="/?q=setup/edit/<? print (int)$this->view->content->setup->id; ?>" title="<? echo L::setup_EDIT; ?>" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
 						<? endif; ?>
 					</div>
 					<div class="setup-status">
@@ -278,7 +278,7 @@ if($setup_exists)
 						</div>
 						<div class="col-xs-12 col-sm-6 col-md-4">
 							<div class="mrg-bot-5px">
-								<div class="special-label"><? echo L::setup_DETECTIONS_PERIOD; ?>: <span id="setup_interval" class="badge"><? print $this->view->content->setup->interval; ?></span></div>
+								<div class="special-label"><? echo L::setup_DETECTIONS_PERIOD; ?>: <span id="setup_interval" class="badge"><? print (int)$this->view->content->setup->interval; ?></span></div>
 							</div>
 							<div class="mrg-bot-5px">
 								<div class="special-label"><? echo L::TIME_REMAIN; ?>: <span id="setup_remain_cnt" class="badge"><?php echo $remain_cnt_text; ?></span></div>
@@ -341,9 +341,10 @@ if($setup_exists)
 							<div class="widget-pane info active ">
 								<h3 class="sensor-value"><? echo L::PLEASE_WAIT; ?></h3>
 								<small class="sensor-value-name"><?
-									echo ((!empty($sensor->si_notation)) ? 
+									echo htmlspecialchars(((!empty($sensor->si_notation)) ? 
 											constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation))
-											. ' (' . constant('L::sensor_VALUE_SI_NAME_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_name)) . ')' : '');
+											. ' (' . constant('L::sensor_VALUE_SI_NAME_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_name)) . ')' : '')
+										, ENT_QUOTES, 'UTF-8');
 								?></small>
 							</div>
 						</div>
@@ -357,7 +358,7 @@ if($setup_exists)
 		<div class="row">
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
 				<a class="btn btn-default form-control <? echo (!$canSetupControl) ? 'disabled' : ''; 
-					?>" id="experiment-action" data-experiment-state="<? echo (int)$setup_active;?>" data-experiment-id="<? print $this->view->content->experiment->id; ?>" data-text-0="<? echo L::START; ?>" data-text-1="<? echo L::STOP; ?>" <? echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><? 
+					?>" id="experiment-action" data-experiment-state="<? echo (int)$setup_active;?>" data-experiment-id="<? print (int)$this->view->content->experiment->id; ?>" data-text-0="<? echo L::START; ?>" data-text-1="<? echo L::STOP; ?>" <? echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><? 
 					echo ($setup_active) ? L::STOP : L::START;
 					?></a>
 			</div>

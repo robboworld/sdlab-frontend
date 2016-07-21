@@ -48,10 +48,10 @@ class ExperimentController extends Controller
 			}
 
 			// Fill the Experiment properties
-			$experiment->set('title', htmlspecialchars(isset($_POST['experiment_title']) ? $_POST['experiment_title'] : ''));
+			$experiment->set('title', isset($_POST['experiment_title']) ? $_POST['experiment_title'] : '');
 			$setup_id = (isset($_POST['setup_id']) ? (int)$_POST['setup_id'] : '');
 			$experiment->set('setup_id', $setup_id);
-			$experiment->set('comments', htmlspecialchars(isset($_POST['experiment_comments']) ? $_POST['experiment_comments'] : ''));
+			$experiment->set('comments', isset($_POST['experiment_comments']) ? $_POST['experiment_comments'] : '');
 
 			// Get dates
 			// Get local date and use UNIX timestamp (UTC)
@@ -303,8 +303,8 @@ class ExperimentController extends Controller
 			// Save experiment
 
 			// Fill the Experiment properties
-			$experiment->set('title', htmlspecialchars(isset($_POST['experiment_title']) ? $_POST['experiment_title'] : ''));
-			$experiment->set('comments', htmlspecialchars(isset($_POST['experiment_comments']) ? $_POST['experiment_comments'] : ''));
+			$experiment->set('title', isset($_POST['experiment_title']) ? $_POST['experiment_title'] : '');
+			$experiment->set('comments', isset($_POST['experiment_comments']) ? $_POST['experiment_comments'] : '');
 			$new_setup_id = (isset($_POST['setup_id']) ? (int)$_POST['setup_id'] : 0);
 			$new_setup_id = ($new_setup_id<0) ? 0 : $new_setup_id;
 			//$experiment->set('setup_id', $new_setup_id);

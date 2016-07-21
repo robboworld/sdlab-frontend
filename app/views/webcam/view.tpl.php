@@ -81,7 +81,7 @@ $streamed = (!empty($this->view->content->item->stream) && ($this->view->content
 
 	<? if (isset($this->view->content->item)) : ?>
 
-	<form id="sdform" method="post" action="?<? echo htmlentities($_SERVER['QUERY_STRING'], ENT_COMPAT | ENT_HTML401, 'UTF-8'); ?>" class="form-horizontal">
+	<form id="sdform" method="post" action="?<? echo $_SERVER['QUERY_STRING']; ?>" class="form-horizontal">
 		<input type="hidden" name="form-id" value="action-webcam-form"/>
 		<input type="hidden" name="dev_id" value="-1"/>
 		<input type="hidden" name="destination" value="<? echo 'webcam/view/' . (int)$this->view->content->item->Index; ?>"/>

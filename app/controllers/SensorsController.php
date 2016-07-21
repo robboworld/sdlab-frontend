@@ -1562,7 +1562,7 @@ class SensorsController extends Controller
 
 			foreach($sensors as $item)
 			{
-				$list .= '<a class="'.$class_string.'" href="#" data-id="'.$item->id.'">'.$item->title.'</a>';
+				$list .= '<a class="'.$class_string.'" href="#" data-id="'.htmlspecialchars($item->id, ENT_QUOTES, 'UTF-8').'">'.htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8').'</a>';
 			}
 			return $list;
 		}

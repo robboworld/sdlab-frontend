@@ -14,14 +14,14 @@ class Menu
 				if(isset($item['menu']))
 				{
 					$sub_menu_html = '<ul>'.self::render($item['menu'], $user_level).'</ul>';
-					$menu_html .= '<li><a id="'.$id.'" href="'.$href.'">'.$item['title'].'</a>'.$sub_menu_html.'</li>';
+					$menu_html .= '<li><a id="'.$id.'" href="'.$href.'">'.htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8').'</a>'.$sub_menu_html.'</li>';
 				}
 				else
 				{
-					$item_title = $item['title'];
+					$item_title = htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8');
 					if(isset($item['icon']))
 					{
-						$item_title = '<span class="'.$item['icon'].'"></span><span class="hidden-xs">&nbsp;'.$item['title'].'</span>';
+						$item_title = '<span class="'.$item['icon'].'"></span><span class="hidden-xs">&nbsp;'.htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8').'</span>';
 					}
 					$menu_html .= '<li><a id="'.$id.'" href="'.$href.'">'.$item_title.'</a></li>';
 				}

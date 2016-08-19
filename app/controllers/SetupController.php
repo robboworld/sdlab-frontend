@@ -7,7 +7,7 @@
 class SetupController extends Controller
 {
 
-	function __construct($action = 'create')
+	public function __construct($action = 'create')
 	{
 		parent::__construct($action);
 
@@ -15,12 +15,12 @@ class SetupController extends Controller
 		$this->id = App::router(2);
 	}
 
-	function index()
+	public function index()
 	{
 		System::go('setup/create');
 	}
 
-	function create()
+	public function create()
 	{
 		// TODO: Access to creation only for admin?
 		self::setTitle(L::setup_TITLE_CREATION);
@@ -140,7 +140,7 @@ class SetupController extends Controller
 		}
 	}
 
-	function edit()
+	public function edit()
 	{
 		self::setViewTemplate('create');
 		self::setTitle(L::setup_TITLE_EDIT);
@@ -247,7 +247,7 @@ class SetupController extends Controller
 	/**
 	 * @return array
 	 */
-	static function loadSetups()
+	public static function loadSetups()
 	{
 		$db = new DB();
 
@@ -265,7 +265,7 @@ class SetupController extends Controller
 	 * 
 	 * @return array|bool
 	 */
-	static function getSensors($id, $getinfo = false)
+	public static function getSensors($id, $getinfo = false)
 	{
 		// TODO: Rescan sensors for connect status
 		if(!is_numeric($id))
@@ -301,7 +301,7 @@ class SetupController extends Controller
 	 * @param array $sensors
 	 * @return bool
 	 */
-	function setSensors(array $sensors)
+	public function setSensors(array $sensors)
 	{
 		if(empty($this->id))
 		{
@@ -337,7 +337,7 @@ class SetupController extends Controller
 	 * Reset all rows in setup_conf where setup_id = this setup id
 	 * @return bool
 	 */
-	function resetSensors()
+	public function resetSensors()
 	{
 		if(empty($this->id))
 		{

@@ -7,7 +7,7 @@
 class SessionController extends Controller
 {
 	public $user_access_level = 0;
-	function create()
+	public function create()
 	{
 		if(isset($_POST['session_key']))
 		{
@@ -57,7 +57,7 @@ class SessionController extends Controller
 		self::setContentTitle(L::session_NEW_SESSION);
 	}
 
-	function edit()
+	public function edit()
 	{
 		// Check access
 		if(!$this->session())
@@ -112,7 +112,7 @@ class SessionController extends Controller
 
 	}
 
-	function destroy()
+	public function destroy()
 	{
 		Session::destroySession();
 		if($this->session())

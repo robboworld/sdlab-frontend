@@ -5,7 +5,7 @@
 class ExperimentController extends Controller
 {
 
-	function __construct($action = 'create')
+	public function __construct($action = 'create')
 	{
 		parent::__construct($action);
 
@@ -14,7 +14,7 @@ class ExperimentController extends Controller
 		$this->config = App::config();
 	}
 
-	function index()
+	public function index()
 	{
 		System::go('experiment/create');
 	}
@@ -23,7 +23,7 @@ class ExperimentController extends Controller
 	 * Action: Create
 	 * Create experiment
 	 */
-	function create()
+	public function create()
 	{
 		self::setTitle(L::experiment_TITLE_CREATION);
 		self::setContentTitle(L::experiment_TITLE_CREATION);
@@ -126,7 +126,7 @@ class ExperimentController extends Controller
 	 * Action: View
 	 * View single experiment or all
 	 */
-	function view()
+	public function view()
 	{
 		if(!is_null($this->id) && is_numeric($this->id))
 		{
@@ -256,7 +256,7 @@ class ExperimentController extends Controller
 	/** Action: Edit
 	 * Edit experiment
 	 */
-	function edit()
+	public function edit()
 	{
 		if(empty($this->id) || !is_numeric($this->id))
 		{
@@ -400,7 +400,7 @@ class ExperimentController extends Controller
 	 * Deleting experiment.
 	 * Deletes all data related to experiment.
 	 */
-	function delete()
+	public function delete()
 	{
 		if (empty($this->id) || !is_numeric($this->id))
 		{
@@ -561,7 +561,7 @@ class ExperimentController extends Controller
 	 * Action: Journal
 	 * View experiment journal.
 	 */
-	function journal()
+	public function journal()
 	{
 		if(empty($this->id) || !is_numeric($this->id))
 		{
@@ -658,7 +658,7 @@ class ExperimentController extends Controller
 		$this->view->content->detections = &$journal;
 	}
 
-	function graph()
+	public function graph()
 	{
 		if (empty($this->id))
 		{
@@ -812,7 +812,7 @@ class ExperimentController extends Controller
 	 * Clean detections journal.
 	 * Deletes all detections data related to experiment.
 	 */
-	function clean()
+	public function clean()
 	{
 		if (empty($this->id) || !is_numeric($this->id))
 		{
@@ -874,7 +874,7 @@ class ExperimentController extends Controller
 	 * Exports detections data related to experiment in requested format:
 	 *   - CSV
 	 */
-	function download()
+	public function download()
 	{
 		// TODO: Fix access check, because this controller cannot execute actions if not logged on, App controller start other controller with html output. Need raw variant controller with public access
 
@@ -1119,7 +1119,7 @@ class ExperimentController extends Controller
 	 *
 	 * @return array  Result in form array('result' => bool, 'items' => array()) or False on error
 	 */
-	function isActive($params)
+	public function isActive($params)
 	{
 		// Check id 
 		if(!isset($params['experiment']) && empty($params['experiment']))
@@ -1197,7 +1197,7 @@ class ExperimentController extends Controller
 	 * @param  string  $session_key  $session_key
 	 * @return array  Array of objects with experiment ids or empty
 	 */
-	static function loadExperiments($session_key = null)
+	public static function loadExperiments($session_key = null)
 	{
 		$db = new DB();
 

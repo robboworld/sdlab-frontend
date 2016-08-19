@@ -29,7 +29,7 @@ class Experiment extends Model
 										comments = :comments
 									where id = :id';
 
-	function __construct($session_key = null)
+	public function __construct($session_key = null)
 	{
 		if(is_numeric($session_key) && Session::keyExists($session_key))
 		{
@@ -50,7 +50,7 @@ class Experiment extends Model
 
 	}
 
-	function load($id)
+	public function load($id)
 	{
 		if(is_numeric($id))
 		{
@@ -72,7 +72,7 @@ class Experiment extends Model
 		return false;
 	}
 
-	function save()
+	public function save()
 	{
 
 		if(!is_null($this->id))
@@ -110,7 +110,7 @@ class Experiment extends Model
 	 * @param $session
 	 * @return bool
 	 */
-	function userCanCreate($session)
+	public function userCanCreate($session)
 	{
 		// TODO: add experiments counter for registered users, check counter not exceed max value, may be max count in config
 
@@ -126,7 +126,7 @@ class Experiment extends Model
 	 * @param $session
 	 * @return bool
 	 */
-	function userCanView($session)
+	public function userCanView($session)
 	{
 		if(!$session)
 		{
@@ -145,7 +145,7 @@ class Experiment extends Model
 	 * @param $session
 	 * @return bool
 	 */
-	function userCanEdit($session)
+	public function userCanEdit($session)
 	{
 		if(!$session)
 		{
@@ -164,7 +164,7 @@ class Experiment extends Model
 	 * @param $session
 	 * @return bool
 	 */
-	function userCanDelete($session)
+	public function userCanDelete($session)
 	{
 		if(!$session)
 		{

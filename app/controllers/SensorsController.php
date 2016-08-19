@@ -5,14 +5,14 @@
 class SensorsController extends Controller
 {
 
-	function __construct()
+	public function __construct()
 	{
 		parent::__construct();
 		$this->config = App::config();
 	}
 
 
-	function index()
+	public function index()
 	{
 		$this->addJs('functions');
 		$this->addJs('chart');
@@ -45,7 +45,7 @@ class SensorsController extends Controller
 	 * 
 	 * @return array  Result in form array('result' => sensor list of objects) or False on error
 	 */
-	function getSensors($params)
+	public function getSensors($params)
 	{
 		// Rescan sensors mode only for admin access
 		$rescan = (isset($params['rescan']) && $params['rescan']) ? true : false;
@@ -182,7 +182,7 @@ class SensorsController extends Controller
 	 * 
 	 * @return array  Result in form array('result' => sensor data object of (Time, Reading)) or False on error
 	 */
-	function getData($params)
+	public function getData($params)
 	{
 		$socket = new JSONSocket($this->config['socket']['path']);
 		if ($socket->error())
@@ -214,7 +214,7 @@ class SensorsController extends Controller
 	 *
 	 * @return array  Result in form array('result' => sensor array with data array (Sensor, ValueIdx, result(Time, Reading))) or False on error
 	 */
-	function getDataItems($params)
+	public function getDataItems($params)
 	{
 		if (!is_array($params)) 
 		{
@@ -283,7 +283,7 @@ class SensorsController extends Controller
 	 * 
 	 * @return array  Result in form array('result' => DATA) or False on error
 	 */
-	function experimentStrob($params)
+	public function experimentStrob($params)
 	{
 		if(empty($params['experiment']))
 		{
@@ -529,7 +529,7 @@ class SensorsController extends Controller
 	 *
 	 * @return array  Result in form array('result' => uuid) or False on error
 	 */
-	function experimentStart($params)
+	public function experimentStart($params)
 	{
 		if(empty($params['experiment']))
 		{
@@ -799,7 +799,7 @@ class SensorsController extends Controller
 	 *
 	 * @return array  Result in form array('result' => uuid) or False on error
 	 */
-	function experimentStop($params)
+	public function experimentStop($params)
 	{
 		if(empty($params['experiment']))
 		{
@@ -1241,7 +1241,7 @@ class SensorsController extends Controller
 	 *
 	 * @return array  Result in form array('result' => object) or False on error
 	 */
-	function experimentStatus($params)
+	public function experimentStatus($params)
 	{
 		if(empty($params['experiment']))
 		{

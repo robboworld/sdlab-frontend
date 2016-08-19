@@ -6,7 +6,7 @@
  */
 class Sensor
 {
-	function __construct($id, $title, $c)
+	public function __construct($id, $title, $c)
 	{
 		$this->id = $id;
 		$this->title = $title;

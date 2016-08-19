@@ -30,7 +30,7 @@ class Html
 	 * 
 	 * @see JHtmlSelect::$formatOptions in Joomla.Libraries.HTML (/libraries/cms/html/select.php)
 	 */
-	static protected $optionDefaults = array(
+	protected static $optionDefaults = array(
 			'option' => array('option.attr' => null, 'option.disable' => 'disable', 'option.id' => null, 'option.key' => 'value',
 					'option.key.toHtml' => true, 'option.label' => null, 'option.label.toHtml' => true, 'option.text' => 'text',
 					'option.text.toHtml' => true, 'option.class' => 'class', 'option.onclick' => 'onclick'));

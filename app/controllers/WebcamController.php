@@ -5,7 +5,7 @@
 class WebcamController extends Controller
 {
 
-	function __construct($action = 'view')
+	public function __construct($action = 'view')
 	{
 		parent::__construct($action);
 
@@ -14,7 +14,7 @@ class WebcamController extends Controller
 		$this->config = App::config();
 	}
 
-	function index()
+	public function index()
 	{
 		System::go('webcam/view');
 	}
@@ -23,7 +23,7 @@ class WebcamController extends Controller
 	 * Action: View
 	 * View single webcam or list of all cams
 	 */
-	function view()
+	public function view()
 	{
 		if(!is_null($this->id) && is_numeric($this->id))
 		{
@@ -307,7 +307,7 @@ class WebcamController extends Controller
 	/** Action: Start
 	 * Start web camera streaming
 	 */
-	function start()
+	public function start()
 	{
 		if (isset($_POST) && isset($_POST['dev_id']))
 		{
@@ -368,7 +368,7 @@ class WebcamController extends Controller
 	/** Action: Stop
 	 * Stop web camera streaming
 	 */
-	function stop()
+	public function stop()
 	{
 		if (isset($_POST) && isset($_POST['dev_id']))
 		{
@@ -435,7 +435,7 @@ class WebcamController extends Controller
 	/** Action: Start all
 	 * Start all web cameras streaming
 	 */
-	function startall()
+	public function startall()
 	{
 		//if ($this->session()->getUserLevel() == 3)
 		{
@@ -476,7 +476,7 @@ class WebcamController extends Controller
 	/** Action: Stop all
 	 * Stop all web cameras streaming
 	 */
-	function stopall()
+	public function stopall()
 	{
 		//if($this->session()->getUserLevel() == 3)
 		{

@@ -30,7 +30,7 @@ class Monitor extends Model
 									where id = :id';
 
 
-	function __construct()
+	public function __construct()
 	{
 		$id = null;
 		$exp_id = null;
@@ -42,7 +42,7 @@ class Monitor extends Model
 	}
 
 	// todo: delete because not used loading monitor by id
-	function load($id)
+	public function load($id)
 	{
 		if(is_numeric($id))
 		{
@@ -64,7 +64,7 @@ class Monitor extends Model
 		return false;
 	}
 
-	function loadItems($fields = array(), $order_col = 'id', $order_dir = 'ASC', $limit = null, $limitstart = null)
+	public function loadItems($fields = array(), $order_col = 'id', $order_dir = 'ASC', $limit = null, $limitstart = null)
 	{
 		$sql_load_items_query = 'select * from monitors';
 
@@ -201,7 +201,7 @@ class Monitor extends Model
 		return $items;
 	}
 
-	function save()
+	public function save()
 	{
 		$result = null;
 

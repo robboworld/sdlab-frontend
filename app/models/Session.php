@@ -33,14 +33,15 @@ class Session extends Model
 	 */
 	private $user_level = 1;
 
-	function __construct()
+	public function __construct()
 	{
 		parent::__construct();
 		self::generateKey();
 		$this->DateStart = time();
 		$this->expiry = 0;
 	}
-	function save()
+
+	public function save()
 	{
 
 		if(isset($this->id))
@@ -82,7 +83,7 @@ class Session extends Model
 		if($result) return true;
 	}
 
-	function load($key)
+	public function load($key)
 	{
 		$row = $this->db->query("select * from sessions where session_key = " . $this->db->quote($key));
 		$session = $row->fetch(PDO::FETCH_OBJ);
@@ -140,7 +141,7 @@ class Session extends Model
 	 * @param $key
 	 * @return bool
 	 */
-	static function keyExists($key)
+	public static function keyExists($key)
 	{
 		$dbh = (new DB())->query("select id from sessions where session_key = '$key'");
 		$result = $dbh->fetch(PDO::FETCH_OBJ);
@@ -163,7 +164,7 @@ class Session extends Model
 	}
 
 
-	function setSession()
+	public function setSession()
 	{
 		$_SESSION['sdlab'] = array(
 			'id' => $this->id,
@@ -173,7 +174,7 @@ class Session extends Model
 			'comments' => $this->comments
 		);
 	}
-	static function destroySession()
+	public static function destroySession()
 	{
 		unset($_SESSION['sdlab']);
 	}

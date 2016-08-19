@@ -6,7 +6,7 @@
  */
 class Menu
 {
-	static function render(array $menu, $user_level = 0)
+	public static function render(array $menu, $user_level = 0)
 	{
 		$menu_html = '';
 		foreach($menu as $key => $item)
@@ -43,7 +43,7 @@ class Menu
 	 * @return mixed
 	 * 
 	 */
-	static function get()
+	public static function get()
 	{
 		$menu['page/view'] = array(
 			'title' => L::SYSTEM,

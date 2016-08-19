@@ -4,7 +4,7 @@
  */
 class DetectionsController extends Controller
 {
-	function __construct()
+	public function __construct()
 	{
 		parent::__construct();
 		$this->config = App::config();
@@ -21,7 +21,7 @@ class DetectionsController extends Controller
 	 *
 	 * @return array  Result in form array('result' => array of objects) or False on error
 	 */
-	function getGraphData($params)
+	public function getGraphData($params)
 	{
 		if(empty($params['plot']))
 		{
@@ -134,7 +134,7 @@ class DetectionsController extends Controller
 	 * 
 	 * @return array  Result in form array('result' => array of objects) or False on error
 	 */
-	function getGraphDataAll($params)
+	public function getGraphDataAll($params)
 	{
 		if(empty($params['experiment']))
 		{
@@ -287,7 +287,7 @@ class DetectionsController extends Controller
 	 *
 	 * @return array  Result in form array('result' => True) or False on error
 	 */
-	function delete($params)
+	public function delete($params)
 	{
 		if(empty($params['id']))
 		{
@@ -433,7 +433,7 @@ class DetectionsController extends Controller
 	 *
 	 * @return array  Result in form array('result' => True) or False on error
 	 */
-	function deletebytime($params)
+	public function deletebytime($params)
 	{
 		if(empty($params['dt']) || empty($params['exp_id']))
 		{
@@ -539,7 +539,7 @@ class DetectionsController extends Controller
 	}
 
 
-	function error()
+	public function error()
 	{
 		return $this->error;
 	}

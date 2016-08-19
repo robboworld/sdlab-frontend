@@ -4,7 +4,7 @@
  */
 class ApiController extends Controller
 {
-	function __construct()
+	public function __construct()
 	{
 		$method_query = explode('.', isset($_GET['method']) ? $_GET['method'] : '');
 
@@ -32,7 +32,7 @@ class ApiController extends Controller
 	 *     - error: Error text, may be empty text
 	 * Other fields optional.
 	 */
-	function api()
+	public function api()
 	{
 		if(method_exists($this->controller, $this->method))
 		{
@@ -67,9 +67,10 @@ class ApiController extends Controller
 	}
 
 	/**
-	 * Override default render method
+	 * Override default render method.
+	 * JSON output.
 	 */
-	function renderView()
+	public function renderView()
 	{
 		// Execute
 		$this->api();

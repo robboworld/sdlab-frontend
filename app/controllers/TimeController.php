@@ -4,13 +4,13 @@
  */
 class TimeController extends Controller
 {
-	function __construct($action = 'index')
+	public function __construct($action = 'index')
 	{
 		parent::__construct($action);
 		$this->config = App::config();
 	}
 
-	function index()
+	public function index()
 	{
 		System::go('time/edit');
 	}
@@ -20,7 +20,7 @@ class TimeController extends Controller
 	 * Action: Edit
 	 * Edit time settings
 	 */
-	function edit()
+	public function edit()
 	{
 		if ($this->session()->getUserLevel() == 3)
 		{

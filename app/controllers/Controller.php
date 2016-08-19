@@ -1,6 +1,6 @@
 <?php
 /**
- * Class App
+ * Class Controller
  *
  * Base controller class
  */
@@ -14,7 +14,7 @@ class Controller
 
 	/**
 	 * User access level for controller.
-	 * This is minimal access level needed for access to controler actions.
+	 * This is minimal access level needed for access to controller actions.
 	 *   0 - guest
 	 *   1 - registered (default)
 	 *   3 - admin
@@ -22,19 +22,19 @@ class Controller
 	 */
 	protected $user_access_level = 1;
 
-	function __construct($action = 'index')
+	public function __construct($action = 'index')
 	{
 		$this->action = System::cleanVar($action, 'method');
 		$this->view = new stdClass();
 		$this->view->content = new stdClass();
 	}
 
-	function index()
+	public function index()
 	{
 		// default method
 	}
 
-	function error()
+	public function error()
 	{
 		return $this->error;
 	}
@@ -119,7 +119,7 @@ class Controller
 		include(VIEWS.'/layout.tpl.php');
 	}
 
-	function render()
+	public function render()
 	{
 		if(!isset($this->view->template)) $this->view->template = $this->action;
 
@@ -157,7 +157,7 @@ class Controller
 	}
 	*/
 
-	function user_access_level()
+	public function user_access_level()
 	{
 		return $this->user_access_level;
 	}

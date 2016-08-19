@@ -29,7 +29,7 @@ class Plot extends Model
 										stop = :stop
 									where id = :id';
 
-	function __construct()
+	public function __construct()
 	{
 		$this->id = null;
 		$this->exp_id = null;
@@ -41,7 +41,7 @@ class Plot extends Model
 		parent::__construct();
 	}
 
-	function load($id)
+	public function load($id)
 	{
 		if(is_numeric($id))
 		{
@@ -63,7 +63,7 @@ class Plot extends Model
 		return false;
 	}
 
-	function save()
+	public function save()
 	{
 		if(!empty($this->id))
 		{

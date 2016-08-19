@@ -15,7 +15,7 @@ class JSONSocket
 	private $errorno;
 	private $request;
 
-	function __construct($path)
+	public function __construct($path)
 	{
 		//$this->socket = socket_create(AF_UNIX, SOCK_STREAM, null);
 		//socket_connect($this->socket, $path);
@@ -28,7 +28,7 @@ class JSONSocket
 		}
 	}
 
-	function __destruct()
+	public function __destruct()
 	{
 		if(!empty($this->socket) && is_resource($this->socket))
 		{
@@ -36,7 +36,7 @@ class JSONSocket
 		}
 	}
 
-	function call($method, $params)
+	public function call($method, $params)
 	{
 		$request = new stdClass();
 		$request->jsonrpc = '2.0';
@@ -125,7 +125,7 @@ class JSONSocket
 		return false;
 	}
 
-	function error()
+	public function error()
 	{
 		if (!$this->errorno)
 		{
@@ -138,7 +138,7 @@ class JSONSocket
 		);
 	}
 
-	static function availableTransport()
+	public static function availableTransport()
 	{
 		return stream_get_transports();
 	}

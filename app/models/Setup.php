@@ -39,7 +39,7 @@ class Setup extends Model
 									where id = :id';
 
 
-	function __construct($session_key = null)
+	public function __construct($session_key = null)
 	{
 		if(is_numeric($session_key) && Session::keyExists($session_key))
 		{
@@ -63,7 +63,7 @@ class Setup extends Model
 		parent::__construct();
 	}
 
-	function load($id)
+	public function load($id)
 	{
 		if(is_numeric($id))
 		{
@@ -85,7 +85,7 @@ class Setup extends Model
 		return false;
 	}
 
-	function save()
+	public function save()
 	{
 		if(!is_null($this->id))
 		{
@@ -138,7 +138,7 @@ class Setup extends Model
 	 * @param $session
 	 * @return bool
 	 */
-	function userCanEdit($session)
+	public function userCanEdit($session)
 	{
 		if(!$session)
 		{
@@ -163,7 +163,7 @@ class Setup extends Model
 	 * @param $session
 	 * @return bool
 	 */
-	function userCanCreate($session)
+	public function userCanCreate($session)
 	{
 		// TODO: not used, not only admin can create now, remove this
 		// TODO: add Setups counter for registered users, check counter not exceed max value, may be max count in config
@@ -190,7 +190,7 @@ class Setup extends Model
 	 * @param $session
 	 * @return bool
 	 */
-	function userCanDelete($session)
+	public function userCanDelete($session)
 	{
 		//TODO: not used delete check for Setups, only experiments can be deleted by admin
 
@@ -213,7 +213,7 @@ class Setup extends Model
 	 * @param $exp_id
 	 * @return bool
 	 */
-	function userCanControl($session, $exp_id)
+	public function userCanControl($session, $exp_id)
 	{
 		if(!$session || !$exp_id)
 		{
@@ -236,7 +236,7 @@ class Setup extends Model
 		return false;
 	}
 
-	function time()
+	public function time()
 	{
 		if(!empty($this->amount))
 		{

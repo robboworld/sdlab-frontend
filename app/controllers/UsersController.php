@@ -7,7 +7,7 @@
 class UsersController extends Controller
 {
 
-	function __construct($action)
+	public function __construct($action)
 	{
 		parent::__construct($action);
 
@@ -16,7 +16,7 @@ class UsersController extends Controller
 		$this->config = App::config();
 	}
 
-	function index()
+	public function index()
 	{
 		System::go('users/view');
 	}
@@ -25,7 +25,7 @@ class UsersController extends Controller
 	 * Action: View
 	 * View single user profile or list all
 	 */
-	function view()
+	public function view()
 	{
 		if(!is_null($this->id) && is_numeric($this->id))
 		{

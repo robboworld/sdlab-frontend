@@ -7,14 +7,14 @@
 class PageController extends Controller
 {
 
-	function __construct($action = 'view')
+	public function __construct($action = 'view')
 	{
 		$this->user_access_level = 0;
 		parent::__construct($action);
 
 	}
 
-	function view()
+	public function view()
 	{
 		$query = System::cleanVar(App::router(2), 'cmd');
 		if(!empty($query))

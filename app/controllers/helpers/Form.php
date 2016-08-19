@@ -9,7 +9,7 @@ class Form
 	public $id;
 	public $submit;
 
-	function __construct($id = 'new-form')
+	public function __construct($id = 'new-form')
 	{
 		$this->id = $id;
 		$this->submit = new stdClass();
@@ -17,7 +17,7 @@ class Form
 	}
 
 
-	static function redirect($query_string = null)
+	public static function redirect($query_string = null)
 	{
 		if($query_string == null)
 		{
@@ -35,7 +35,7 @@ class Form
 	 * @param $date
 	 * @return string
 	 */
-	static function dateToInput($date, $timezone = null)
+	public static function dateToInput($date, $timezone = null)
 	{
 		$dt = new DateTime($date);
 
@@ -62,7 +62,7 @@ class Form
 	 * 
 	 * @return int
 	 */
-	static function DHMStoSec(array $dhm)
+	public static function DHMStoSec(array $dhm)
 	{
 		$sec = 0;
 		$sec += $dhm[3];
@@ -72,7 +72,7 @@ class Form
 		return $sec;
 	}
 
-	static function formTimeObject($sec)
+	public static function formTimeObject($sec)
 	{
 		$times = array();
 

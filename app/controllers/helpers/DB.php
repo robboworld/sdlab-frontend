@@ -8,7 +8,7 @@ class DB extends PDO
 {
 	protected static $db = null;
 
-	function __construct()
+	public function __construct()
 	{
 		parent::__construct('sqlite:'.DBFILE);
 	}

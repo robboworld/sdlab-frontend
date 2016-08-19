@@ -24,14 +24,23 @@ class System
 	 */
 	protected static $zones = array('Africa', 'America', 'Antarctica', 'Arctic', 'Asia', 'Atlantic', 'Australia', 'Europe', 'Indian', 'Pacific');
 
-	static function dump($var)
+	public static function dump($var)
 	{
 		echo '<pre>';
 		var_dump($var);
 		echo '</pre>';
 	}
 
-	static function dateformat($string, $format = 'd.m.Y H:i:s', $timezone = null)
+	/**
+	 * Format text datetime
+	 * 
+	 * @param string $string    input datetime string in format for DateTime
+	 * @param string $format    new datetime format
+	 * @param string $timezone  new timezone, one of the supported timezone names or 'now' for local
+	 * 
+	 * @return string
+	 */
+	public static function dateformat($string, $format = 'd.m.Y H:i:s', $timezone = null)
 	{
 		$dt = new DateTime($string);
 
@@ -52,9 +61,11 @@ class System
 	}
 
 	/**
-	 * @param string $query_string
+	 * Redirect and exit
+	 * 
+	 * @param string $query_string  url
 	 */
-	static function go($query_string = null)
+	public static function go($query_string = null)
 	{
 		if($query_string == null)
 		{
@@ -69,13 +80,14 @@ class System
 	}
 
 	/**
-	 * Go to the destination url by request var
+	 * Go to the destination url by request var.
+	 * Goes to default query if no destication valiable found.
 	 * 
 	 * @param string $default_query  Default redirect query
 	 * @param string $method         Method (POST|GET)
 	 * @param string $query_var      Request var name
 	 */
-	static function goback($default_query = null, $method = "get", $query_var = "destination")
+	public static function goback($default_query = null, $method = "get", $query_var = "destination")
 	{
 		$method = strtolower($method);
 		switch ($method)
@@ -107,10 +119,11 @@ class System
 
 	/**
 	 * Output error/status and exit (404,403,500 and etc).
+	 * 
 	 * @param integer $errcode
 	 * @param string  $str
 	 */
-	static function goerror($code = 500, $str = null)
+	public static function goerror($code = 500, $str = null)
 	{
 		// Clean output buffer
 		while (@ob_end_clean()) {
@@ -149,22 +162,27 @@ class System
 	/**
 	 * Convert number of seconds to nanoseconds
 	 * 
-	 * @param  interger|float  $var  Seconds
+	 * @param  int|float  $var  Seconds
 	 * 
-	 * @return interger|float
+	 * @return int|float
 	 */
-	static function nano($var)
+	public static function nano($var)
 	{
 		return $var * 1000000000;
 	}
 
-	static function secToTime($sec)
+	public static function secToTime($sec)
 	{
 		$obj = Form::formTimeObject($sec);
 		return $obj->d . ' ' . L::DAYS_SHORT2 . ' ' . $obj->h . ' ' . L::HOURS_SHORT2 . ' ' . $obj->m . ' ' . L::MINUTES_SHORT2 . ' ' . $obj->s . ' '. L::SECONDS_SHORT2;
 	}
 
-	static function nulldate()
+	/**
+	 * Null date in backend
+	 * 
+	 * @return string
+	 */
+	public static function nulldate()
 	{
 		return "0001-01-01T00:00:00Z";
 	}
@@ -185,7 +203,7 @@ class System
 	 * 
 	 * @return string
 	 */
-	static function cutdatemsec($string)
+	public static function cutdatemsec($string)
 	{
 		return (string) preg_replace('/\.\d+(Z|(\+|\-).*)/i', '${1}', $string);
 	}
@@ -207,7 +225,7 @@ class System
 	 *
 	 * @return string|integer  Number of second parts (nanoseconds)
 	 */
-	static function getdatemsec($string)
+	public static function getdatemsec($string)
 	{
 		$i = preg_match('/\.(\d+)(Z|(\+|\-).*)/i', $string, $mathes);
 		if ($i && isset($mathes[1]))
@@ -236,7 +254,7 @@ class System
 	 *
 	 * @return string
 	 */
-	static function convertDatetimeToUTC($string)
+	public static function convertDatetimeToUTC($string)
 	{
 		$nsec = static::getdatemsec($string);
 		$dt = new DateTime(static::cutdatemsec($string));
@@ -250,11 +268,12 @@ class System
 	 * @see System::convertDatetimeToUTC
 	 *
 	 * @param  string  $string
+	 * @param  string  $format  Output datetime format
 	 * @param  string  $timezone  Timezone name or 'now' for current TZ or null, if use from time string
 	 *
 	 * @return string
 	 */
-	static function datemsecformat($string, $format = 'd.m.Y H:i:s.u', $timezone = null)
+	public static function datemsecformat($string, $format = 'd.m.Y H:i:s.u', $timezone = null)
 	{
 		$nsec = static::getdatemsec($string);
 		$dt = new DateTime(static::cutdatemsec($string));
@@ -283,7 +302,7 @@ class System
 	 * 
 	 * @return string  Text string for field name or False on error/not found
 	 */
-	static function getValsTranslate($name, $field = '')
+	public static function getValsTranslate($name, $field = '')
 	{
 		// TODO: create special dictionary of available sensors with characteristics in db or get from backend (modify API request Lab.ListSensors)
 
@@ -308,7 +327,7 @@ class System
 				'humidity' => array(
 						'value_name'    => 'humidity',
 						'si_name'       => 'percent',
-						'si_notation'   => 'percent'  // xxx: as "%" in translates, because cannt use symbol in lang key-constant
+						'si_notation'   => 'percent'  // xxx: as "%" in translates, because cannot use symbol in lang key-constant
 				),
 				'illuminance' => array(
 						'value_name'    => 'illuminance',
@@ -349,7 +368,7 @@ class System
 	}
 
 
-	static function get_ip_address($ifname = 'eth0')
+	public static function get_ip_address($ifname = 'eth0')
 	{
 		$ips = static::get_ip_addresses($ifname);
 
@@ -362,7 +381,7 @@ class System
 	 * 
 	 * @return array:
 	 */
-	static function get_interfaces($pattern = null)
+	public static function get_interfaces($pattern = null)
 	{
 
 		$osName = strtoupper(PHP_OS);
@@ -401,7 +420,7 @@ class System
 	 * 
 	 * @return array:
 	 */
-	static function get_ip_addresses($ifname = null)
+	public static function get_ip_addresses($ifname = null)
 	{
 		$osName = strtoupper(PHP_OS);
 		$ipRes = null;
@@ -647,34 +666,12 @@ class System
 
 
 	/**
-	 * Fetches and returns a given variable.
+	 * Fetches and returns a backurl variable value.
+	 * Try from REQUEST array, than from GET.
 	 *
-	 * The default behaviour is fetching variables depending on the
-	 * current request method: GET and HEAD will result in returning
-	 * an entry from $_GET, POST and PUT will result in returning an
-	 * entry from $_POST.
-	 *
-	 * You can force the source by setting the $hash parameter:
-	 *
-	 * post    $_POST
-	 * get     $_GET
-	 * files   $_FILES
-	 * cookie  $_COOKIE
-	 * env     $_ENV
-	 * server  $_SERVER
-	 * method  via current $_SERVER['REQUEST_METHOD']
-	 * default $_REQUEST
-	 *
-	 * @param   string   $name     Variable name.
-	 * @param   string   $default  Default value if the variable does not exist.
-	 * @param   string   $hash     Where the var should come from (POST, GET, FILES, COOKIE, METHOD).
-	 * @param   string   $type     Return type for the variable, for valid values see {@link System::cleanVar()}.
-	 * @param   integer  $mask     Filter mask for the variable.
+	 * @param   string   $name     Variable name
 	 * 
-	 * @return  mixed  Requested variable.
-	 * 
-	 * @see Joomla 3.2+ JRequest::getVar()
-	 *
+	 * @return  mixed  Requested variable value.
 	 */
 	public static function getVarBackurl($name = 'destination')
 	{
@@ -697,7 +694,7 @@ class System
 	 * 
 	 * @return float
 	 */
-	static function microtime_float()
+	public static function microtime_float()
 	{
 		//list($usec, $sec) = explode(" ", microtime());
 		//return ((float)$usec + (float)$sec);
@@ -708,11 +705,13 @@ class System
 	/**
 	 * Method to get the time zone field option groups.
 	 * 
+	 * @param   array  $elements  additional groups elements
+	 * 
 	 * @return  array  The field option objects as a nested array in groups.
 	 * 
 	 * @see JFormFieldTimezone::getGroups() in Joomla.Platform.Form (/libraries/joomla/form/fields/timezone.php)
 	 */
-	static function getTimezonesGroups($elements = array())
+	public static function getTimezonesGroups($elements = array())
 	{
 		static $base_groups = null;
 

@@ -1,8 +1,7 @@
 <?php
 /**
- * Experiment controller
+ * Class ExperimentController
  */
-
 class ExperimentController extends Controller
 {
 

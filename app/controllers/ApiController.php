@@ -1,5 +1,7 @@
-<?
-
+<?php
+/**
+ * Class ApiController
+ */
 class ApiController extends Controller
 {
 	function __construct()
@@ -76,11 +78,11 @@ class ApiController extends Controller
 		header('Content-Type: application/json');
 		if(!isset($this->json_error) && isset($this->json_result))
 		{
-			print $this->json_result;
+			echo $this->json_result;
 		}
 		else
 		{
-			print $this->json_error;
+			echo $this->json_error;
 		}
 	}
 }

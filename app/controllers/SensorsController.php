@@ -1,5 +1,7 @@
-<?
-
+<?php
+/**
+ * Class SensorsController
+ */
 class SensorsController extends Controller
 {
 

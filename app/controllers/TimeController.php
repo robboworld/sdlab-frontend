@@ -2,7 +2,6 @@
 /**
  * Time configuration controller
  */
-
 class TimeController extends Controller
 {
 	function __construct($action = 'index')

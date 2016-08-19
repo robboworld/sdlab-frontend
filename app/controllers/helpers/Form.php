@@ -1,7 +1,7 @@
-<?
-
+<?php
 /**
  * Class Form
+ * 
  * Forms helper
  */
 class Form

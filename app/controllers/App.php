@@ -1,5 +1,9 @@
-<?
-
+<?php
+/**
+ * Class App
+ * 
+ * Main application class
+ */
 class App
 {
 	private $controller;

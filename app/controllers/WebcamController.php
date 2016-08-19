@@ -2,7 +2,6 @@
 /**
  * Webcam controller
  */
-
 class WebcamController extends Controller
 {
 

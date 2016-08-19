@@ -1,5 +1,9 @@
-<?
-
+<?php
+/**
+ * Class SessionController
+ * 
+ * Actions with user sessions and profile
+ */
 class SessionController extends Controller
 {
 	public $user_access_level = 0;

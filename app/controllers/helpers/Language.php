@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Class Lang
  * Override i18n class

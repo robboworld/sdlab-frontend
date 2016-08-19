@@ -1,9 +1,9 @@
-<?
-
+<?php
 /**
  * Class Experiment
+ * 
+ * Experiment model
  */
-
 class Experiment extends Model
 {
 	protected $id;

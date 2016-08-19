@@ -1,5 +1,9 @@
-<?
-
+<?php
+/**
+ * Class App
+ *
+ * Base controller class
+ */
 class Controller
 {
 	protected $name;

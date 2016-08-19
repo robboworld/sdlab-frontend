@@ -1,7 +1,6 @@
-<?
-
+<?php
 /** 
- * class System
+ * Class System
  * 
  * Static system methods
  */
@@ -27,9 +26,9 @@ class System
 
 	static function dump($var)
 	{
-		print('<pre>');
+		echo '<pre>';
 		var_dump($var);
-		print('</pre>');
+		echo '</pre>';
 	}
 
 	static function dateformat($string, $format = 'd.m.Y H:i:s', $timezone = null)

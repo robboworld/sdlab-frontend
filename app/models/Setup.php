@@ -1,5 +1,9 @@
 <?php
-
+/**
+ * Class Setup
+ *
+ * Setup data model
+ */
 class Setup extends Model
 {
 

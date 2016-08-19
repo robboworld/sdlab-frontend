@@ -1,10 +1,9 @@
-<?
-
+<?php
 /**
- *
+ * Class JSONSocket
+ * 
+ * Connection with backend through socket (jsonrpc calls)
  */
-
-
 class JSONSocket
 {
 	const ENOTSOCK     = 88;

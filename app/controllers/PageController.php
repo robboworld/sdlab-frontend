@@ -1,5 +1,9 @@
-<?
-
+<?php
+/**
+ * Class App
+ *
+ * Simple index page actions controller class
+ */
 class PageController extends Controller
 {
 

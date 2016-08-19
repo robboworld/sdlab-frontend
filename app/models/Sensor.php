@@ -1,5 +1,9 @@
 <?php
-
+/**
+ * Class Sensor
+ *
+ * Sensor data model
+ */
 class Sensor
 {
 	function __construct($id, $title, $c)

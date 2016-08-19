@@ -1,5 +1,9 @@
-<?
-
+<?php
+/**
+ * Class Session
+ *
+ * Session data model
+ */
 class Session extends Model
 {
 	private $id;

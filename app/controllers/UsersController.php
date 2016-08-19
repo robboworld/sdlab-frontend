@@ -1,8 +1,9 @@
 <?php
 /**
  * Users controller
+ * 
+ * User management actions controller 
  */
-
 class UsersController extends Controller
 {
 

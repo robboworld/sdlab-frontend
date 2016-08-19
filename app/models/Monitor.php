@@ -1,5 +1,9 @@
 <?php
-
+/**
+ * Class Monitor
+ *
+ * Monitor data model
+ */
 class Monitor extends Model
 {
 

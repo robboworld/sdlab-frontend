@@ -1,7 +1,8 @@
-<?
-
+<?php
 /**
  * Class Plot
+ * 
+ * Plot data model
  */
 class Plot extends Model
 {

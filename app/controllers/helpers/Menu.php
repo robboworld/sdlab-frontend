@@ -1,5 +1,9 @@
-<?
-
+<?php
+/**
+ * Class Menu 
+ * 
+ * Store and render menu items
+ */
 class Menu
 {
 	static function render(array $menu, $user_level = 0)

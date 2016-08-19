@@ -1,6 +1,4 @@
-<?
-
-
+<?php
 /**
  * Class DetectionsController
  */

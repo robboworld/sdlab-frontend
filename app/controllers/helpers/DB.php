@@ -1,7 +1,7 @@
-<?
-
+<?php
 /**
  * Class DB
+ * 
  * Connection to sqlite database
  */
 class DB extends PDO

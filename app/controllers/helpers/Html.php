@@ -1,6 +1,6 @@
-<?
+<?php
 /** 
- * class Html
+ * Class Html
  * 
  * Html widgets
  * 

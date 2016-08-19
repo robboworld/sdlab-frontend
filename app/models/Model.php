@@ -1,7 +1,8 @@
 <?
-
 /**
  * Class Model
+ * 
+ * Base model
  */
 abstract class Model implements ModelInterface
 {

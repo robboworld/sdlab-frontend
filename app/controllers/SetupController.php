@@ -1,6 +1,9 @@
-<?
-
-
+<?php
+/**
+ * Class SetupController
+ *
+ * Sensors setup actions controller
+ */
 class SetupController extends Controller
 {
 

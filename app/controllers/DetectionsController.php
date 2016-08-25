@@ -110,6 +110,7 @@ class DetectionsController extends Controller
 						$graph_object->data[] = array(
 							($time->getTimestamp() + $tz_offset)*1000,  // convert to localtime and to milliseconds
 							$point->detection
+							// TODO: check $point->error for error text (NaN) and $point->detection for empty value (NULL)
 						);
 					}
 					$result[] = $graph_object;
@@ -228,7 +229,7 @@ class DetectionsController extends Controller
 		foreach($displayed_sensors as $sensor)
 		{
 			$data = new stdClass();
-			// TODO: add to label name of sensor from setup_info (but unknown setup id for each detection, setup can be changed)
+			// TODO: add name of sensor to label from setup_info (but unknown which setup id was used for each detection, setup can be changed)
 			$data->label         = empty($sensor->value_name) ? L::sensor_UNKNOWN : constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name));
 			$data->sensor_id     = $sensor->sensor_id;
 			$data->sensor_val_id = $sensor->sensor_val_id;
@@ -253,6 +254,7 @@ class DetectionsController extends Controller
 						// cut fractional part with dot from time in msec (14235464000.0 -> 14235464000)
 						$data->data[$k][0] = substr($t, 0, $dotpos);
 					}
+					// TODO: check $data->data[$k] for error text (NaN) and for empty detection value (NULL)
 				}
 			}
 			else
@@ -279,9 +281,9 @@ class DetectionsController extends Controller
 
 
 	/**
-	 * Delete data from detections by ids.
+	 * Delete detections by ids.
 	 * API method: Detections.delete
-	 * API params: id[]
+	 * API params: id|id[]
 	 *
 	 * @param  array $params  Array of parameters
 	 *
@@ -373,14 +375,14 @@ class DetectionsController extends Controller
 				}
 			}
 
-			// Set only available data
+			// Set only available data and ignore denied
 			foreach ($ids_exps as $val)
 			{
 				$ids[(int)$val['id']] = (int)$val['exp_id'];
 			}
 			$ids = array_filter($ids);
 
-			// Denied access to some detections data
+			// Warning on denied access to some detections data
 			if ($denied > 0)
 			{
 				$this->error = L::ACCESS_DENIED;
@@ -398,7 +400,7 @@ class DetectionsController extends Controller
 			return false;
 		}
 
-		// Update experiment stop
+		// Delete detections
 		$sql_delete_query = 'delete from detections where id in (' . implode(',', array_fill(0, count($ids), '?')) . ')';
 		$stmt = $db->prepare($sql_delete_query);
 		try
@@ -427,9 +429,11 @@ class DetectionsController extends Controller
 	/**
 	 * Delete data from detections of experiment by datetime.
 	 * API method: Detections.deletebytime
-	 * API params: dt[], exp_id
+	 * API params: dt|dt[], exp_id
 	 *
-	 * @param  array $params  Array of parameters, dt - datetime in format Y-m-dTH:i:s.u (UTC), cuts nanoseconds to 3 digits (milliseconds)
+	 * @param  array $params  Array of parameters, 
+	 *                        datetime(dt) in format Y-m-dTH:i:s.u (UTC),
+	 *                        cuts nanoseconds to 3 digits (milliseconds).
 	 *
 	 * @return array  Result in form array('result' => True) or False on error
 	 */
@@ -514,6 +518,7 @@ class DetectionsController extends Controller
 		$db = new DB();
 
 		// Delete detections
+		// XXX: Carefully! Only 3 digits (milliseconds) supported in sqlite in datetime functions (%f format), but time stored as full datetime string with parts of seconds)
 		$sql_delete_query = 'delete from detections where exp_id = ' . (int)$experiment->id . ' and strftime(\'%Y-%m-%dT%H:%M:%f\', time) in (' . implode(',', array_fill(0, count($dts), '?')) . ')';
 		$stmt = $db->prepare($sql_delete_query);
 		try

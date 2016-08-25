@@ -6,7 +6,6 @@
  */
 class Monitor extends Model
 {
-
 	protected $id;
 	protected $exp_id;
 	protected $setup_id;
@@ -76,7 +75,7 @@ class Monitor extends Model
 			{
 				$where[':exp_id'] = $fields['exp_id'];
 			}
-			else 
+			else
 			{
 				return false;
 			}
@@ -125,6 +124,7 @@ class Monitor extends Model
 			else if (is_array($fields['created']))
 			{
 				$created = &$fields['created'];
+				// Filters from-to up to seconds precision
 				if (isset($created['from'])) 
 				{
 					$str = (string) preg_replace('/[^A-Z0-9\-\:\.]/i', '', $created['from']);
@@ -152,6 +152,7 @@ class Monitor extends Model
 
 		if (isset($fields['deleted']))
 		{
+			// bool
 			$where['deleted'] = ((int) $fields['deleted'] > 0) ? '((deleted notnull) and cast(deleted as integer)>0)' : '((deleted isnull) or cast(deleted as integer)=0)';
 		}
 

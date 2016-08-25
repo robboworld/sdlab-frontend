@@ -3,6 +3,7 @@ $(document).ready(function(){
 		var form = $('#journalForm').get(0);
 		//var rq = coreAPICall('Detections.download', {exp_id: form.exp_id.value/*,dtfrom: null,dtto: null*/}, exportDetection);
 
+		// Mode: get|post|ajax
 		var mode = 'post';    // ajax'ed POST or simple POST method (simple POST use jQuery.fileDownload plugin and injected <form> submit)
 		if (isMobile.Android()){
 			mode = 'get';
@@ -73,7 +74,7 @@ $(document).ready(function(){
 				break;
 			case 'ajax':
 				// Use jquery ajax POST request
-				// XXX: Warning not correctly works on old browsers and android stock android browser
+				// XXX: Warning not correctly works on old browsers and stock android browser
 				ajax_rqdata.base64 = 1;  // XXX: temporary use encode document to base64 on server and decode on client (ONLY for mode=ajax)
 				document.body.style.cursor = 'wait';
 

@@ -135,7 +135,7 @@ class WebcamController extends Controller
 							else
 							{
 								// error
-								// TODO: error get streaming data for camera from backend api, may by need show error
+								// TODO: error get streaming data for camera from backend api, may be need show error
 							}
 							unset($socket);
 
@@ -153,7 +153,7 @@ class WebcamController extends Controller
 			else
 			{
 				// error
-				// TODO: error get monitor data from backend api, may by need show error
+				// TODO: error get monitor data from backend api, may be need show error
 			
 				// TODO: need fix false if empty cameras list returned
 				//System::go('webcam/view');
@@ -276,7 +276,7 @@ class WebcamController extends Controller
 						else
 						{
 							// error
-							// TODO: error get streaming data for camera from backend api, may by need show error
+							// TODO: error get streaming data for camera from backend api, may be need show error
 						}
 
 						unset($socket);
@@ -292,7 +292,7 @@ class WebcamController extends Controller
 			else 
 			{
 				// error
-				// TODO: error get monitor data from backend api, may by need show error
+				// TODO: error get monitor data from backend api, may be need show error
 
 				// TODO: need fix false if empty cameras list returned
 

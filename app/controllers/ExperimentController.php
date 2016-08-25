@@ -211,12 +211,12 @@ class ExperimentController extends Controller
 						}
 						else
 						{
-							// TODO: error get monitor data from backend api, may by need show error
+							// TODO: error get monitor data from backend api, may be need show error
 						}
 					}
 					else
 					{
-						// TODO: error get monitor data from backend api, may by need show error
+						// TODO: error get monitor data from backend api, may be need show error
 					}
 				}
 			}
@@ -325,7 +325,7 @@ class ExperimentController extends Controller
 				{
 					// Reset Setup, not found
 
-					// XXX: No reset old orphaned Setups
+					// XXX: No reset old orphaned Setups, leave as is
 
 					//$setup_id = '';
 					//$experiment->set('setup_id', $setup_id);
@@ -337,7 +337,7 @@ class ExperimentController extends Controller
 			{
 				if ((int)$new_setup_id != (int)$experiment->setup_id)
 				{
-					// Setup must be changed
+					// Check current Setup is active and new once is available
 
 					if ($this->view->form->cur_setup)
 					{
@@ -373,7 +373,7 @@ class ExperimentController extends Controller
 			{
 				if($experiment->save() && !is_null($experiment->id))
 				{
-					// Set master of Setup if set Setup with no master
+					// Set master of Setup if new Setup hasn't master experiment
 					if($canChangeSetup && $new_setup)
 					{
 						$setup = (new Setup())->load($new_setup->id);
@@ -623,7 +623,7 @@ class ExperimentController extends Controller
 		$sensors = SetupController::getSensors($experiment->setup_id, true);
 		$available_sensors = $displayed_sensors = array();
 
-		// Get list of available sensors
+		// Fill list of available sensors
 		foreach($sensors as $sensor)
 		{
 			$key = '' . $sensor->id . '#' . (int)$sensor->sensor_val_id;
@@ -634,7 +634,7 @@ class ExperimentController extends Controller
 		}
 		$this->view->content->available_sensors = $available_sensors;
 
-		// If requested sensors for showing prepare displayed list by intersection  
+		// Fill list of displayed sensors from sensors filter
 		if(!empty($sensors_show))
 		{
 			$this->view->content->displayed_sensors = array_intersect_key($available_sensors, $sensors_show);
@@ -644,7 +644,7 @@ class ExperimentController extends Controller
 			$this->view->content->displayed_sensors = $available_sensors;
 		}
 
-		// Array of values grouped by timestamps (UTC datetime!)
+		// Array of values grouped by full timestamps (UTC datetime!)
 		$journal = array();
 		foreach($detections as $row)
 		{
@@ -801,7 +801,7 @@ class ExperimentController extends Controller
 
 			$this->view->content->available_sensors = &$available_sensors;
 
-			// Add graph of all sensors on ajax script
+			// Plot with all sensors data loads on ajax request
 			$this->view->content->detections = array();
 		}
 	}
@@ -863,7 +863,7 @@ class ExperimentController extends Controller
 			System::go('experiment/journal/'.$this->id);
 		}
 
-		// TODO: Show info about errors while clean or about success (need session saved msgs)
+		// TODO: Show info about errors while clean or message about success (need session stored messages)
 
 		return;
 	}
@@ -876,7 +876,7 @@ class ExperimentController extends Controller
 	 */
 	public function download()
 	{
-		// TODO: Fix access check, because this controller cannot execute actions if not logged on, App controller start other controller with html output. Need raw variant controller with public access
+		// TODO: Fix access check, because this controller cannot execute actions if not logged on, App controller already starts other controller with html output. Need raw format variant controller with public access.
 
 		if (empty($this->id) || !is_numeric($this->id))
 		{
@@ -914,7 +914,7 @@ class ExperimentController extends Controller
 				$request = &$_GET;
 			}
 		}
-		else 
+		else
 		{
 			System::goerror(500);
 		}
@@ -926,7 +926,7 @@ class ExperimentController extends Controller
 			$db = new DB();
 
 			// Get detections
-			//TODO: add support filter POST 'dtfrom' and 'dtto' for dates range
+			//TODO: add filter support with 'dtfrom' and 'dtto' parameters for date range
 			$query = 'select id, strftime(\'%Y-%m-%dT%H:%M:%fZ\', time) as time, sensor_id, sensor_val_id, detection, error'
 					. ' from detections'
 					. ' where exp_id = ' . (int)$experiment->id
@@ -937,7 +937,7 @@ class ExperimentController extends Controller
 			$sensors = SetupController::getSensors($experiment->setup_id, true);
 			$available_sensors = $displayed_sensors = array();
 
-			// Get list of available sensors
+			// Fill list of available sensors
 			foreach($sensors as $sensor)
 			{
 				$key = '' . $sensor->id . '#' . (int)$sensor->sensor_val_id;
@@ -947,7 +947,7 @@ class ExperimentController extends Controller
 				}
 			}
 
-			// If requested sensors for showing prepare displayed list by intersection
+			// Fill list of displayed sensors from sensors filter
 			$sensors_show = array();
 			if(isset($request['show-sensor']) && !empty($request['show-sensor']) && is_array($request['show-sensor']))
 			{
@@ -965,7 +965,7 @@ class ExperimentController extends Controller
 				$displayed_sensors = $available_sensors;
 			}
 
-			// Array of values grouped by timestamps (UTC datetime!)
+			// Array of values grouped by full timestamps (UTC datetime!)
 			$journal = array();
 			foreach($detections as $row)
 			{
@@ -1208,10 +1208,14 @@ class ExperimentController extends Controller
 				':session_key' => $session_key
 			));
 		}
-		else if($session_key == null)
+		else if ($session_key == null)
 		{
 			$search = $db->prepare('select id from experiments');
 			$search->execute();
+		}
+		else
+		{
+			return array();
 		}
 
 		return $search->fetchAll(PDO::FETCH_OBJ);

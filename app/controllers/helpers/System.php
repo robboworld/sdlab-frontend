@@ -265,7 +265,7 @@ class System
 
 	/**
 	 * Convert datetime string with nanoseconds from UTC to local time
-	 * @see System::convertDatetimeToUTC
+	 * @see formats comments in System::convertDatetimeToUTC
 	 *
 	 * @param  string  $string
 	 * @param  string  $format  Output datetime format

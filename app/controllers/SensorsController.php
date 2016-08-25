@@ -405,7 +405,6 @@ class SensorsController extends Controller
 
 				return false;
 			}
-		
 		}
 
 		// Wait for results
@@ -503,12 +502,15 @@ class SensorsController extends Controller
 			error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
 		}
 		// Update experiment stop
-		$sql_exp_update_query = "update experiments set DateEnd_exp = :DateEnd_exp where id = :id";
+		$sql_exp_update_query = "update experiments set DateEnd_exp = :DateEnd_exp where id = :id and 
+				(((DateEnd_exp isnull) or (DateEnd_exp = 0) or (DateEnd_exp = '')) or (((DateEnd_exp notnull) and (DateEnd_exp != 0) and (DateEnd_exp != '')) and (DateEnd_exp < strftime('%s',:DateEnd_exp_planned))))";
 		$update = $db->prepare($sql_exp_update_query);
 		$result = $update->execute(array(
-				':DateEnd_exp' => (new DateTime())->format('U'),
-				':id' => $experiment->id
+				':DateEnd_exp'         => (new DateTime())->format('U'),
+				':id'                  => $experiment->id,
+				':DateEnd_exp_planned' => (new DateTime())->format('U')
 		));
+
 		if (!$result)
 		{
 			error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
@@ -876,8 +878,6 @@ class SensorsController extends Controller
 		// Stop monitors
 		foreach ($monitors as $mon)
 		{
-			// TODO: call to Lab.GetMonInfo by uuid for check if need to stop
-
 			// Prepare parameters for api method
 			$query_params = array($mon->uuid);
 
@@ -936,7 +936,7 @@ class SensorsController extends Controller
 				if (!$socket)
 				{
 					$this->error = L::ERROR;
-				
+
 					return false;
 				}
 
@@ -1275,7 +1275,7 @@ class SensorsController extends Controller
 			// TODO: check for multiple Setups in experiment mode
 			// Use other setups under experiment mastering from request
 
-			// Check if valid and available
+			// Check if setup valid and available
 			if ((int)$params['setup'] == (int)$experiment->setup_id)
 			{
 				// Use default
@@ -1284,7 +1284,7 @@ class SensorsController extends Controller
 			{
 				$db = new DB();
 
-				// Check active experiment
+				// Check setup for experiment
 				$query = $db->prepare('select id from setups where master_exp_id = :master_exp_id and id = :setup_id');
 				$query->execute(array(
 						':master_exp_id' => $experiment->id,
@@ -1313,7 +1313,7 @@ class SensorsController extends Controller
 		}
 
 		// Load Setup
-		$setup = (new Setup())->load($experiment->setup_id);
+		$setup = (new Setup())->load($setup_id);
 		if (!$setup)
 		{
 			$this->error = L::ERROR_SETUP_NOT_FOUND;
@@ -1374,7 +1374,7 @@ class SensorsController extends Controller
 			}
 			else
 			{
-				// TODO: error get monitor data from backend api, may by need return error
+				// TODO: error get monitor data from backend api, may be need return error
 			}
 		}
 
@@ -1427,7 +1427,6 @@ class SensorsController extends Controller
 		if ($monitor && isset($monitor->info))
 		{
 			// TODO: need from backend API Monitor.Info about last data value (DS.last_ds) and test it to "U" with last_update date
-
 			$dt_created = new DateTime(System::cutdatemsec($monitor->info->Created));
 			$dt_last = new DateTime(System::cutdatemsec($monitor->info->Last));
 			if ($dt_last == $dt_created /* && $monitor->info->last_ds == "U" */)

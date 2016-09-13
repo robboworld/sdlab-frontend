@@ -39,6 +39,8 @@ class System
 	 * @param string $timezone  new timezone, one of the supported timezone names or 'now' for local
 	 * 
 	 * @return string
+	 * 
+	 * @throws Exception
 	 */
 	public static function dateformat($string, $format = 'd.m.Y H:i:s', $timezone = null)
 	{
@@ -253,6 +255,8 @@ class System
 	 * @param  string  $string
 	 *
 	 * @return string
+	 * 
+	 * @throws Exception
 	 */
 	public static function convertDatetimeToUTC($string)
 	{
@@ -267,11 +271,13 @@ class System
 	 * Convert datetime string with nanoseconds from UTC to local time
 	 * @see formats comments in System::convertDatetimeToUTC
 	 *
-	 * @param  string  $string
-	 * @param  string  $format  Output datetime format
+	 * @param  string  $string    Input date string (empty or null for now time)
+	 * @param  string  $format    Output datetime format
 	 * @param  string  $timezone  Timezone name or 'now' for current TZ or null, if use from time string
 	 *
 	 * @return string
+	 * 
+	 * @throws Exception
 	 */
 	public static function datemsecformat($string, $format = 'd.m.Y H:i:s.u', $timezone = null)
 	{

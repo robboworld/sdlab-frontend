@@ -6,10 +6,14 @@
  */
 class Controller
 {
-	protected $name;
+	/**
+	 * @var App
+	 */
 	public $app;
 	public $view;
 	public $error;
+
+	protected $name;
 	protected $action;
 
 	/**

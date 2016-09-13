@@ -138,7 +138,13 @@ class App
 
 	public static function config()
 	{
-		$config = include(APP . '/config/config.php');
+		static $config = null;
+
+		if ($config === null)
+		{
+			$config = include(APP . '/config/config.php');
+		}
+
 		return $config;
 	}
 }

@@ -3,7 +3,7 @@ $(document).ready(function(){
 
     if($('input[name="setup-type"]:checked').length > 0){
         $('.setup-type, #setup-type-alert').hide();
-        $('input[type="submit"]').removeAttr('disabled');
+        $('input[type="submit"]').prop('disabled',false);
         $('#'+$('input[name="setup-type"]:checked').attr('data-id')).show();
     }
 
@@ -14,7 +14,7 @@ $(document).ready(function(){
         $('input[name="setup-type"]:checked').parent().parent().find('label').removeClass('active');
         $('input[name="setup-type"]:checked').parent().addClass('active');
 
-        $('input[type="submit"]').removeAttr('disabled');
+        $('input[type="submit"]').prop('disabled',false);
     })
 
 

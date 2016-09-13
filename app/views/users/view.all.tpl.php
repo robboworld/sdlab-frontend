@@ -80,8 +80,8 @@
 					</td>
 					<td class="text-left">
 						<?php if(!empty($item->DateStart)) echo System::dateformat('@'.$item->DateStart, System::DATETIME_FORMAT2, 'now'); ?>
-					</td class="text-left">
-					<td>
+					</td>
+					<td class="text-left">
 						<?php if(!empty($item->DateEnd)) echo System::dateformat('@'.$item->DateEnd, System::DATETIME_FORMAT2, 'now'); ?>
 					</td>
 					<td>

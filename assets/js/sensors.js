@@ -1,3 +1,5 @@
+/* TODO: REMOVE! NOT USED SCRIPTS!*/
+
 var sensorsList = new Object();
 
 

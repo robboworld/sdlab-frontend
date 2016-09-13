@@ -174,17 +174,17 @@ class DetectionsController extends Controller
 		$db = new DB();
 
 		// Get unique sensors list from detections data of experiment
-		$query = 'select a.sensor_id, a.sensor_val_id, '
+		$sql = 'select a.sensor_id, a.sensor_val_id, '
 					. 's.value_name, s.si_notation, s.si_name, s.max_range, s.min_range, s.resolution '
 				. 'from detections as a '
 				. 'left join sensors as s on a.sensor_id = s.sensor_id and a.sensor_val_id = s.sensor_val_id '
 				. 'where a.exp_id = :exp_id '
 				. 'group by a.sensor_id, a.sensor_val_id order by a.sensor_id';
-		$load = $db->prepare($query);
-		$load->execute(array(
+		$query = $db->prepare($sql);
+		$query->execute(array(
 				':exp_id' => $experiment->id
 		));
-		$sensors = $load->fetchAll(PDO::FETCH_OBJ);
+		$sensors = $query->fetchAll(PDO::FETCH_OBJ);
 		if(empty($sensors))
 		{
 			$sensors = array();
@@ -217,12 +217,14 @@ class DetectionsController extends Controller
 		$tz_offset = (new DateTime())->format('Z');
 
 		// Get time in milliseconds in local timezone
-		$query = //'select strftime(\'%Y.%m.%d %H:%M:%f\', time) as time, detection '
-				 'select (strftime(\'%s\',time) - strftime(\'%S\',time) + strftime(\'%f\',time)' . ($tz_offset>=0 ? ' + ' : ' ')  . $tz_offset . ')*1000 as time, detection '
+		// Special raw data for plot [x, y, bottom,...], bottom is not used (0 by default), other fields are custom
+		$sql = //'select time, strftime(\'%Y.%m.%d %H:%M:%f\', time) as mstime, detection '
+				 'select (strftime(\'%s\',time) - strftime(\'%S\',time) + strftime(\'%f\',time)' . ($tz_offset>=0 ? ' + ' : ' ')  . $tz_offset . ')*1000 as mstime, detection, 0, time, error '
 				. 'from detections '
-				. 'where exp_id = :exp_id and sensor_id = :sensor_id and sensor_val_id = :sensor_val_id and (error isnull or error = \'\')'
-				. 'order by strftime(\'%s\', time),strftime(\'%f\', time)';
-		$load = $db->prepare($query);
+				. 'where exp_id = :exp_id and sensor_id = :sensor_id and sensor_val_id = :sensor_val_id and (error isnull or error = \'\') '
+				//. 'order by strftime(\'%s\', time),strftime(\'%f\', time)';
+				. 'order by strftime(\'%Y-%m-%dT%H:%M:%f\', time), id';
+		$query = $db->prepare($sql);
 
 		$result = array();
 		$i = 0;
@@ -235,12 +237,12 @@ class DetectionsController extends Controller
 			$data->sensor_val_id = $sensor->sensor_val_id;
 			$data->color         = ++$i;
 
-			$res = $load->execute(array(
+			$res = $query->execute(array(
 					':exp_id'        => $experiment->id,
 					':sensor_id'     => $sensor->sensor_id,
 					':sensor_val_id' => $sensor->sensor_val_id
 			));
-			$detections = $load->fetchAll(PDO::FETCH_NUM);
+			$detections = $query->fetchAll(PDO::FETCH_NUM);
 
 			if(!empty($detections))
 			{
@@ -254,7 +256,12 @@ class DetectionsController extends Controller
 						// cut fractional part with dot from time in msec (14235464000.0 -> 14235464000)
 						$data->data[$k][0] = substr($t, 0, $dotpos);
 					}
-					// TODO: check $data->data[$k] for error text (NaN) and for empty detection value (NULL)
+					// TODO: check $data->data[$k][3] for error text (NaN) and $data->data[$k][2] for empty detection value (NULL)
+					if ($data->data[$k][4] != '' || $data->data[$k][4] === 'NaN')
+					{
+						// Special case for plot graph - null - skip point and break line that connect points on plot
+						$data->data[$k][1] = null;
+					}
 				}
 			}
 			else
@@ -401,8 +408,8 @@ class DetectionsController extends Controller
 		}
 
 		// Delete detections
-		$sql_delete_query = 'delete from detections where id in (' . implode(',', array_fill(0, count($ids), '?')) . ')';
-		$stmt = $db->prepare($sql_delete_query);
+		$sql_delete = 'delete from detections where id in (' . implode(',', array_fill(0, count($ids), '?')) . ')';
+		$stmt = $db->prepare($sql_delete);
 		try
 		{
 			$res = $stmt->execute(array_keys($ids));
@@ -433,7 +440,7 @@ class DetectionsController extends Controller
 	 *
 	 * @param  array $params  Array of parameters, 
 	 *                        datetime(dt) in format Y-m-dTH:i:s.u (UTC),
-	 *                        cuts nanoseconds to 3 digits (milliseconds).
+	 *                        dt MUST match datetime stored in database up to second parts (micro, milli, nano end etc.).
 	 *
 	 * @return array  Result in form array('result' => True) or False on error
 	 */
@@ -466,40 +473,27 @@ class DetectionsController extends Controller
 		}
 
 		// Get datetimes
+		if (is_string($params['dt']))
+		{
+			$params['dt'] = array($params['dt']);
+		}
 		if(is_array($params['dt']))
 		{
 			foreach($params['dt'] as $val)
 			{
-				$dt = DateTime::createFromFormat('Y-m-d?H:i:s.u+', $val);
-				$err = DateTime::getLastErrors();
-				if ($dt === false || $err['error_count'] > 0) continue;
-				/*
-				try {
-					$dt = DateTime::createFromFormat('Y-m-d?H:i:s.u+', $val);
-				} catch (Exception $e) {
-					// echo $e->getMessage();
+				// UTC time with seconds parts
+				try
+				{
+					$tm = System::datemsecformat($val, 'Y-m-d\TH:i:s.u\Z', null);  // XXX: Cannot use DateTime, because only 6 milli digits supported.
 				}
-				*/
+				catch (Exception $e)
+				{
+					// skip invalid dates
+					continue;
+				}
 
-				// Cut from 6 to 3 msec digits
-				$dts[substr($dt->format('Y-m-d\TH:i:s.u'), 0, -3)] = null;  // only 3 digits used for msec in sqlite
+				$dts[$tm] = null;
 			}
-		}
-		else if (is_string($params['dt']))
-		{
-			$dt = DateTime::createFromFormat('Y-m-d?H:i:s.u+', $params['dt']);
-			$err = DateTime::getLastErrors();
-			if ($dt === false || $err['error_count'] > 0) continue;
-			/*
-			try{
-				$dt = DateTime::createFromFormat('Y-m-d?H:i:s.u+', $params['dt']);
-			} catch (Exception $e) {
-				// echo $e->getMessage();
-			}
-			*/
-
-			// Cut from 6 to 3 msec digits
-			$dts[substr($dt->format('Y-m-d\TH:i:s.u'), 0, -3)] = null;  // only 3 digits used for msec in sqlite
 		}
 		else
 		{
@@ -519,8 +513,10 @@ class DetectionsController extends Controller
 
 		// Delete detections
 		// XXX: Carefully! Only 3 digits (milliseconds) supported in sqlite in datetime functions (%f format), but time stored as full datetime string with parts of seconds)
-		$sql_delete_query = 'delete from detections where exp_id = ' . (int)$experiment->id . ' and strftime(\'%Y-%m-%dT%H:%M:%f\', time) in (' . implode(',', array_fill(0, count($dts), '?')) . ')';
-		$stmt = $db->prepare($sql_delete_query);
+		//      Dont cut mirco-, nano- and etc. seconds, use full datetime string compare
+		//$sql_delete = 'delete from detections where exp_id = ' . (int)$experiment->id . ' and strftime(\'%Y-%m-%dT%H:%M:%f\', time) in (' . implode(',', array_fill(0, count($dts), '?')) . ')';
+		$sql_delete = 'delete from detections where exp_id = ' . (int)$experiment->id . ' and time in (' . implode(',', array_fill(0, count($dts), '?')) . ')';
+		$stmt = $db->prepare($sql_delete);
 		try
 		{
 			$res = $stmt->execute(array_keys($dts));

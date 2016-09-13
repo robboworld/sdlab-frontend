@@ -106,10 +106,13 @@ class SessionController extends Controller
 			foreach($experiments_in_session as $key => $item)
 			{
 				$experiments_in_session[$key] = (new Experiment())->load($item->id);
+				if ($experiments_in_session[$key])
+				{
+					$experiments_in_session[$key]->_setup = (new Setup())->load($experiments_in_session[$key]->setup_id);
+				}
 			}
-			$this->view->experiments_in_session = $experiments_in_session;
+			$this->view->experiments_in_session = &$experiments_in_session;
 		}
-
 	}
 
 	public function destroy()

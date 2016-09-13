@@ -1,8 +1,8 @@
 <?php 
-$setup_type = 'length';
-if (!empty($this->view->form->setup->time_det))
+$setup_type = 'amount';
+if (empty($this->view->form->setup->amount))
 {
-	$setup_type = 'amount';
+	$setup_type = 'length';
 }
 ?>
 <div class="row">
@@ -17,12 +17,14 @@ if (!empty($this->view->form->setup->time_det))
 		<div class="form-group setup-title">
 			<input class="form-control" name="setup_title" type="text" required="required" placeholder="<?php echo L::setup_NAME; ?>" value="<?php echo htmlspecialchars($this->view->form->setup->title, ENT_QUOTES, 'UTF-8'); ?>"/>
 		</div>
-		<?php 
+		<?php
 		// Check if active
-		if($this->view->form->setup->flag) : ?>
+		if(isset($this->view->form->setup->isActive) && $this->view->form->setup->isActive) : ?>
 		<div class="row form-group">
 			<div class="col-md-4">
-				<?php echo L::setup_CURRENT_STATUS; ?>
+				<?php echo L::setup_CURRENT_STATUS;
+				//TODO: add Setup counters: Active in / Used in (current merged with active monitors)
+				?>
 			</div>
 			<div class="col-md-8 form-inline">
 				<span class="label label-danger"><?php echo L::setup_STATUS_IN_PROCESS; ?></span>
@@ -104,6 +106,28 @@ if (!empty($this->view->form->setup->time_det))
 							<input type="text" name="interval" class="form-control" required="required" size="10" placeholder="10" value="<?php echo htmlspecialchars($this->view->form->setup->interval, ENT_QUOTES, 'UTF-8'); ?>"> <?php echo L::SECONDS_SHORT; ?>
 						</div>
 					</div>
+					<div class="row form-group">
+						<div class="col-xs-6 col-md-6 col-sm-6 setup-label">
+							<?php echo L::setup_ACCESS; ?>
+						</div>
+						<div class="col-xs-6 col-md-6 col-sm-6">
+							<div class="radio<?php echo $this->view->form->setup->id ? ' disabled' : '' ?>">
+					 			<label>
+									<input type="radio" value="0" id="setup_access0" name="access" <?php echo ($this->view->form->setup->access == 0) ? 'checked="checked"' : ''; echo $this->view->form->setup->id ? ' disabled="disabled"' : ''; ?>/> <?php echo L::setup_ACCESS_SHARED; ?>
+								</label>
+							</div>
+							<div class="radio<?php echo $this->view->form->setup->id ? ' disabled' : '' ?>">
+								<label>
+									<input type="radio" value="1" id="setup_access1" name="access" <?php echo ($this->view->form->setup->access == 1) ? 'checked="checked"' : ''; echo $this->view->form->setup->id ? ' disabled="disabled"' : ''; ?>/> <?php echo L::setup_ACCESS_PRIVATE; ?>
+								</label>
+							</div>
+							<div class="radio<?php echo $this->view->form->setup->id ? ' disabled' : '' ?>">
+								<label>
+									<input type="radio" value="2" id="setup_access2" name="access" <?php echo ($this->view->form->setup->access == 2) ? 'checked="checked"' : ''; echo $this->view->form->setup->id ? ' disabled="disabled"' : ''; ?>/> <?php echo L::setup_ACCESS_SINGLE; ?>
+								</label>
+							</div>
+						</div>
+					</div>
 					<?php
 					// TODO: repeate on errors not realised in backend monitoring, need push this parameters to backend and configure RRD/RRA
 					?>
@@ -143,12 +167,12 @@ if (!empty($this->view->form->setup->time_det))
 						<?php if(isset($this->view->form->sensors)) : ?>
 							<?php foreach($this->view->form->sensors as $sensor) :?>
 								<tr>
-									<td><?php echo $sensor->id; ?>
-										<input type="hidden" name="sensors[<?php echo $sensor->id; ?>][<?php echo (int)$sensor->sensor_val_id; ?>][id]" value="<?php echo $sensor->id; ?>"/>
-										<input type="hidden" name="sensors[<?php echo $sensor->id; ?>][<?php echo (int)$sensor->sensor_val_id; ?>][val_id]" value="<?php echo (int)$sensor->sensor_val_id; ?>"/>
+									<td><?php echo $sensor->sensor_id; ?>
+										<input type="hidden" name="sensors[<?php echo $sensor->sensor_id; ?>][<?php echo (int)$sensor->sensor_val_id; ?>][id]" value="<?php echo $sensor->sensor_id; ?>"/>
+										<input type="hidden" name="sensors[<?php echo $sensor->sensor_id; ?>][<?php echo (int)$sensor->sensor_val_id; ?>][val_id]" value="<?php echo (int)$sensor->sensor_val_id; ?>"/>
 									</td>
 									<td><?php echo htmlspecialchars(constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8'); ?></td>
-									<td class="sensor-setup-name"><input type="text" placeholder="<?php echo L::sensor_NAME; ?>" name="sensors[<?php echo $sensor->id; ?>][<?php echo (int)$sensor->sensor_val_id; ?>][name]" class="form-control" required="required" value="<?php 
+									<td class="sensor-setup-name"><input type="text" placeholder="<?php echo L::sensor_NAME; ?>" name="sensors[<?php echo $sensor->sensor_id; ?>][<?php echo (int)$sensor->sensor_val_id; ?>][name]" class="form-control" required="required" value="<?php
 										if (isset($sensor->name) && mb_strlen($sensor->name,'utf-8')>0)
 										{
 											echo htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8');
@@ -225,7 +249,7 @@ if (!empty($this->view->form->setup->time_det))
 	<div class="col-md-offset-1 col-md-10 text-center">
 		<div class="btn-group" style="float: none;">
 			<a href="/?q=experiment/view" class="col-md-6 btn-default btn width-auto form-control"><?php echo L::CANCEL; ?></a>
-		<?php if($this->view->form->id == 'edit-setup-form') : 
+		<?php if($this->view->form->id == 'edit-setup-form') :
 			if((int)$this->view->form->setup->master_exp_id) :
 			// TODO: Create Setup w/o master for admin only?
 		?>

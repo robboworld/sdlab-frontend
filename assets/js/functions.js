@@ -115,6 +115,24 @@ function base64DecToArr(sBase64, nBlocksSize){
 }
 
 /**
+ * Is arrays equal
+ * @param   array a
+ * @param   array b
+ * @returns boolean
+ */
+function arraysEqual(a, b) {
+	if (a === b) return true;
+	if (a == null || b == null) return false;
+	if (a.length != b.length) return false;
+
+	// Arrays must by sorted
+	for (var i = 0; i < a.length; ++i) {
+		if (a[i] !== b[i]) return false;
+	}
+	return true;
+}
+
+/**
  * Graph data class
  * @param   data
  */

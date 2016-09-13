@@ -141,7 +141,7 @@ class TimeController extends Controller
 				}
 
 				// Prepare array of parameters for API method
-				$query_params = array(
+				$request_params = array(
 						'Datetime' => $dt->format(System::DATETIME_RFC3339_UTC),
 						'TZ'       => $timezone,  // null if not changed
 						'Reboot'   => $reboot  // true - reboot, false - no reboot
@@ -156,7 +156,7 @@ class TimeController extends Controller
 				}
 
 				// Get results
-				$result = $socket->call('Lab.SetDatetime', (object) $query_params);
+				$result = $socket->call('Lab.SetDatetime', (object) $request_params);
 				if ($result && $result['result'])
 				{
 					if ($reboot)
@@ -193,8 +193,8 @@ class TimeController extends Controller
 	 *
 	 * @return string  The field input markup.
 	 */
-	protected function getTimezoneInput($id = 'timezone_id', $name = 'timezone', $value = '', $readonly = false, 
-			$elements = array(), 
+	protected function getTimezoneInput($id = 'timezone_id', $name = 'timezone', $value = '', $readonly = false,
+			$elements = array(),
 			$attrib = array('class' => '', 'disabled' => false, 'size' => null, 'required' => false, 'autofocus' => false, 'onchange' => ''))
 	{
 		$html = array();

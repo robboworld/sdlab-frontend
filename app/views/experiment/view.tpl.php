@@ -1,179 +1,58 @@
 <?php
 // Setup status
 $setup_exists    = isset($this->view->content->setup) && $this->view->content->setup;
-$setup_active    = $setup_exists && $this->view->content->setup->flag;  //#setup_status_active
+$setup_active    = $setup_exists && Setup::isActive($this->view->content->setup->id, (int)$this->view->content->experiment->id);  //#setup_status_active
 $ownSetup        = $setup_exists && ($this->view->content->setup->session_key == $this->session()->getKey());
+// TODO: get Setups in Monitors ownership, need additional db queries for array of setups
 $masterSetup     = $setup_exists && ($this->view->content->setup->master_exp_id == $this->view->content->experiment->id);
 $canSetupControl = $setup_exists && $this->view->content->setup->userCanControl($this->session(), $this->view->content->experiment->id);
 
-// Init stats
-$amount          = 0;       //#setup_amount_cnt
-$done_cnt        = 0;       //#setup_done_cnt
-                            //#setup_interval
-$remain_cnt      = 0;       //#setup_remain_cnt
-$remain_cnt_text = '';
-
-//#setup_time_det
-
 $now = new DateTime();
-//#setup_stopat_parent
-$stopat_title_1 = L::experiment_ESTIMATED_FINISH_TIME;
-$stopat_title_0 = L::experiment_ESTIMATED_FINISH_TIME_IF_START_NOW;
-$setup_stopat_date  = null;
-$setup_stopat_text  = '';   //#setup_stopat
-$setup_stopat_class = '';
-$finished = null;
 
-#experiment-action
+// Init stats
+$amount             = 0;
+$setup_stopat_date  = null;
+$setup_stopat_text  = '';
+$setup_stopat_class = '';
+$stopat_title_1     = L::experiment_ESTIMATED_FINISH_TIME;
+$stopat_title_0     = L::experiment_ESTIMATED_FINISH_TIME_IF_START_NOW;
+
+// Experiment and monitors active
+$experiment_active = false;
+foreach ($this->view->content->monitors as $mon)
+{
+	if ($mon->active)
+	{
+		$experiment_active = true;
+		break;
+	}
+}
 
 if($setup_exists)
 {
 	// Amount of detections
-	// Check Setup mode
 	$amount = $this->view->content->setup->amount ? (int)$this->view->content->setup->amount : '*';
-
-	// Get already done count of detections
-	if ($this->view->content->monitor && isset($this->view->content->monitor->info))
-	{
-
-		// TODO: need from backend API Monitor.Info about last data value (DS.last_ds) and test it to "U" with last_update date
-
-		$dt_created = new DateTime(System::cutdatemsec($this->view->content->monitor->info->Created));
-		$dt_last = new DateTime(System::cutdatemsec($this->view->content->monitor->info->Last));
-		if ($dt_last == $dt_created /* && $this->view->content->monitor->info->last_ds == "U" */)
-		{
-			// No data in rrd
-		}
-		else
-		{
-			$timestamp_created = $dt_created->format('U');
-			$timestamp_last    = $dt_last->format('U');
-
-			$done_cnt = ($timestamp_last >= $timestamp_created) ?
-					(int)(($timestamp_last - $timestamp_created) / $this->view->content->monitor->info->Archives[0]->Step) :
-					0;
-		}
-	}
-
-	// Remain detections
-	// Check Setup mode
-	if ($this->view->content->setup->amount)
-	{
-		$remain_cnt = $this->view->content->setup->amount - $done_cnt;
-		$remain_cnt = ($remain_cnt >= 0) ? $remain_cnt : 0;
-		$remain_cnt_text = $remain_cnt;
-	}
-	else
-	{
-		$remain_cnt_text = '*';
-	}
-
 	// Stop at time
-	if ($setup_active)
-	{
-		// Check Setup mode
-		if ($this->view->content->setup->amount)
-		{
-			// Amount detections mode
-
-			// Has monitor data
-			if ($this->view->content->monitor && isset($this->view->content->monitor->info))
-			{
-				// Get StopAt from Created + Setup.time(sec)
-				$setup_stopat_date = new DateTime(System::cutdatemsec($this->view->content->monitor->info->Created));
-				$setup_stopat_date->setTimezone((new DateTime())->getTimezone());
-				$setup_stopat_date->modify('+'.$this->view->content->setup->time().' sec');
-				$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
-
-				if ($now->format('U') > $setup_stopat_date->format('U'))
-				{
-					$setup_stopat_class = 'alert-success';
-					$finished = true;
-				}
-				else 
-				{
-					$finished = false;
-				}
-			}
-			else
-			{
-				$setup_stopat_text = L::TIME_UNKNOWN;
-			}
-		}
-		else
-		{
-			// StopAt mode
-
-			// Has monitor data
-			if ($this->view->content->monitor && isset($this->view->content->monitor->info))
-			{
-				// TODO: need from backend API Monitor.Info about last data value (DS.last_ds) and test it to "U" with last_update date
-
-				if ($this->view->content->monitor->info->StopAt !== System::nulldate())
-				{
-					$setup_stopat_date = new DateTime(System::cutdatemsec($this->view->content->monitor->info->StopAt));
-					$setup_stopat_date->setTimezone((new DateTime())->getTimezone());
-					$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
-
-					if ($now->format('U') > $setup_stopat_date->format('U'))
-					{
-						$setup_stopat_class = 'alert-success';
-						$finished = true;
-					}
-					else
-					{
-						$finished = false;
-					}
-				}
-				else
-				{
-					$setup_stopat_date = new DateTime(System::cutdatemsec($this->view->content->monitor->info->Created));
-					$setup_stopat_date->setTimezone((new DateTime())->getTimezone());
-					$setup_stopat_date->modify('+'.$this->view->content->setup->time().' sec');
-					$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
-
-					if ($now->format('U') > $setup_stopat_date->format('U'))
-					{
-						$setup_stopat_class = 'alert-success';
-						$finished = true;
-					}
-					else
-					{
-						$finished = false;
-					}
-				}
-			}
-			else
-			{
-				$setup_stopat_text = L::TIME_UNKNOWN;
-			}
-		}
-	}
-	else
-	{
-		$setup_stopat_date = new DateTime();
-		$setup_stopat_date->modify('+'.$this->view->content->setup->time().' sec');
-		$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
-	}
+	$setup_stopat_date = new DateTime();
+	$setup_stopat_date->modify('+'.$this->view->content->setup->time().' sec');
+	$setup_stopat_text = $setup_stopat_date->format(System::DATETIME_FORMAT1);
+	$setup_stopat_class .= 'muted ';
 }
 ?>
 
 <script type="text/javascript">
-<!--
-    $(document).ready(function(){
-        SDExperiment.exp_id = <?php echo (int)$this->view->content->experiment->id; ?>;
-        <?php if($setup_exists && $setup_active && $masterSetup && ($finished === false)) : ?>
+	$(document).ready(function(){
+		SDExperiment.exp_id = <?php echo (int)$this->view->content->experiment->id; ?>;
+		<?php if ($experiment_active) : ?>
 
-        // Monitoring status polling
-        SDExperiment.stopTimer('MonId');
-        SDExperiment.updaterMonId = setInterval(function() {
-            updateExperimentStatus(SDExperiment.exp_id);
-        }, SDExperiment.updaterMonTime*1000);
-        $('#setup_status_active i.glyphicon').addClass('blink').show();
-        <?php endif;?>
+		// Monitoring status polling
+		SDExperiment.stopTimer('MonId');
+		SDExperiment.updaterMonId = setInterval(function() {
+			updateExperimentStatus(SDExperiment.exp_id);
+		}, SDExperiment.updaterMonTime*1000);
+		<?php endif;?>
 
-    });
-//-->
+	});
 </script>
 <div class="row">
 	<div class="col-md-12">
@@ -189,31 +68,34 @@ if($setup_exists)
 	</div>
 	<?php
 	/*
-	<div class="col-md-6 text-right">
+	<div class="col-md-12 text-right">
 		<?php echo L::MEMBERS; ?>: <?php echo htmlspecialchars($this->view->content->session->name, ENT_QUOTES, 'UTF-8'); ?>
 	</div>
 	*/
 	?>
+
 </div>
 
 <div class="row exp-view">
 	<div class="col-md-12">
-		<table class="table table-responsive table-bordered table-condensed exp-table">
+		<table class="table table-responsive table-bordered table-condensed exp-table" data-experiment-id="<?php echo (int)$this->view->content->experiment->id;
+		?>" data-setup-id="<?php echo (int)$this->view->content->experiment->setup_id;
+		?>">
 			<tbody>
 			<tr>
 				<td class="col-md-12 padng-3px">
 					<h3 class="exp-title">
-						<a href="/?q=experiment/edit/<?php echo (int)$this->view->content->experiment->id; ?>" class="btn btn-edit btn-sm btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
-						<span><?php echo htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8'); ?></span>
+						<span class="glyphicon glyphicon-record <?php if ($experiment_active) : ?>blink text-danger<?php endif; ?>">&nbsp;</span>
+						<span><?php echo htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8'); ?></span><a href="/?q=experiment/edit/<?php echo (int)$this->view->content->experiment->id; ?>" class="btn btn-edit btn-sm btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
 					</h3>
 					<div class="period-work">
 						<div class="date-block">
 							<div id="exp_datestart" class="text-left ln-hgt-16px">
-								<?php if(!empty($this->view->content->experiment->DateStart_exp))
+								<?php if (!empty($this->view->content->experiment->DateStart_exp))
 									echo System::dateformat('@'.$this->view->content->experiment->DateStart_exp, System::DATETIME_FORMAT2, 'now'); ?>
 							</div>
 							<div id="exp_end" class="text-left ln-hgt-16px">
-								<?php if(!empty($this->view->content->experiment->DateEnd_exp))
+								<?php if (!empty($this->view->content->experiment->DateEnd_exp))
 									echo System::dateformat('@'.$this->view->content->experiment->DateEnd_exp, System::DATETIME_FORMAT2, 'now'); ?>
 							</div>
 						</div>
@@ -228,17 +110,17 @@ if($setup_exists)
 					</div>
 				</td>
 			</tr>
-		<?php if(isset($this->view->content->experiment->comments)) : ?>
+		<?php if (isset($this->view->content->experiment->comments)) : ?>
 			<tr>
-				<td colspan="2" class="bg-default">
+				<td class="bg-default">
 					<small><?php echo htmlspecialchars($this->view->content->experiment->comments, ENT_QUOTES, 'UTF-8'); ?></small>
 				</td>
 			</tr>
 		<?php endif;?>
 		<?php if ($setup_exists) :?>
 			<tr>
-				<td colspan="2">
-					<div class="">
+				<td>
+					<div class="setup-title">
 						<?php echo L::SETUP; ?>: <b><?php echo htmlspecialchars($this->view->content->setup->title, ENT_QUOTES, 'UTF-8'); ?></b>
 						<?php if($this->view->content->setup->userCanEdit($this->session())) :?>
 							<a href="/?q=setup/edit/<?php echo (int)$this->view->content->setup->id; ?>" title="<?php echo L::setup_EDIT; ?>" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
@@ -250,13 +132,9 @@ if($setup_exists)
 							<span class="label label-info"><?php echo L::setup_OWNER; ?></span>
 						</div>
 						<?php endif; ?>
-						<?php if ($setup_active) : ?>
-						<div id="setup_status_active" class="col-md-2">
-							<span class="label label-danger"><i class="glyphicon glyphicon-exclamation-sign" style="display:none;">&nbsp;</i><?php 
-								echo ($this->view->content->setup->master_exp_id == $this->view->content->experiment->id) ? L::setup_ACTIVE : L::setup_BUSY;
-							?></span>
+						<div id="setup_status_active" class="col-md-2" style="<?php if (!$setup_active) : ?>display:none;<?php endif; ?>">
+							<span class="label label-danger"><?php echo L::setup_ACTIVE; ?></span>
 						</div>
-						<?php endif; ?>
 						<?php if ($masterSetup) : ?>
 						<div id="setup_status_master" class="col-md-2">
 							<span class="label label-info"><?php echo L::experiment_MASTER; ?></span>
@@ -266,39 +144,31 @@ if($setup_exists)
 				</td>
 			</tr>
 			<tr>
-				<td colspan="2">
+				<td>
 					<div class="mrg-top-5px">
 						<div class="col-xs-12 col-sm-6 col-md-4">
 							<div class="mrg-bot-5px">
 								<div class="special-label"><?php echo L::setup_DETECTIONS_COUNT; ?>: <span id="setup_amount_cnt" class="badge"><?php echo $amount; ?></span></div>
-							</div>
-							<div class="mrg-bot-5px">
-								<div class="special-label"><?php echo L::DONE; ?>: <span id="setup_done_cnt" class="badge"><?php echo $done_cnt; ?></span></div>
 							</div>
 						</div>
 						<div class="col-xs-12 col-sm-6 col-md-4">
 							<div class="mrg-bot-5px">
 								<div class="special-label"><?php echo L::setup_DETECTIONS_PERIOD; ?>: <span id="setup_interval" class="badge"><?php echo (int)$this->view->content->setup->interval; ?></span></div>
 							</div>
-							<div class="mrg-bot-5px">
-								<div class="special-label"><?php echo L::TIME_REMAIN; ?>: <span id="setup_remain_cnt" class="badge"><?php echo $remain_cnt_text; ?></span></div>
-							</div>
 						</div>
 						<div class="col-xs-12 col-sm-6 col-md-4">
 							<div class="mrg-bot-5px">
 								<div class="special-label"><?php echo L::setup_DURATION; ?>: <span id="setup_time_det" class="badge"><?php echo System::secToTime($this->view->content->setup->time()); ?></span></div>
 							</div>
-							<div class="mrg-bot-5px" id="setup_stopat_parent" title="<?php echo ($setup_active ? $stopat_title_1 : $stopat_title_0);?>" data-title-0="<?php echo $stopat_title_0;?>" data-title-1="<?php echo $stopat_title_1;?>">
+							<div class="mrg-bot-5px" id="setup_stopat_parent" title="<?php echo $stopat_title_0;?>">
 								<div class="special-label"><?php echo L::FINISHING; ?>: <span id="setup_stopat" class="badge <?php echo $setup_stopat_class;?>"><?php echo $setup_stopat_text;?></span></div>
 							</div>
 						</div>
 						<div class="col-xs-12 col-sm-6 col-md-3" style="display: none;">
 							<div class="mrg-bot-5px">
-								<?php echo L::MEMBERS; ?>: {value}<?php 
-
-								// todo: get Setup Consumers list output? but no consume anymore
-
-								?>
+								<?php
+								// TODO: get Setup Consumers list output? but no consumers anymore
+								echo L::MEMBERS; ?>: {value}
 							</div>
 						</div>
 					</div>
@@ -306,7 +176,7 @@ if($setup_exists)
 			</tr>
 		<?php else : ?>
 			<tr>
-				<td colspan="2">
+				<td>
 					<div>
 						<?php echo L::experiment_ERROR_SETUP_NOT_SELECTED . ' '
 							. L::experiment_YOU_MUST_SELECT_OR_CREATE(
@@ -319,14 +189,311 @@ if($setup_exists)
 		<?php endif;?>
 			</tbody>
 		</table>
+
+		<?php if (!empty($this->view->content->monitors)) : ?>
+		<!-- Monitors -->
+		<div class="panel-group panel-group-monitors" id="accordion-monitors" role="tablist" aria-multiselectable="true">
+			<?php foreach ($this->view->content->monitors as $i => $mon) :
+
+			// Get StopAt from Created + Setup.time(sec)
+			$created = new DateTime(System::cutdatemsec($mon->info->Created));
+			$created->setTimezone((new DateTime())->getTimezone());
+			$created_text = $created->format(System::DATETIME_FORMAT1);
+
+			$heading_class = ($this->view->content->experiment->setup_id && ($mon->setup_id == $this->view->content->experiment->setup_id)) ? 'heading-setup-current' : '';
+
+			$setup_mon_exists   = isset($mon->setup) && $mon->setup && $mon->setup->id;
+			$ownMonSetup        = $setup_mon_exists && ($mon->setup->session_key == $this->session()->getKey());
+			$canMonSetupControl = !$setup_mon_exists || ($setup_mon_exists && $mon->setup->userCanControl($this->session(), $this->view->content->experiment->id));
+			$masterMonSetup     = $setup_mon_exists && ($mon->setup->master_exp_id == $this->view->content->experiment->id);
+
+			// Can set as current the Setup if not set as current yet and exists
+			$canSetSetup = $setup_mon_exists && (!isset($this->view->content->setup) || $this->view->content->setup->id != $mon->setup_id);
+
+			// Init stats
+			$mon_done_cnt        = 0;
+			$mon_remain_cnt      = 0;
+			$mon_remain_cnt_text = '';
+			$mon_err_cnt         = 0;
+			$mon_stopat_date     = null;
+			$mon_stopat_text     = '';
+			$mon_stopat_class    = '';
+
+			// Get already done count of detections
+			if (isset($mon->info))
+			{
+				$mon_done_cnt = $mon->info->Counter->Done;
+				$mon_err_cnt  = $mon->info->Counter->Err;
+
+				// Check Setup mode
+				if ($mon->amount)
+				{
+					$mon_remain_cnt = $mon->amount - $mon_done_cnt;
+					$mon_remain_cnt = ($mon_remain_cnt >= 0) ? $mon_remain_cnt : 0;
+					$mon_remain_cnt_text = $mon_remain_cnt;
+				}
+				else
+				{
+					$mon_remain_cnt_text = '*';
+				}
+			}
+
+			// Stop at time calc
+
+			// Check mode
+			if ($mon->amount)
+			{
+				// Amount detections mode
+
+				// + Stop At condition
+				if ($mon->stopat !== System::nulldate())
+				{
+					$mon_stopat_date = new DateTime(System::cutdatemsec($mon->stopat));
+					$mon_stopat_date->setTimezone((new DateTime())->getTimezone());
+					$mon_stopat_text = $mon_stopat_date->format(System::DATETIME_FORMAT1);
+
+					if ($now->format('U') > $mon_stopat_date->format('U'))
+					{
+						$mon_stopat_class .= 'alert-success ';
+					}
+				}
+				else
+				{
+					// Get Approximately Stop At: Created + Monitor.time(sec)
+					$mon_stopat_class .= 'muted ';
+
+					$mon_stopat_date = new DateTime(System::cutdatemsec($mon->created));
+					$mon_stopat_date->setTimezone((new DateTime())->getTimezone());
+					$mon_stopat_date->modify('+'.$mon->time().' sec');
+					$mon_stopat_text = $mon_stopat_date->format(System::DATETIME_FORMAT1);
+
+					if ($now->format('U') > $mon_stopat_date->format('U'))
+					{
+						//$mon_stopat_class .= 'alert-success ';
+					}
+				}
+			}
+			else
+			{
+				// StopAt mode
+
+				if ($mon->stopat !== System::nulldate())
+				{
+					$mon_stopat_date = new DateTime(System::cutdatemsec($mon->stopat));
+					$mon_stopat_date->setTimezone((new DateTime())->getTimezone());
+					$mon_stopat_text = $mon_stopat_date->format(System::DATETIME_FORMAT1);
+
+					if ($now->format('U') > $mon_stopat_date->format('U'))
+					{
+						$mon_stopat_class .= 'alert-success ';
+					}
+				}
+				else
+				{
+					$mon_stopat_class .= 'muted ';
+					$mon_stopat_text   = L::TIME_UNKNOWN;
+				}
+			}
+			?>
+
+			<div id="panelMon<?php echo $i; ?>" class="panel panel-default monitor-panel <?php if ($mon->active) : ?>monitor-active<?php endif;
+					?>" data-monitor-id="<?php echo (int)$mon->id;
+					?>" data-monitor-uuid="<?php echo $mon->uuid;
+					?>" data-monitor-setupid="<?php echo (int)$mon->setup_id;
+					?>" data-monitor-expid="<?php echo (int)$mon->exp_id;
+			?>">
+				<div class="panel-heading <?php echo $heading_class; ?>" role="tab" id="panelMonHeading<?php echo $i; ?>">
+					<h4 class="panel-title">
+						<a role="button" data-toggle="collapse" <?php 
+								//echo 'data-parent="#accordion-monitors"';  // uncomment for single panel incollapsed
+							?> href="#collapseMon<?php echo $i; ?>" aria-expanded="<?php echo $mon->active ? 'true' : 'false'; ?>" aria-controls="#collapseMon<?php echo $i; ?>">
+							<span class="glyphicon glyphicon-record <?php
+								if ($mon->active) : ?>blink text-danger<?php endif;
+							?>">&nbsp;</span>
+							<span class="glyphicon glyphicon-exclamation-sign" title="<?php echo L::ERRORS . ': ' . (int)$mon_err_cnt; ?>" <?php
+								if ((int)$mon_err_cnt == 0) : ?>style="display:none;"<?php endif; ?>>&nbsp;</span>
+							<?php echo L::MONITORING; ?>: <b><?php echo $created_text; ?></b>
+						</a>
+					</h4>
+					<div class="btn-group pull-right dropdown-monitor">
+						<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							<span class="glyphicon glyphicon-cog"></span>
+						</button>
+						<ul class="dropdown-menu">
+							<li class="monitor-active-hidden" style="<?php if ($mon->active) : ?>display:none;<?php endif; ?>">
+								<a href="#" onclick="alert('TODO: Remove monitor info');" ><?php echo L::REMOVE; ?></a>
+							</li>
+							<li role="separator" class="divider"></li>
+							<?php if ($setup_mon_exists) : ?>
+							<li>
+								<a href="#"><?php echo L::setup_GO_TO_EDIT; ?></a>
+							</li>
+							<?php endif; ?>
+							<li>
+								<a href="#" onclick="alert('TODO: Show sensors info');"><?php echo L::monitor_SHOW_SENSORS; ?></a>
+							</li>
+							<li style="<?php if (!$canSetSetup) : ?>display:none;<?php endif; ?>">
+								<a href="#"><?php echo L::experiment_SET_SETUP; ?></a>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<div id="collapseMon<?php echo $i; ?>" class="panel-collapse collapse<?php echo $mon->active ? ' in' : ''; ?>" role="tabpanel" aria-labelledby="panelMonHeading<?php echo $i; ?>">
+					<div class="panel-body">
+						<table class="table table-responsive table-bordered table-condensed mon-table">
+							<tbody>
+							<tr>
+								<td class="col-md-12">
+									<div>
+										<?php if ($setup_mon_exists) : ?>
+											<?php echo L::SETUP; ?>: <b><?php echo htmlspecialchars($mon->setup->title, ENT_QUOTES, 'UTF-8'); ?></b>
+										<?php endif; ?>
+										<?php if ($canSetSetup) :?>
+											<a href="/?q=experiment/setsetup/<?php echo (int)$this->view->content->experiment->id; ?>&setup_id=<?php echo (int)$mon->setup_id; ?>" title="<?php echo L::setup_SELECT; ?>" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-new-window"></span><?php echo L::setup_SELECT; ?></a>
+										<?php endif; ?>
+										<?php if ($setup_mon_exists) : ?>
+											<div class="pull-right">
+												<span class="<?php
+												switch ($mon->setup->access)
+												{
+													case Setup::$ACCESS_PRIVATE:
+														echo 'glyphicon glyphicon-align-left';
+													break;
+													case Setup::$ACCESS_SINGLE:
+														echo 'glyphicon glyphicon-align-center';
+													break;
+													case Setup::$ACCESS_SHARED:
+													default:
+														echo 'glyphicon glyphicon-align-right';
+													break;
+												}
+												?>" aria-hidden="true">&nbsp;</span>
+											</div>
+										<?php endif; ?>
+									</div>
+									<div class="setup-status">
+										<?php if ($ownMonSetup) : ?>
+										<div class="col-md-2 setup-status-owner">
+											<span class="label label-info"><?php echo L::setup_OWNER; ?></span>
+										</div>
+										<?php endif; ?>
+										<?php if ($masterMonSetup) : ?>
+										<div class="col-md-2 setup-status-master">
+											<span class="label label-info"><?php echo L::experiment_MASTER; ?></span>
+										</div>
+										<?php endif; ?>
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<div class="mrg-top-5px">
+										<div class="col-xs-12 col-sm-11 col-md-11">
+											<div class="col-xs-11 col-sm-6 col-md-4">
+												<?php if ($mon->amount) : ?>
+												<div class="mrg-bot-5px">
+													<div class="special-label"><?php echo L::setup_DETECTIONS_COUNT; ?>: <span class="badge monitor-amount-cnt"><?php echo $mon->amount; ?></span></div>
+												</div>
+												<?php endif; ?>
+
+												<div class="mrg-bot-5px">
+													<div class="special-label"><?php echo L::DONE; ?>: <span class="badge monitor-done-cnt"><?php echo $mon_done_cnt; ?></span></div>
+												</div>
+
+												<?php if ($mon->amount) : ?>
+												<div class="mrg-bot-5px">
+													<div class="special-label"><?php echo L::TIME_REMAIN; ?>: <span class="badge monitor-remain-cnt"><?php echo $mon_remain_cnt_text; ?></span></div>
+												</div>
+												<?php endif; ?>
+											</div>
+											<div class="col-xs-11 col-sm-5 col-md-3">
+												<div class="mrg-bot-5px">
+													<div class="special-label"><?php echo L::setup_DETECTIONS_PERIOD; ?>: <span class="badge"><?php echo (int)$mon->interval; ?></span></div>
+												</div>
+											</div>
+											<div class="col-xs-11 col-sm-6 col-md-4">
+												<?php if ($mon->duration) : ?>
+												<div class="mrg-bot-5px">
+													<div class="special-label"><?php echo L::setup_DURATION; ?>: <span class="badge monitor-duration"><?php echo System::secToTime($mon->time_det); ?></span></div>
+												</div>
+												<?php endif; ?>
+
+												<div class="mrg-bot-5px" class="monitor-stopat-parent" title="<?php echo $stopat_title_1;?>">
+													<div class="special-label"><?php echo L::FINISHING; ?>: <span class="badge monitor-stopat <?php echo $mon_stopat_class;?>"><?php echo $mon_stopat_text;?></span></div>
+												</div>
+											</div>
+										</div>
+										<div class="col-xs-12 col-sm-1 col-md-1">
+											<!-- Monitor control -->
+											<div class="mrg-bot-5px">
+												<button type="button" class="btn btn-default form-control monitor-stop <?php
+													echo ((!$canMonSetupControl || !$mon->active) ? 'disabled' : '');
+													?>" data-text="<?php echo L::STOP; ?>" <?php
+													echo ((!$canMonSetupControl || !$mon->active) ? 'disabled="disabled"' : '');
+												?>><span class="glyphicon glyphicon-stop">&nbsp;</span><span class="btn-text"><?php echo L::STOP; ?></span></button>
+											</div>
+
+											<div class="mrg-bot-5px">
+												<button type="button" class="btn btn-default form-control monitor-strob <?php
+													echo ((!$canMonSetupControl) ? 'disabled' : '');
+													?>" data-text="<?php echo L::STROBE; ?>" <?php
+													echo ((!$canMonSetupControl) ? 'disabled="disabled"' : '');
+												?>><span class="glyphicon glyphicon-step-forward">&nbsp;</span><span class="btn-text"><?php echo L::STROBE; ?></span></button>
+											</div>
+
+											<div class="mrg-bot-5px">
+												<button type="button" class="btn btn-default form-control monitor-remove <?php
+													echo ($mon->active ? 'disabled' : '');
+													?>" data-text="<?php echo L::REMOVE; ?>" <?php
+													echo ($mon->active ? 'disabled="disabled"' : '');
+												?>><span class="glyphicon glyphicon-remove-circle">&nbsp;</span><span class="btn-text"><?php echo L::REMOVE; ?></span></button>
+											</div>
+											<!-- End Monitor control -->
+										</div>
+										<div class="col-xs-12 col-sm-12 col-md-12" style="display: none;">
+											<div class="mrg-bot-5px">
+												<?php
+												// TODO: get Setup Consumers list output? but no consumers anymore
+												echo L::MEMBERS; ?>: {value}
+											</div>
+										</div>
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<div class="pull-right text-right">
+									<?php
+									/*
+									if (!isset($this->view->content->experiment->DateEnd_exp) || empty($this->view->content->experiment->DateEnd_exp)) : ?>
+										<!-- <a href="#" class="btn btn-default form-control disabled"><?php echo L::FINISH; ?></a> -->
+									<?php else : ?>
+										<span><?php echo L::experiment_FINISHED; ?></span>
+									<?php endif;
+									*/
+									?>
+									</div>
+								</td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<?php endforeach; ?>
+
+		</div>
+		<!-- End Monitors -->
+		<?php endif; ?>
+
 	</div>
 </div>
 <div class="row">
 	<div class="col-sm-10 col-md-10">
 		<div class="row" id="widget-workspace">
 		<?php if (isset($this->view->content->sensors)) :?>
-			<?php foreach($this->view->content->sensors as $sensor): 
-				$skey = '' . $sensor->id . '#' . (int)$sensor->sensor_val_id; ?>
+			<?php foreach($this->view->content->sensors as $sensor):
+				$skey = '' . $sensor->sensor_id . '#' . (int)$sensor->sensor_val_id; ?>
 				<div class="col-xs-6 col-sm-4 col-md-3 sensor-widget" data-sensor-id="<?php echo $skey; ?>">
 					<div class="panel panel-default">
 						<div class="panel-heading">
@@ -338,10 +505,10 @@ if($setup_exists)
 						</div>
 						<div class="panel-body">
 							<small class="pull-right">id: <?php echo htmlspecialchars($skey, ENT_QUOTES, 'UTF-8'); ?></small>
-							<div class="widget-pane info active ">
+							<div class="widget-pane info active">
 								<h3 class="sensor-value"><?php echo L::PLEASE_WAIT; ?></h3>
 								<small class="sensor-value-name"><?php
-									echo htmlspecialchars(((!empty($sensor->si_notation)) ? 
+									echo htmlspecialchars(((!empty($sensor->si_notation)) ?
 											constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation))
 											. ' (' . constant('L::sensor_VALUE_SI_NAME_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_name)) . ')' : '')
 										, ENT_QUOTES, 'UTF-8');
@@ -357,21 +524,23 @@ if($setup_exists)
 	<div class="col-xs-12 col-sm-2 col-md-2 pull-left">
 		<div class="row">
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
-				<a class="btn btn-default form-control <?php echo (!$canSetupControl) ? 'disabled' : ''; 
-					?>" id="experiment-action" data-experiment-state="<?php echo (int)$setup_active;?>" data-experiment-id="<?php echo (int)$this->view->content->experiment->id; ?>" data-text-0="<?php echo L::START; ?>" data-text-1="<?php echo L::STOP; ?>" <?php echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><?php 
+				<button type="button" id="experiment-action" class="btn btn-default form-control <?php
+					echo (!$canSetupControl) ? 'disabled' : '';
+					?>" data-text-0="<?php echo L::START; ?>" data-text-1="<?php echo L::STOP; ?>" <?php echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><?php
 					echo ($setup_active) ? L::STOP : L::START;
-					?></a>
+				?></button>
 			</div>
 
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
-					<a class="btn btn-default form-control <?php echo (!$canSetupControl) ? 'disabled' : '';
-						?>" id="experiment-strob" data-experiment-id="<?php echo (int)$this->view->content->experiment->id; ?>" <?php echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><?php echo L::STROBE; ?></a>
+				<button type="button" id="experiment-strob" class="btn btn-default form-control <?php echo (!$canSetupControl) ? 'disabled' : '';
+					?>" <?php echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><?php echo L::STROBE;
+				?></button>
 			</div>
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
-					<a class="btn btn-default form-control" href="/?q=experiment/journal/<?php echo (int)$this->view->content->experiment->id; ?>"><?php echo L::JOURNAL; ?></a>
+				<a class="btn btn-default form-control" href="/?q=experiment/journal/<?php echo (int)$this->view->content->experiment->id; ?>"><?php echo L::JOURNAL; ?></a>
 			</div>
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
-					<a class="btn btn-default form-control" href="/?q=experiment/graph/<?php echo (int)$this->view->content->experiment->id; ?>"><?php echo L::GRAPHS; ?></a>
+				<a class="btn btn-default form-control" href="/?q=experiment/graph/<?php echo (int)$this->view->content->experiment->id; ?>"><?php echo L::GRAPHS; ?></a>
 			</div>
 		</div>
 	</div>
@@ -382,12 +551,5 @@ if($setup_exists)
 		<label for="experiment-sensors-refresh" class="checkbox">
 			<input type="checkbox" id="experiment-sensors-refresh" value="1" title="<?php echo L::experiment_AUTO_REFRESH_VALUES_TITLE('3'); ?>"/> <?php echo L::experiment_AUTO_REFRESH_VALUES; ?>
 		</label>
-	</div>
-	<div class="col-xs-6 col-sm-2 col-md-2 pull-right text-right">
-	<?php if (!isset($this->view->content->experiment->DateEnd_exp) || empty($this->view->content->experiment->DateEnd_exp)) :?>
-		<!-- <a href="#" class="btn btn-default form-control disabled"><?php echo L::FINISH; ?></a> -->
-	<?php else : ?>
-		<span><?php echo L::experiment_FINISHED; ?></span>
-	<?php endif; ?>
 	</div>
 </div>

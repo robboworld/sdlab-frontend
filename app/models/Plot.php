@@ -14,13 +14,13 @@ class Plot extends Model
 	protected $start;
 	protected $stop;
 
-	private $sql_load_query = 'select * from plots where id = :id';
-	private $sql_insert_query = 'insert into setups
+	private $sql_load = 'select * from plots where id = :id';
+	private $sql_insert = 'insert into setups
 										(exp_id, id_sensor_x, sensor_val_id_x, scales, start, stop)
 										values
 										(:exp_id, :id_sensor_x, :sensor_val_id_x, :scales, :start, :stop)';
 
-	private $sql_update_query = 'update setups set
+	private $sql_update = 'update setups set
 										exp_id = :exp_id,
 										id_sensor_x = :id_sensor_x,
 										sensor_val_id_x = :sensor_val_id_x,
@@ -38,6 +38,7 @@ class Plot extends Model
 		$this->scales = null;
 		$this->start = null;
 		$this->stop = null;
+
 		parent::__construct();
 	}
 
@@ -45,7 +46,7 @@ class Plot extends Model
 	{
 		if(is_numeric($id))
 		{
-			$load = $this->db->prepare($this->sql_load_query);
+			$load = $this->db->prepare($this->sql_load);
 			$load->execute(array(
 				':id' => $id
 			));
@@ -67,7 +68,7 @@ class Plot extends Model
 	{
 		if(!empty($this->id))
 		{
-			$update = $this->db->prepare($this->sql_insert_query);
+			$update = $this->db->prepare($this->sql_insert);
 			$result = $update->execute(array(
 				':id' => $this->id,
 				':exp_id' => $this->exp_id,
@@ -80,7 +81,7 @@ class Plot extends Model
 		}
 		else
 		{
-			$insert = $this->db->prepare($this->sql_insert_query);
+			$insert = $this->db->prepare($this->sql_insert);
 			$result = $insert->execute(array(
 				':exp_id' => $this->exp_id,
 				':id_sensor_x' => $this->id_sensor_x,

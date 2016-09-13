@@ -40,13 +40,13 @@ class WebcamController extends Controller
 
 			// TODO: Get list of available video streams (parse mjpg process run cmdline, get N ids /dev/videoN)
 			// Prepare parameters for api method
-			$query_params = null;
+			$request_params = null;
 
 			// Send request for list cameras
 			$socket = new JSONSocket($this->config['socket']['path']);
 			if (!$socket->error())
 			{
-				$res = $socket->call('Lab.ListVideos', $query_params);
+				$res = $socket->call('Lab.ListVideos', $request_params);
 				if ($res)
 				{
 					$result = $res['result'];
@@ -92,13 +92,13 @@ class WebcamController extends Controller
 							$result[$k]->stream = null;
 
 							// Prepare parameters for api method
-							$query_params = array($vid->Device);
+							$request_params = array($vid->Device);
 
 							// Send request for get info about camera stream
 							$socket = new JSONSocket($this->config['socket']['path']);
 							if (!$socket->error())
 							{
-								$res = $socket->call('Lab.GetVideoStream', $query_params);
+								$res = $socket->call('Lab.GetVideoStream', $request_params);
 								if ($res)
 								{
 									$data = $res['result'];
@@ -183,13 +183,13 @@ class WebcamController extends Controller
 
 			// TODO: Get list of available video streams (parse mjpg process run cmdline, get N ids /dev/videoN)
 			// Prepare parameters for api method
-			$query_params = null;
+			$request_params = null;
 
 			// Send request for list cameras
 			$socket = new JSONSocket($this->config['socket']['path']);
 			if (!$socket->error())
 			{
-				$res = $socket->call('Lab.ListVideos', $query_params);
+				$res = $socket->call('Lab.ListVideos', $request_params);
 				if ($res)
 				{
 					$result = $res['result'];
@@ -232,13 +232,13 @@ class WebcamController extends Controller
 						$result[$k]->stream = null;
 
 						// Prepare parameters for api method
-						$query_params = array($vid->Device);
+						$request_params = array($vid->Device);
 
 						// Send request for get info about camera stream
 						$socket = new JSONSocket($this->config['socket']['path']);
 						if (!$socket->error())
 						{
-							$res = $socket->call('Lab.GetVideoStream', $query_params);
+							$res = $socket->call('Lab.GetVideoStream', $request_params);
 							if ($res)
 							{
 								$data = $res['result'];
@@ -325,7 +325,7 @@ class WebcamController extends Controller
 					}
 
 					// Prepare parameters for api method
-					$query_params = array('/dev/video' . (int)$dev_id);
+					$request_params = array('/dev/video' . (int)$dev_id);
 
 					// Send request for list cameras
 					$socket = new JSONSocket($this->config['socket']['path']);
@@ -336,7 +336,7 @@ class WebcamController extends Controller
 						System::goback('webcam/view', 'post');
 					}
 
-					$result = $socket->call('Lab.StartVideoStream', $query_params);
+					$result = $socket->call('Lab.StartVideoStream', $request_params);
 					unset($socket);
 
 					// Check result
@@ -386,7 +386,7 @@ class WebcamController extends Controller
 					}
 
 					// Prepare parameters for api method
-					$query_params = array('/dev/video' . (int)$dev_id);
+					$request_params = array('/dev/video' . (int)$dev_id);
 
 					// Send request for list cameras
 					$socket = new JSONSocket($this->config['socket']['path']);
@@ -397,7 +397,7 @@ class WebcamController extends Controller
 						System::goback('webcam/view', 'post');
 					}
 
-					$result = $socket->call('Lab.StopVideoStream', $query_params);
+					$result = $socket->call('Lab.StopVideoStream', $request_params);
 					unset($socket);
 
 					// Check result
@@ -442,7 +442,7 @@ class WebcamController extends Controller
 			if (isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'action-webcam-form')
 			{
 				// Prepare parameters for api method
-				$query_params = null;
+				$request_params = null;
 
 				// Send request for list cameras
 				$socket = new JSONSocket($this->config['socket']['path']);
@@ -453,7 +453,7 @@ class WebcamController extends Controller
 					System::goback('webcam/view', 'post');
 				}
 
-				$result = $socket->call('Lab.StartVideoStreamAll', $query_params);
+				$result = $socket->call('Lab.StartVideoStreamAll', $request_params);
 				unset($socket);
 
 				// Check result
@@ -483,7 +483,7 @@ class WebcamController extends Controller
 			if (isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'action-webcam-form')
 			{
 				// Prepare parameters for api method
-				$query_params = null;
+				$request_params = null;
 
 				// Send request for list cameras
 				$socket = new JSONSocket($this->config['socket']['path']);
@@ -494,7 +494,7 @@ class WebcamController extends Controller
 					System::goback('webcam/view', 'post');
 				}
 
-				$result = $socket->call('Lab.StopVideoStreamAll', $query_params);
+				$result = $socket->call('Lab.StopVideoStreamAll', $request_params);
 				unset($socket);
 
 				// Check result

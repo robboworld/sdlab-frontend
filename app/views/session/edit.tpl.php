@@ -12,15 +12,15 @@
 		<input type="hidden" name="form-id" value="edit-session-form">
 		<div class="form-group col-md-6">
 			<label><?php echo L::MEMBER; ?></label>
-			<input type="text" class="form-control" name="session_name" placeholder="<?php echo L::FULL_NAME; ?>" value="<?php echo htmlspecialchars($this->session()->name, ENT_QUOTES, 'UTF-8');?>" <?php if($this->session()->getUserLevel() >1 ) echo "disabled";?>/>
+			<input type="text" class="form-control" name="session_name" placeholder="<?php echo L::FULL_NAME; ?>" value="<?php echo htmlspecialchars($this->session()->name, ENT_QUOTES, 'UTF-8');?>" <?php if($this->session()->getUserLevel() >1 ) echo 'disabled="disabled"';?>/>
 		</div>
 		<div class="form-group col-md-3">
 			<label><?php echo L::session_WORK_NAME; ?></label>
-			<input type="text" class="form-control" name="session_title" placeholder="<?php echo L::TITLE; ?>" value="<?php echo htmlspecialchars($this->session()->title, ENT_QUOTES, 'UTF-8');?>" <?php if($this->session()->getUserLevel() >1 ) echo "disabled";?>/>
+			<input type="text" class="form-control" name="session_title" placeholder="<?php echo L::TITLE; ?>" value="<?php echo htmlspecialchars($this->session()->title, ENT_QUOTES, 'UTF-8');?>" <?php if($this->session()->getUserLevel() >1 ) echo 'disabled="disabled"';?>/>
 		</div>
 		<div class="form-group col-md-3">
 			<label><?php echo L::session_EXPIRES_TIME_DAYS; ?></label>
-			<input type="text" class="form-control" name="session_expiry" placeholder="<?php echo L::session_EXPIRES_TIME; ?>" value="<?php echo htmlspecialchars($this->session()->expiry, ENT_QUOTES, 'UTF-8');?>" size="3" <?php if($this->session()->getUserLevel() >1 ) echo "disabled";?>/>
+			<input type="text" class="form-control" name="session_expiry" placeholder="<?php echo L::session_EXPIRES_TIME; ?>" value="<?php echo htmlspecialchars($this->session()->expiry, ENT_QUOTES, 'UTF-8');?>" size="3" <?php if($this->session()->getUserLevel() >1 ) echo 'disabled="disabled"';?>/>
 		</div>
 
 		<div class="form-group col-md-12">
@@ -65,14 +65,16 @@
 			</tr>
 		</thead>
 		<tbody>
-			<?php foreach ($this->view->experiments_in_session as $item) : ?>
+			<?php foreach ($this->view->experiments_in_session as $item) : if($item) : ?>
 			<tr>
 				<td>#<?php echo (int)$item->id?></td>
-				<td><?php if(!empty($item->DateStart_exp)) { echo System::dateformat('@'.$item->DateStart_exp, System::DATETIME_FORMAT2, 'now'); } ?> / <?php if(!empty($item->DateEnd_exp)) { echo System::dateformat('@'.$item->DateEnd_exp, System::DATETIME_FORMAT2, 'now'); } ?></td>
-				<td><a href="?q=experiment/view/<?php echo (int)$item->id?>"><?php echo htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8')?></a></td>
-				<td><?php if ($setup = (new Setup())->load($item->setup_id)) {echo htmlspecialchars($setup->title, ENT_QUOTES, 'UTF-8');} ?></td>
+				<td><?php
+					if(!empty($item->DateStart_exp)) { echo System::dateformat('@'.$item->DateStart_exp, System::DATETIME_FORMAT2, 'now'); } ?> / <?php
+					if(!empty($item->DateEnd_exp))   { echo System::dateformat('@'.$item->DateEnd_exp, System::DATETIME_FORMAT2, 'now'); } ?></td>
+				<td><a href="?q=experiment/view/<?php echo (int)$item->id; ?>"><?php echo htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8'); ?></a></td>
+				<td><?php if ($item->_setup) { echo htmlspecialchars($item->_setup->title, ENT_QUOTES, 'UTF-8'); } ?></td>
 			</tr>
-			<?php endforeach; ?>
+			<?php endif; endforeach; ?>
 		</tbody>
 	</table>
 	<?php endif; ?>

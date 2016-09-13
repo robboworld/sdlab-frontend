@@ -11,13 +11,7 @@ $(document).ready(function(){
             var rq = coreAPICall('Experiment.isActive', {experiment: $(this).data('experiment')}, function(data, st, xhr){
                 if (typeof data.error === 'undefined'){
                     if (data.result){
-                        var msg;
-                        if (data.items.length <= 1){
-                            msg = SDLab.Language._('journal_QUESTION_REMOVE_EXPERIMENT_WITH_1');
-                        } else {
-                            msg = SDLab.Language.format('journal_QUESTION_REMOVE_EXPERIMENT_WITH_JS_N', data.items.length);
-                        }
-
+                        var msg = SDLab.Language._('journal_QUESTION_REMOVE_EXPERIMENT_WITH_1');
                         if (confirm(msg) && typeof xhr.activator !== 'undefined'){
                             experimentDelete($(xhr.activator).data('experiment'), 1);
                         }

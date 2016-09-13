@@ -9,7 +9,7 @@ if ($this->view->form->id != 'create-experiment-form')
 	// Check Setup change access
 	if ($this->view->form->cur_setup)
 	{
-		$canChangeSetup = !((int)$this->view->form->cur_setup->flag > 0);
+		//$canChangeSetup = !$this->view->form->cur_setup->isActive;
 	}
 }
 
@@ -41,7 +41,25 @@ if ($this->view->form->id != 'create-experiment-form')
 			<select class="form-control" name="setup_id" <?php if ($this->view->form->id != 'create-experiment-form' && !$canChangeSetup) echo 'disabled="disabled"';?>>
 				<option value=""><?php echo L::setup_SELECT_OPTION; ?></option>
 				<?php foreach ($this->view->form->setups as $setup): ?>
-					<option value="<?php echo (int)$setup->id; ?>" <?php if ($setup->id == $this->view->form->experiment->setup_id) echo 'selected="selected"'; ?>><?php echo ((($setup->flag)?'[*] ':'') . htmlspecialchars($setup->title, ENT_QUOTES, 'UTF-8')); ?></option>
+					<option value="<?php echo (int)$setup->id; ?>" <?php if ($setup->id == $this->view->form->experiment->setup_id) echo 'selected="selected"'; ?>><?php 
+						$flags = array();
+						if (($this->view->form->id != 'create-experiment-form') && ($setup->master_exp_id == $this->view->form->experiment->id))
+						{
+							$flags[] = 'M';
+						}
+						if ($setup->session_key == $this->session()->getKey())
+						{
+							$flags[] = 'O';
+						}
+						//TODO: add Active in this experiment/anywhere(?) flag to item title (need get active monitors for all setups in list before)
+						//$flags[] = '*';
+						if (!empty($flags))
+						{
+							echo  '[' . implode('', $flags) . '] ';
+						}
+
+						echo htmlspecialchars($setup->title, ENT_QUOTES, 'UTF-8');
+					?></option>
 				<?php endforeach; ?>
 			</select>
 		</div>

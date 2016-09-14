@@ -254,22 +254,22 @@ class ExperimentController extends Controller
 				$this->view->content->monitors[$i]->setup = new Setup();
 				if (!$this->view->content->monitors[$i]->setup->load((int)$mon->setup_id))
 				{
-					$this->view->content->monitors[$i]->setup->set(id, null);
-					$this->view->content->monitors[$i]->setup->set(master_exp_id, null);
-					$this->view->content->monitors[$i]->setup->set(session_key, null);
-					$this->view->content->monitors[$i]->setup->set(access, Setup::$ACCESS_SHARED);
-					$this->view->content->monitors[$i]->setup->set(title, L::UNKNOWN);
+					$this->view->content->monitors[$i]->setup->set('id', null);
+					$this->view->content->monitors[$i]->setup->set('master_exp_id', null);
+					$this->view->content->monitors[$i]->setup->set('session_key', null);
+					$this->view->content->monitors[$i]->setup->set('access', Setup::$ACCESS_SHARED);
+					$this->view->content->monitors[$i]->setup->set('title', L::UNKNOWN);
 				}
 				// Inject configuration from monitor
 				if (isset($this->view->content->monitors[$i]->info))
 				{
-					$this->view->content->monitors[$i]->setup->set(interval, $this->view->content->monitors[$i]->info->Archives[0]->Step);
-					$this->view->content->monitors[$i]->setup->set(amount, $this->view->content->monitors[$i]->info->Amount);
-					$this->view->content->monitors[$i]->setup->set(time_det, $this->view->content->monitors[$i]->info->Duration);
+					$this->view->content->monitors[$i]->setup->set('interval', $this->view->content->monitors[$i]->info->Archives[0]->Step);
+					$this->view->content->monitors[$i]->setup->set('amount', $this->view->content->monitors[$i]->info->Amount);
+					$this->view->content->monitors[$i]->setup->set('time_det', $this->view->content->monitors[$i]->info->Duration);
 
-					//$this->view->content->monitors[$i]->setup->set(period, $this->view->content->monitors[$i]->info->period);
-					//$this->view->content->monitors[$i]->setup->set(number_error, $this->view->content->monitors[$i]->info->number_error);
-					//$this->view->content->monitors[$i]->setup->set(period_repeated_det, $this->view->content->monitors[$i]->info->period_repeated_det);
+					//$this->view->content->monitors[$i]->setup->set('period', $this->view->content->monitors[$i]->info->period);
+					//$this->view->content->monitors[$i]->setup->set('number_error', $this->view->content->monitors[$i]->info->number_error);
+					//$this->view->content->monitors[$i]->setup->set('period_repeated_det', $this->view->content->monitors[$i]->info->period_repeated_det);
 
 					$this->view->content->monitors[$i]->setup->sensors = $this->view->content->monitors[$i]->info->Values;  // [Name,Sensor,ValueIdx,Len]
 				}

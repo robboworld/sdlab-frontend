@@ -143,7 +143,7 @@ class Session extends Model
 	 */
 	public static function keyExists($key)
 	{
-		$dbh = (new DB())->query("select id from sessions where session_key = '$key'");
+		$dbh = (new DB())->query("select id from sessions where session_key = '$key' limit 1");
 		$result = $dbh->fetch(PDO::FETCH_OBJ);
 		if($result)
 		{

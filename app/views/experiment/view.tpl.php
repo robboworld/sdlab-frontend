@@ -85,7 +85,7 @@ if($setup_exists)
 			<tr>
 				<td class="col-md-12 padng-3px">
 					<h3 class="exp-title">
-						<span class="glyphicon glyphicon-record <?php if ($experiment_active) : ?>blink text-danger<?php endif; ?>">&nbsp;</span>
+						<span class="glyphicon glyphicon-record <?php if ($experiment_active) : ?>blink text-danger<?php endif; ?>"></span>
 						<span><?php echo htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8'); ?></span><a href="/?q=experiment/edit/<?php echo (int)$this->view->content->experiment->id; ?>" class="btn btn-edit btn-sm btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
 					</h3>
 					<div class="period-work">

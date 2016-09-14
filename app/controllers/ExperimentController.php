@@ -181,7 +181,6 @@ class ExperimentController extends Controller
 			$monitors = (new Monitor())->loadItems(
 					array(
 							'exp_id' => (int)$experiment->id,
-							//'setup_id' => (int)$experiment->setup_id,
 					),
 					'created',
 					'DESC'
@@ -255,22 +254,22 @@ class ExperimentController extends Controller
 				$this->view->content->monitors[$i]->setup = new Setup();
 				if (!$this->view->content->monitors[$i]->setup->load((int)$mon->setup_id))
 				{
-					$this->view->content->monitors[$i]->setup->id = null;
-					$this->view->content->monitors[$i]->setup->master_exp_id = null;
-					$this->view->content->monitors[$i]->setup->session_key = null;
-					$this->view->content->monitors[$i]->setup->access = Setup::$ACCESS_SHARED;
-					$this->view->content->monitors[$i]->setup->title = L::UNKNOWN;
+					$this->view->content->monitors[$i]->setup->set(id, null);
+					$this->view->content->monitors[$i]->setup->set(master_exp_id, null);
+					$this->view->content->monitors[$i]->setup->set(session_key, null);
+					$this->view->content->monitors[$i]->setup->set(access, Setup::$ACCESS_SHARED);
+					$this->view->content->monitors[$i]->setup->set(title, L::UNKNOWN);
 				}
 				// Inject configuration from monitor
 				if (isset($this->view->content->monitors[$i]->info))
 				{
-					$this->view->content->monitors[$i]->setup->interval = $this->view->content->monitors[$i]->info->Archives[0]->Step;
-					$this->view->content->monitors[$i]->setup->amount = $this->view->content->monitors[$i]->info->Amount;
-					$this->view->content->monitors[$i]->setup->time_det = $this->view->content->monitors[$i]->info->Duration;
+					$this->view->content->monitors[$i]->setup->set(interval, $this->view->content->monitors[$i]->info->Archives[0]->Step);
+					$this->view->content->monitors[$i]->setup->set(amount, $this->view->content->monitors[$i]->info->Amount);
+					$this->view->content->monitors[$i]->setup->set(time_det, $this->view->content->monitors[$i]->info->Duration);
 
-					//$this->view->content->monitors[$i]->setup->period = $t$this->view->content->monitors[$i]->info->period;
-					//$this->view->content->monitors[$i]->setup->number_error = $this->view->content->monitors[$i]->info->number_error;
-					//$this->view->content->monitors[$i]->setup->period_repeated_det = $this->view->content->monitors[$i]->info->period_repeated_det;
+					//$this->view->content->monitors[$i]->setup->set(period, $this->view->content->monitors[$i]->info->period);
+					//$this->view->content->monitors[$i]->setup->set(number_error, $this->view->content->monitors[$i]->info->number_error);
+					//$this->view->content->monitors[$i]->setup->set(period_repeated_det, $this->view->content->monitors[$i]->info->period_repeated_det);
 
 					$this->view->content->monitors[$i]->setup->sensors = $this->view->content->monitors[$i]->info->Values;  // [Name,Sensor,ValueIdx,Len]
 				}
@@ -374,7 +373,7 @@ class ExperimentController extends Controller
 			$this->view->form->cur_setup = (new Setup())->load($experiment->setup_id);
 			if ($this->view->form->cur_setup)
 			{
-				$this->view->form->cur_setup->isActive = Setup::isActive($this->view->form->cur_setup->id, $experiment->id);
+				$this->view->form->cur_setup->active = Setup::isActive($this->view->form->cur_setup->id, $experiment->id);
 			}
 		}
 

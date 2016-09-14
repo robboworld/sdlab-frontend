@@ -19,7 +19,7 @@ if (empty($this->view->form->setup->amount))
 		</div>
 		<?php
 		// Check if active
-		if(isset($this->view->form->setup->isActive) && $this->view->form->setup->isActive) : ?>
+		if(isset($this->view->form->setup->active) && $this->view->form->setup->active) : ?>
 		<div class="row form-group">
 			<div class="col-md-4">
 				<?php echo L::setup_CURRENT_STATUS;

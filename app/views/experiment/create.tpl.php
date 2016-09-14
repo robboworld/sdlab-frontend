@@ -9,7 +9,7 @@ if ($this->view->form->id != 'create-experiment-form')
 	// Check Setup change access
 	if ($this->view->form->cur_setup)
 	{
-		//$canChangeSetup = !$this->view->form->cur_setup->isActive;
+		//$canChangeSetup = !$this->view->form->cur_setup->active;
 	}
 }
 

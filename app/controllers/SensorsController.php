@@ -555,6 +555,7 @@ class SensorsController extends Controller
 		if(empty($sensors))
 		{
 			// TODO: error message about empty setup or no sensors
+			$this->error = L::ERROR;
 
 			return false;
 		}
@@ -597,7 +598,6 @@ class SensorsController extends Controller
 				array(
 						'exp_id'   => (int)$experiment->id,
 						'setup_id' => (int)$setup->id,
-						//'deleted'  => 0
 				),
 				'id', 'ASC'
 		);
@@ -656,14 +656,14 @@ class SensorsController extends Controller
 		$nowutc = clone $now;
 		$nowutc->setTimezone(new DateTimeZone('UTC'));
 		// Check Setup mode
-		$count  = 0;
+		$count = 0;
 		$stopat = System::nulldate();
 		if ($setup->amount)
 		{
 			$count = (int)$setup->amount;
 
 			// + Stop At condition
-			if ($setup->time_det != 0)
+			if ((int)$setup->time_det != 0)
 			{
 				$stopat = (new DateTime($nowutc->format(DateTime::RFC3339)))->modify('+' . (int)$setup->time_det . ' sec')->format(System::DATETIME_RFC3339_UTC);
 			}
@@ -678,7 +678,7 @@ class SensorsController extends Controller
 				'Setup_id' => (int)$setup->id,
 				'Step'     => (int)$setup->interval,
 				'Count'    => $count,
-				'Duration' => $setup->time_det,
+				'Duration' => (int)$setup->time_det,
 				'StopAt'   => $stopat,
 				'Values'   => $params_array
 		);
@@ -918,23 +918,25 @@ class SensorsController extends Controller
 	 * {
 	 *     setup : {
 	 *         id                  : integer,
-	 *         active              : bool,
 	 *         interval            : integer,
 	 *         amount              : integer,
 	 *         time_det            : integer,
 	 *         number_error        : integer,
 	 *         period_repeated_det : integer,
+	 *         active              : bool,
 	 *     }
-	 *     monitor : {
-	 *         uuid                : string
-	 *     }
-	 *     stat : {
-	 *         amount              : string,
-	 *         done_cnt            : string,
-	 *         remain_cnt          : string,
-	 *         time_det            : string,
-	 *         stopat              : string,
-	 *         finished            : bool,
+	 *     monitors : {
+	 *         uuid                : string,
+	 *         data : {
+	 *             'amount'        : string,
+	 *             'done_cnt'      : string,
+	 *             'remain_cnt'    : string,
+	 *             'err_cnt'       : integer,
+	 *             'duration'      : string,
+	 *             'stopat'        : string,
+	 *             'active'        : bool,
+	 *             'finished'      : bool,
+	 *         }
 	 *     }
 	 * }
 	 * </code>
@@ -994,7 +996,7 @@ class SensorsController extends Controller
 		}
 		$monitors = (new Monitor())->loadItems($filters, 'id', 'ASC');
 
-		foreach ($monitors as $monitor)
+		foreach ($monitors as $i => $monitor)
 		{
 			// Get monitoring info from api
 
@@ -1032,7 +1034,7 @@ class SensorsController extends Controller
 					$result['result']->Last = null;
 				}
 
-				$monitor->info = $result['result'];
+				$monitors[$i]->info = $result['result'];
 			}
 			else
 			{
@@ -1076,7 +1078,7 @@ class SensorsController extends Controller
 						'done_cnt'            => '',
 						'remain_cnt'          => '',
 						'err_cnt'             => 0,
-						'time_det'            => '',
+						'duration'            => '',
 						'stopat'              => '',
 						'active'              => false,
 						'finished'            => false
@@ -1094,8 +1096,8 @@ class SensorsController extends Controller
 				$mon_stopat_text     = '';
 
 				// Get already done count of detections
-				$mon_done_cnt = $monitor->info->Counter->Done;
-				$mon_err_cnt  = $monitor->info->Counter->Err;
+				$mon_done_cnt = $monitor->info->Counters->Done;
+				$mon_err_cnt  = $monitor->info->Counters->Err;
 
 				// Check mode
 				if ($monitor->amount)
@@ -1201,13 +1203,13 @@ class SensorsController extends Controller
 				$mon['data']['done_cnt']   = (string)$mon_done_cnt;
 				$mon['data']['remain_cnt'] = $mon_remain_cnt_text;
 				$mon['data']['err_cnt']    = (string)$mon_err_cnt;
-				$mon['data']['time_det']   = System::secToTime($monitor->time_det);
+				$mon['data']['duration']   = System::secToTime($monitor->duration);
 				$mon['data']['stopat']     = $mon_stopat_text;
 				$mon['data']['active']     = ($monitor->active ? true : false);
 				$mon['data']['finished']   = $finished;
 			}
 
-			$return['monitors'][] = &$mon;
+			$return['monitors'][] = $mon;
 		}
 
 		return array('result' => $return);

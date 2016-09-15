@@ -36,7 +36,7 @@ class ExperimentController extends Controller
 		$access_modes = null;
 		if($this->session()->getUserLevel() != 3)
 		{
-			$access_modes = array(Setup::$ACCESS_SHARED => 0, Setup::$ACCESS_PRIVATE => 0);
+			$access_modes = array(Setup::$ACCESS_SHARED => 0, Setup::$ACCESS_PRIVATE => $this->session()->getKey());
 		}
 		$this->view->form->setups = SetupController::loadSetups($access_modes);
 
@@ -361,7 +361,7 @@ class ExperimentController extends Controller
 		$access_modes = null;
 		if($this->session()->getUserLevel() != 3)
 		{
-			$access_modes = array(Setup::$ACCESS_SHARED => 0, Setup::$ACCESS_PRIVATE => 0, Setup::$ACCESS_SINGLE => $experiment->id);
+			$access_modes = array(Setup::$ACCESS_SHARED => 0, Setup::$ACCESS_PRIVATE => $this->session()->getKey(), Setup::$ACCESS_SINGLE => $experiment->id);
 		}
 		$this->view->form->setups = SetupController::loadSetups($access_modes);
 
@@ -722,7 +722,15 @@ class ExperimentController extends Controller
 				. 'where exp_id = :exp_id '
 				. 'order by sensor_id, sensor_val_id';
 		$query = $db->prepare($sql);
-		$query->execute(array(':exp_id' => $experiment->id));
+		if ($query === false)
+		{
+			error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+		}
+		$result = $query->execute(array(':exp_id' => $experiment->id));
+		if ($result === false)
+		{
+			error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+		}
 		$det_sensors = array();
 		while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
 		{
@@ -736,10 +744,19 @@ class ExperimentController extends Controller
 		// Get current Setup sensors (???)
 		//$setup_sensors = array();
 		// xxx: comment out this block if not use setups data for sensors at all
-		$setup_sensors = SetupController::getSensors($experiment->setup_id, true);
-		if ($setup_sensors === false)
+		$temp_sensors = SetupController::getSensors($experiment->setup_id, true);
+		if ($temp_sensors === false)
 		{
-			$setup_sensors = array();
+			$temp_sensors = array();
+		}
+		$setup_sensors = array();
+		foreach ($temp_sensors as $row)
+		{
+			$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+			if(!array_key_exists($key, $setup_sensors))
+			{
+				$setup_sensors[$key] = clone $row;
+			}
 		}
 
 		// Get sensors from register with additional info
@@ -747,15 +764,25 @@ class ExperimentController extends Controller
 		//a.name as name, a.setup_id as setup_id
 		$query = $db->prepare(
 					'select s.sensor_id, s.sensor_val_id, s.value_name as value_name, s.si_notation as si_notation, s.si_name as si_name, s.max_range as max_range, s.min_range as min_range, s.resolution as resolution '
-					. 'from sensors as s on a.sensor_id = s.sensor_id and a.sensor_val_id = s.sensor_val_id '
-					. 'where a.setup_id = :setup_id '
-					. 'group by a.sensor_id, a.sensor_val_id'
+					. 'from sensors as s'
 		);
-		$query->execute();
-		$sensors = $query->fetchAll(PDO::FETCH_OBJ);
-		if ($sensors === false)
+		if ($query === false)
 		{
-			$sensors = array();
+			error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+		}
+		$result = $query->execute();
+		if ($result === false)
+		{
+			error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+		}
+		$sensors = array();
+		while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+		{
+			$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+			if(!array_key_exists($key, $sensors))
+			{
+				$sensors[$key] = clone $row;
+			}
 		}
 
 		// Fill list of available sensors
@@ -1195,25 +1222,44 @@ class ExperimentController extends Controller
 			// Get current Setup sensors (???)
 			//$setup_sensors = array();
 			// xxx: comment out this block if not use setups data for sensors at all
-			$setup_sensors = SetupController::getSensors($experiment->setup_id, true);
-			if ($setup_sensors === false)
+			$temp_sensors = SetupController::getSensors($experiment->setup_id, true);
+			if ($temp_sensors === false)
 			{
-				$setup_sensors = array();
+				$temp_sensors = array();
+			}
+			$setup_sensors = array();
+			foreach ($temp_sensors as $row)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $setup_sensors))
+				{
+					$setup_sensors[$key] = clone $row;
+				}
 			}
 
 			// Get sensors from register with additional info
 			// TODO: add Sensor::getSensor()
 			$query = $db->prepare(
 					'select s.sensor_id, s.sensor_val_id, s.value_name as value_name, s.si_notation as si_notation, s.si_name as si_name, s.max_range as max_range, s.min_range as min_range, s.resolution as resolution '
-					. 'from sensors as s on a.sensor_id = s.sensor_id and a.sensor_val_id = s.sensor_val_id '
-					. 'where a.setup_id = :setup_id '
-					. 'group by a.sensor_id, a.sensor_val_id'
+					. 'from sensors as s'
 			);
-			$query->execute();
-			$sensors = $query->fetchAll(PDO::FETCH_OBJ);
-			if ($sensors === false)
+			if ($query === false)
 			{
-				$sensors = array();
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute();
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			$sensors = array();
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $sensors))
+				{
+					$sensors[$key] = clone $row;
+				}
 			}
 
 			// Fill list of available sensors

@@ -313,7 +313,7 @@ class Monitor extends Model
 		}
 		else
 		{
-			return $this->time_det;
+			return $this->duration;
 		}
 	}
 }

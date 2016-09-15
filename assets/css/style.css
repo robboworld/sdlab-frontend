@@ -181,6 +181,15 @@ h3.exp-title {
 .row-experiment:hover .edit-button {
   background: #428bca;
 }
+.panel-group-monitors.panel-group .panel {
+  overflow: visible;
+}
+.dropdown-monitor .btn.dropdown-toggle {
+  padding: 2px 5px;
+}
+.panel.monitor-panel .panel-collapse .table {
+  margin-bottom: 0;
+}
 
 .period-work {
 	display: inline-block;

@@ -125,6 +125,7 @@ class SetupController extends Controller
 
 			// Show edit form with filled fields on validate/save errors
 			$this->view->form->setup = $setup;
+			$this->view->form->setup->active = false;
 		}
 		else
 		{
@@ -132,6 +133,7 @@ class SetupController extends Controller
 
 			$setup = new Setup();
 			$this->view->form->setup = $setup;
+			$this->view->form->setup->active = false;
 
 			// Check access to create (now can view creation page)
 			/*
@@ -214,7 +216,7 @@ class SetupController extends Controller
 				$setup->set('session_key', $this->session()->getKey());
 			}
 
-			// TODO: add edit Setup access by owner and not in use (currect/active mon?), instead leave changed / lock run / unset from exp / cannot change ?)
+			// TODO: add edit Setup access by owner and not in use (current/active mon?), instead leave changed / lock run / unset from exp / cannot change ?
 			/*
 			$setup->set('access', isset($_POST['access']) && in_array((int)$_POST['number_error'], array(Setup::$ACCESS_SHARED,Setup::$ACCESS_PRIVATE,Setup::$ACCESS_SINGLE)) ?
 					(int)$_POST['access'] :
@@ -276,6 +278,7 @@ class SetupController extends Controller
 		if (!empty($modes))
 		{
 			$kmodes = array_keys($modes);
+
 			// Exclude complex modes
 			// ACCESS_SINGLE
 			$k = array_search(Setup::$ACCESS_SINGLE, $kmodes);
@@ -308,14 +311,58 @@ class SetupController extends Controller
 
 				if (!empty($exp_ids))
 				{
+					$where[] = ((count($exp_ids) == 1) ?
+							('access = ' . (int)$kmodes[$k] . ' and master_exp_id = ' . (int)end($exp_ids)) :
+							('access = ' . (int)$kmodes[$k] . ' and master_exp_id in (' .  implode(',', $exp_ids) . ')')
+					);
 					unset($kmodes[$k]);
-					$where[] = 'access = ' . (int)$k . ' and exp_id in (' .  implode(',', $exp_ids) . ')';
 				}
 			}
 
-			if(!empty($kmodes))
+			// ACCESS_PRIVATE
+			$k = array_search(Setup::$ACCESS_PRIVATE, $kmodes);
+			if ($k !== false)
 			{
-				$where[] = 'access in (' . implode(',', $kmodes) . ')';
+				// if set session_key value, than use special condition
+				$opt = $modes[Setup::$ACCESS_PRIVATE];
+				$session_keys = null;
+				if (!is_array($opt))
+				{
+					$session_keys = array((string)$opt);
+				}
+				else
+				{
+					$session_keys = $opt;
+				}
+				// Filter empty values
+				foreach ($session_keys as $i => $value)
+				{
+					if (mb_strlen($value, 'UTF-8') == 0)
+					{
+						unset($session_keys[$i]);
+					}
+					else
+					{
+						$session_keys[$i] = $db->quote((string)$value);
+					}
+				}
+
+				if (!empty($session_keys))
+				{
+					$where[] = ((count($session_keys) == 1) ?
+							('access = ' . (int)$kmodes[$k] . ' and session_key = ' .  end($session_keys)) :
+							('access = ' . (int)$kmodes[$k] . ' and session_key in (' .  implode(',', $session_keys) . ')')
+					);
+					unset($kmodes[$k]);
+				}
+			}
+
+			if (!empty($kmodes))
+			{
+				$where[] = ((count($kmodes) == 1) ?
+						('access = ' . (int)end($kmodes)) :
+						('access in (' . implode(',', $kmodes) . ')')
+				);
 			}
 		}
 
@@ -324,7 +371,15 @@ class SetupController extends Controller
 				. 'from setups '
 				. ((!empty($where)) ? ('where ('. implode(') or (', $where) . ')') : '')
 		);
-		$query->execute();
+		if ($query === false)
+		{
+			error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+		}
+		$result = $query->execute();
+		if ($result === false)
+		{
+			error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+		}
 
 		return $query->fetchAll(PDO::FETCH_OBJ);
 	}

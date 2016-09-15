@@ -52,6 +52,24 @@ if($setup_exists)
 		}, SDExperiment.updaterMonTime*1000);
 		<?php endif;?>
 
+		$(window).resize(function(){
+			if($('#accordion-monitors').length > 0){
+				if($(window).width() < 768){
+					if ($('#accordion-monitors .monitor-control').hasClass('btn-group-vertical')){
+						$('#accordion-monitors .monitor-control').removeClass('btn-group-vertical').addClass('btn-group btn-group-justified')
+							.find('button').wrap('<div class="btn-group btn-group-wrap" role="group"></div>');
+					}
+				}else{
+					if ($('#accordion-monitors .monitor-control').hasClass('btn-group')){
+						$('#accordion-monitors .monitor-control').removeClass('btn-group btn-group-justified').addClass('btn-group-vertical')
+							.find('button').unwrap('.btn-group-wrap');
+					}
+				}
+			}
+		});
+		if($('#accordion-monitors').length > 0){
+			$(window).trigger('resize');
+		}
 	});
 </script>
 <div class="row">
@@ -85,7 +103,7 @@ if($setup_exists)
 			<tr>
 				<td class="col-md-12 padng-3px">
 					<h3 class="exp-title">
-						<span class="glyphicon glyphicon-record <?php if ($experiment_active) : ?>blink text-danger<?php endif; ?>"></span>
+						<span class="glyphicon glyphicon-record experiment-icon-record <?php if ($experiment_active) : ?>blink text-danger<?php endif; ?>"></span>
 						<span><?php echo htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8'); ?></span><a href="/?q=experiment/edit/<?php echo (int)$this->view->content->experiment->id; ?>" class="btn btn-edit btn-sm btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
 					</h3>
 					<div class="period-work">
@@ -191,6 +209,7 @@ if($setup_exists)
 		</table>
 
 		<?php if (!empty($this->view->content->monitors)) : ?>
+		<h4><?php echo L::MONITORING; ?>:</h4>
 		<!-- Monitors -->
 		<div class="panel-group panel-group-monitors" id="accordion-monitors" role="tablist" aria-multiselectable="true">
 			<?php foreach ($this->view->content->monitors as $i => $mon) :
@@ -222,8 +241,8 @@ if($setup_exists)
 			// Get already done count of detections
 			if (isset($mon->info))
 			{
-				$mon_done_cnt = $mon->info->Counter->Done;
-				$mon_err_cnt  = $mon->info->Counter->Err;
+				$mon_done_cnt = $mon->info->Counters->Done;
+				$mon_err_cnt  = $mon->info->Counters->Err;
 
 				// Check Setup mode
 				if ($mon->amount)
@@ -296,81 +315,83 @@ if($setup_exists)
 			}
 			?>
 
-			<div id="panelMon<?php echo $i; ?>" class="panel panel-default monitor-panel <?php if ($mon->active) : ?>monitor-active<?php endif;
+			<div id="panelMon<?php echo $i; ?>" class="panel panel-primary monitor-panel <?php if ($mon->active) : ?>monitor-active<?php endif;
 					?>" data-monitor-id="<?php echo (int)$mon->id;
 					?>" data-monitor-uuid="<?php echo $mon->uuid;
 					?>" data-monitor-setupid="<?php echo (int)$mon->setup_id;
 					?>" data-monitor-expid="<?php echo (int)$mon->exp_id;
 			?>">
 				<div class="panel-heading <?php echo $heading_class; ?>" role="tab" id="panelMonHeading<?php echo $i; ?>">
-					<h4 class="panel-title">
-						<a role="button" data-toggle="collapse" <?php 
-								//echo 'data-parent="#accordion-monitors"';  // uncomment for single panel incollapsed
-							?> href="#collapseMon<?php echo $i; ?>" aria-expanded="<?php echo $mon->active ? 'true' : 'false'; ?>" aria-controls="#collapseMon<?php echo $i; ?>">
-							<span class="glyphicon glyphicon-record <?php
-								if ($mon->active) : ?>blink text-danger<?php endif;
-							?>">&nbsp;</span>
-							<span class="glyphicon glyphicon-exclamation-sign" title="<?php echo L::ERRORS . ': ' . (int)$mon_err_cnt; ?>" <?php
-								if ((int)$mon_err_cnt == 0) : ?>style="display:none;"<?php endif; ?>>&nbsp;</span>
-							<?php echo L::MONITORING; ?>: <b><?php echo $created_text; ?></b>
-						</a>
-					</h4>
-					<div class="btn-group pull-right dropdown-monitor">
-						<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<div class="btn-group dropdown-monitor pull-right hidden">
+						<a href="#" class="btn btn-sm btn-primary dropdown-toggle" data-target="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
 							<span class="glyphicon glyphicon-cog"></span>
-						</button>
-						<ul class="dropdown-menu">
+						</a>
+						<ul class="dropdown-menu dropdown-menu-right">
 							<li class="monitor-active-hidden" style="<?php if ($mon->active) : ?>display:none;<?php endif; ?>">
 								<a href="#" onclick="alert('TODO: Remove monitor info');" ><?php echo L::REMOVE; ?></a>
 							</li>
 							<li role="separator" class="divider"></li>
 							<?php if ($setup_mon_exists) : ?>
 							<li>
-								<a href="#"><?php echo L::setup_GO_TO_EDIT; ?></a>
+								<a href="#"><?php echo L::setup_EDIT; ?></a>
 							</li>
 							<?php endif; ?>
 							<li>
-								<a href="#" onclick="alert('TODO: Show sensors info');"><?php echo L::monitor_SHOW_SENSORS; ?></a>
+								<a href="#" onclick="alert('TODO: Show sensors info');"><?php echo L::sensor_SHOW_ITEMS; ?></a>
 							</li>
 							<li style="<?php if (!$canSetSetup) : ?>display:none;<?php endif; ?>">
-								<a href="#"><?php echo L::experiment_SET_SETUP; ?></a>
+								<a href="#"><?php echo L::setup_SET_; ?></a>
 							</li>
 						</ul>
 					</div>
+					<h5 class="panel-title">
+						<span class="glyphicon glyphicon-record monitor-icon-record <?php
+							if ($mon->active) : ?>blink text-danger<?php endif; ?>"></span>
+						<span class="glyphicon glyphicon-exclamation-sign monitor-icon-errors" title="<?php
+							echo L::ERRORS . ': ' . (int)$mon_err_cnt; ?>" <?php
+							if ((int)$mon_err_cnt == 0) : ?>style="display:none;"<?php endif; ?>></span>&nbsp;
+						<a role="button" title="<?php echo L::MONITORING . ': ' . $mon->uuid; ?>" data-toggle="collapse" <?php
+							//echo 'data-parent="#accordion-monitors"';  // uncomment for single panel incollapsed
+							?> href="#collapseMon<?php echo $i; ?>" aria-expanded="<?php echo $mon->active ? 'true' : 'false'; ?>" aria-controls="#collapseMon<?php echo $i; ?>"><?php
+							echo L::MONITORING; ?>: <b><?php echo L::FROM_ . '&nbsp;' . $created_text; ?></b>
+						</a>
+					</h5>
 				</div>
 				<div id="collapseMon<?php echo $i; ?>" class="panel-collapse collapse<?php echo $mon->active ? ' in' : ''; ?>" role="tabpanel" aria-labelledby="panelMonHeading<?php echo $i; ?>">
-					<div class="panel-body">
-						<table class="table table-responsive table-bordered table-condensed mon-table">
-							<tbody>
-							<tr>
-								<td class="col-md-12">
-									<div>
-										<?php if ($setup_mon_exists) : ?>
-											<?php echo L::SETUP; ?>: <b><?php echo htmlspecialchars($mon->setup->title, ENT_QUOTES, 'UTF-8'); ?></b>
-										<?php endif; ?>
-										<?php if ($canSetSetup) :?>
-											<a href="/?q=experiment/setsetup/<?php echo (int)$this->view->content->experiment->id; ?>&setup_id=<?php echo (int)$mon->setup_id; ?>" title="<?php echo L::setup_SELECT; ?>" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-new-window"></span><?php echo L::setup_SELECT; ?></a>
-										<?php endif; ?>
-										<?php if ($setup_mon_exists) : ?>
-											<div class="pull-right">
-												<span class="<?php
-												switch ($mon->setup->access)
-												{
-													case Setup::$ACCESS_PRIVATE:
-														echo 'glyphicon glyphicon-align-left';
-													break;
-													case Setup::$ACCESS_SINGLE:
-														echo 'glyphicon glyphicon-align-center';
-													break;
-													case Setup::$ACCESS_SHARED:
-													default:
-														echo 'glyphicon glyphicon-align-right';
-													break;
-												}
-												?>" aria-hidden="true">&nbsp;</span>
-											</div>
-										<?php endif; ?>
-									</div>
+					<table class="table table-responsive table-bordered table-condensed mon-table">
+						<tbody>
+						<tr>
+							<td class="col-md-12">
+								<div>
+									<?php if ($setup_mon_exists) : ?>
+										<?php echo L::SETUP; ?>: <b><?php echo htmlspecialchars($mon->setup->title, ENT_QUOTES, 'UTF-8'); ?></b>
+									<?php endif; ?>
+									<?php if ($canSetSetup) :?>
+										<div class="" style="display:none;">
+											<a href="/?q=experiment/setsetup/<?php echo (int)$this->view->content->experiment->id; ?>&setup_id=<?php echo (int)$mon->setup_id; ?>" class="small" title="<?php echo L::setup_SET_; ?>"><span class="glyphicon glyphicon-new-window"></span>&nbsp;<?php echo L::setup_SET_; ?></a>
+										</div>
+									<?php endif; ?>
+									<?php if ($setup_mon_exists) : ?>
+										<div class="pull-right">
+											<span class="<?php
+											switch ($mon->setup->access)
+											{
+												case Setup::$ACCESS_PRIVATE:
+													echo 'glyphicon glyphicon-align-left';
+												break;
+												case Setup::$ACCESS_SINGLE:
+													echo 'glyphicon glyphicon-align-center';
+												break;
+												case Setup::$ACCESS_SHARED:
+												default:
+													echo 'glyphicon glyphicon-align-right';
+												break;
+											}
+											?>" aria-hidden="true">&nbsp;</span>
+										</div>
+									<?php endif; ?>
+								</div>
+								<div class="col-xs-10 col-md-10">
 									<div class="setup-status">
 										<?php if ($ownMonSetup) : ?>
 										<div class="col-md-2 setup-status-owner">
@@ -383,101 +404,108 @@ if($setup_exists)
 										</div>
 										<?php endif; ?>
 									</div>
-								</td>
-							</tr>
-							<tr>
-								<td>
-									<div class="mrg-top-5px">
-										<div class="col-xs-12 col-sm-11 col-md-11">
-											<div class="col-xs-11 col-sm-6 col-md-4">
-												<?php if ($mon->amount) : ?>
-												<div class="mrg-bot-5px">
-													<div class="special-label"><?php echo L::setup_DETECTIONS_COUNT; ?>: <span class="badge monitor-amount-cnt"><?php echo $mon->amount; ?></span></div>
-												</div>
-												<?php endif; ?>
-
-												<div class="mrg-bot-5px">
-													<div class="special-label"><?php echo L::DONE; ?>: <span class="badge monitor-done-cnt"><?php echo $mon_done_cnt; ?></span></div>
-												</div>
-
-												<?php if ($mon->amount) : ?>
-												<div class="mrg-bot-5px">
-													<div class="special-label"><?php echo L::TIME_REMAIN; ?>: <span class="badge monitor-remain-cnt"><?php echo $mon_remain_cnt_text; ?></span></div>
-												</div>
-												<?php endif; ?>
+								</div>
+								<div class="col-xs-2 col-md-2">
+									<div class="text-right monitor-control-state">
+										<span class="monitor-control-waiting" style="display:none;"><span class="glyphicon glyphicon-refresh spin"></span><span class="btn-text hidden">&nbsp;<?php echo L::RUNNING_; ?></span></span>
+									</div>
+								</div>
+								<div class="col-xs-12 col-md-12">
+									<div class="text-right">
+										<div class="monitor-error-text text-danger" style="display:none;"></div>
+									</div>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<div class="mrg-top-5px">
+									<div class="col-xs-12 col-sm-10 col-md-10">
+										<div class="col-xs-12 col-sm-6 col-md-4">
+											<?php if ($mon->amount) : ?>
+											<div class="mrg-bot-5px">
+												<div class="special-label"><?php echo L::setup_DETECTIONS_COUNT; ?>: <span class="badge monitor-amount-cnt"><?php echo $mon->amount; ?></span></div>
 											</div>
-											<div class="col-xs-11 col-sm-5 col-md-3">
-												<div class="mrg-bot-5px">
-													<div class="special-label"><?php echo L::setup_DETECTIONS_PERIOD; ?>: <span class="badge"><?php echo (int)$mon->interval; ?></span></div>
-												</div>
-											</div>
-											<div class="col-xs-11 col-sm-6 col-md-4">
-												<?php if ($mon->duration) : ?>
-												<div class="mrg-bot-5px">
-													<div class="special-label"><?php echo L::setup_DURATION; ?>: <span class="badge monitor-duration"><?php echo System::secToTime($mon->time_det); ?></span></div>
-												</div>
-												<?php endif; ?>
+											<?php endif; ?>
 
-												<div class="mrg-bot-5px" class="monitor-stopat-parent" title="<?php echo $stopat_title_1;?>">
-													<div class="special-label"><?php echo L::FINISHING; ?>: <span class="badge monitor-stopat <?php echo $mon_stopat_class;?>"><?php echo $mon_stopat_text;?></span></div>
-												</div>
+											<div class="mrg-bot-5px">
+												<div class="special-label"><?php echo L::DONE; ?>: <span class="badge monitor-done-cnt"><?php echo $mon_done_cnt; ?></span></div>
+											</div>
+
+											<?php if ($mon->amount) : ?>
+											<div class="mrg-bot-5px">
+												<div class="special-label"><?php echo L::TIME_REMAIN; ?>: <span class="badge monitor-remain-cnt"><?php echo $mon_remain_cnt_text; ?></span></div>
+											</div>
+											<?php endif; ?>
+										</div>
+										<div class="col-xs-12 col-sm-6 col-md-4">
+											<div class="mrg-bot-5px">
+												<div class="special-label"><?php echo L::setup_DETECTIONS_PERIOD; ?>: <span class="badge"><?php echo (int)$mon->interval; ?></span></div>
 											</div>
 										</div>
-										<div class="col-xs-12 col-sm-1 col-md-1">
-											<!-- Monitor control -->
+										<div class="col-xs-12 col-sm-6 col-md-4">
+											<?php if ($mon->duration) : ?>
 											<div class="mrg-bot-5px">
-												<button type="button" class="btn btn-default form-control monitor-stop <?php
-													echo ((!$canMonSetupControl || !$mon->active) ? 'disabled' : '');
-													?>" data-text="<?php echo L::STOP; ?>" <?php
-													echo ((!$canMonSetupControl || !$mon->active) ? 'disabled="disabled"' : '');
-												?>><span class="glyphicon glyphicon-stop">&nbsp;</span><span class="btn-text"><?php echo L::STOP; ?></span></button>
+												<div class="special-label"><?php echo L::setup_DURATION; ?>: <span class="badge monitor-duration"><?php echo System::secToTime($mon->duration); ?></span></div>
 											</div>
+											<?php endif; ?>
 
-											<div class="mrg-bot-5px">
-												<button type="button" class="btn btn-default form-control monitor-strob <?php
-													echo ((!$canMonSetupControl) ? 'disabled' : '');
-													?>" data-text="<?php echo L::STROBE; ?>" <?php
-													echo ((!$canMonSetupControl) ? 'disabled="disabled"' : '');
-												?>><span class="glyphicon glyphicon-step-forward">&nbsp;</span><span class="btn-text"><?php echo L::STROBE; ?></span></button>
-											</div>
-
-											<div class="mrg-bot-5px">
-												<button type="button" class="btn btn-default form-control monitor-remove <?php
-													echo ($mon->active ? 'disabled' : '');
-													?>" data-text="<?php echo L::REMOVE; ?>" <?php
-													echo ($mon->active ? 'disabled="disabled"' : '');
-												?>><span class="glyphicon glyphicon-remove-circle">&nbsp;</span><span class="btn-text"><?php echo L::REMOVE; ?></span></button>
-											</div>
-											<!-- End Monitor control -->
-										</div>
-										<div class="col-xs-12 col-sm-12 col-md-12" style="display: none;">
-											<div class="mrg-bot-5px">
-												<?php
-												// TODO: get Setup Consumers list output? but no consumers anymore
-												echo L::MEMBERS; ?>: {value}
+											<div class="mrg-bot-5px" class="monitor-stopat-parent" title="<?php echo $stopat_title_1;?>">
+												<div class="special-label"><?php echo L::FINISHING; ?>: <span class="badge monitor-stopat <?php echo $mon_stopat_class;?>"><?php echo $mon_stopat_text;?></span></div>
 											</div>
 										</div>
 									</div>
-								</td>
-							</tr>
-							<tr>
-								<td>
-									<div class="pull-right text-right">
-									<?php
-									/*
-									if (!isset($this->view->content->experiment->DateEnd_exp) || empty($this->view->content->experiment->DateEnd_exp)) : ?>
-										<!-- <a href="#" class="btn btn-default form-control disabled"><?php echo L::FINISH; ?></a> -->
-									<?php else : ?>
-										<span><?php echo L::experiment_FINISHED; ?></span>
-									<?php endif;
-									*/
-									?>
+									<div class="col-xs-12 col-sm-2 col-md-2">
+										<!-- Monitor control -->
+										<div class="pull-right btn-group-vertical btn-group-sm monitor-control" role="group" aria-label="...">
+											<button type="button" class="btn btn-default monitor-stop <?php
+												echo ((!$canMonSetupControl || !$mon->active) ? 'disabled' : '');
+												?>" data-text="<?php echo L::STOP; ?>" <?php
+												echo ((!$canMonSetupControl || !$mon->active) ? 'disabled="disabled"' : '');
+											?>><span class="glyphicon glyphicon-stop"></span><span class="btn-text hidden">&nbsp;<?php echo L::STOP; ?></span></button>
+											<button type="button" class="btn btn-default monitor-strob <?php
+												echo ((!$canMonSetupControl) ? 'disabled' : '');
+												?>" data-text="<?php echo L::STROBE; ?>" <?php
+												echo ((!$canMonSetupControl) ? 'disabled="disabled"' : '');
+											?>><span class="glyphicon glyphicon-step-forward"></span><span class="btn-text hidden">&nbsp;<?php echo L::STROBE; ?></span></button>
+											<button type="button" class="btn btn-default monitor-remove <?php
+												echo ($mon->active ? 'disabled' : '');
+												?>" data-text="<?php echo L::REMOVE; ?>" <?php
+												echo ($mon->active ? 'disabled="disabled"' : '');
+											?>><span class="glyphicon glyphicon-trash"></span><span class="btn-text hidden">&nbsp;<?php echo L::REMOVE; ?></span></button>
+										</div>
+										<!-- End Monitor control -->
 									</div>
-								</td>
-							</tr>
-							</tbody>
-						</table>
-					</div>
+									<div class="col-xs-12 col-sm-12 col-md-12" style="display: none;">
+										<div class="mrg-bot-5px">
+											<?php
+											// TODO: get Setup Consumers list output? but no consumers anymore
+											echo L::MEMBERS; ?>: {value}
+										</div>
+									</div>
+								</div>
+							</td>
+						</tr>
+						<?php
+						/*
+						?>
+						<tr>
+							<td>
+								<div class="pull-right text-right">
+								<?php
+								if (!isset($this->view->content->experiment->DateEnd_exp) || empty($this->view->content->experiment->DateEnd_exp)) : ?>
+									<!-- <a href="#" class="btn btn-default form-control disabled"><?php echo L::FINISH; ?></a> -->
+								<?php else : ?>
+									<span><?php echo L::experiment_FINISHED; ?></span>
+								<?php endif;
+								</div>
+							</td>
+						</tr>
+						<?php
+						*/
+						?>
+						</tbody>
+					</table>
 				</div>
 			</div>
 			<?php endforeach; ?>
@@ -488,6 +516,9 @@ if($setup_exists)
 
 	</div>
 </div>
+<?php if (isset($this->view->content->sensors) && !empty($this->view->content->sensors)) : ?>
+<h4><?php echo L::SENSORS; ?>:</h4>
+<?php endif; ?>
 <div class="row">
 	<div class="col-sm-10 col-md-10">
 		<div class="row" id="widget-workspace">
@@ -524,15 +555,14 @@ if($setup_exists)
 	<div class="col-xs-12 col-sm-2 col-md-2 pull-left">
 		<div class="row">
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
-				<button type="button" id="experiment-action" class="btn btn-default form-control <?php
+				<button type="button" id="experiment_action" class="btn btn-default form-control <?php
 					echo (!$canSetupControl) ? 'disabled' : '';
 					?>" data-text-0="<?php echo L::START; ?>" data-text-1="<?php echo L::STOP; ?>" <?php echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><?php
 					echo ($setup_active) ? L::STOP : L::START;
 				?></button>
 			</div>
-
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
-				<button type="button" id="experiment-strob" class="btn btn-default form-control <?php echo (!$canSetupControl) ? 'disabled' : '';
+				<button type="button" id="experiment_strob" class="btn btn-default form-control <?php echo (!$canSetupControl) ? 'disabled' : '';
 					?>" <?php echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><?php echo L::STROBE;
 				?></button>
 			</div>
@@ -543,13 +573,25 @@ if($setup_exists)
 				<a class="btn btn-default form-control" href="/?q=experiment/graph/<?php echo (int)$this->view->content->experiment->id; ?>"><?php echo L::GRAPHS; ?></a>
 			</div>
 		</div>
+		<div class="row">
+			<div class="col-xs-12 col-md-12">
+				<div id="experiment_control_state" class="text-center">
+					<span id="experiment_control_waiting" style="display:none;"><span class="glyphicon glyphicon-refresh spin"></span><span class="btn-text hidden">&nbsp;<?php echo L::RUNNING_; ?></span></span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-xs-12 col-md-12">
+		<div class="text-right">
+			<div id="experiment_error_text" class="text-danger" style="display:none;"></div>
+		</div>
 	</div>
 </div>
 
 <div class="row">
 	<div class="col-md-5 pull-left text-left">
-		<label for="experiment-sensors-refresh" class="checkbox">
-			<input type="checkbox" id="experiment-sensors-refresh" value="1" title="<?php echo L::experiment_AUTO_REFRESH_VALUES_TITLE('3'); ?>"/> <?php echo L::experiment_AUTO_REFRESH_VALUES; ?>
+		<label for="experiment_sensors_refresh" class="checkbox">
+			<input type="checkbox" id="experiment_sensors_refresh" value="1" title="<?php echo L::experiment_AUTO_REFRESH_VALUES_TITLE('3'); ?>"/> <?php echo L::experiment_AUTO_REFRESH_VALUES; ?>
 		</label>
 	</div>
 </div>

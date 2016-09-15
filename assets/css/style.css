@@ -128,21 +128,15 @@ blink, .blink {
 .text-area { resize: vertical; min-height: 250px; }
 .width-auto { width: auto; }
 /* exp-page */ 
+.exp-table {}
+.exp-table .padng-3px { padding: 3px; }
 h3.exp-title {
-	margin: 0;
-	line-height: 40px;
-}
-.exp-table h3 {
-	line-height: 27px;
-	max-width: 74%;
 	display: inline-block;
+	max-width: 74%;
+	margin: 0;
 	padding-left: 40px;
 }
-.exp-table .padng-3px { padding: 3px; }
-.exp-table .btn-edit {
-	position: absolute;
-	left: 20px;
-}
+.exp-table .btn-edit { padding 0 12px; }
 .special-label {
 	border: 1px solid transparent;
 	display: inline-block;
@@ -156,10 +150,14 @@ h3.exp-title {
 	background-color: #fff;
 	color: #428bca;
 }
-.exp-title a { margin-bottom: 3px; }
-.exp-title span { vertical-align: middle; }
-.exp-title span.glyphicon { vertical-align: text-top; }
-
+td.exp-header { position: relative; }
+.exp-title a { }
+.exp-title span { }
+.exp-title .experiment-icon-record {
+  position: absolute;
+  top: 5px;
+  left: 8px;
+}
 .row-experiment .remove-button,
 .row-experiment .edit-button {
   background: white;

@@ -101,10 +101,11 @@ if($setup_exists)
 		?>">
 			<tbody>
 			<tr>
-				<td class="col-md-12 padng-3px">
+				<td class="padng-3px exp-header">
 					<h3 class="exp-title">
 						<span class="glyphicon glyphicon-record experiment-icon-record <?php if ($experiment_active) : ?>blink text-danger<?php endif; ?>"></span>
-						<span><?php echo htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8'); ?></span><a href="/?q=experiment/edit/<?php echo (int)$this->view->content->experiment->id; ?>" class="btn btn-edit btn-sm btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
+						<span><?php echo htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8'); 
+						?></span><a href="/?q=experiment/edit/<?php echo (int)$this->view->content->experiment->id; ?>" class="btn btn-edit"><span class="glyphicon glyphicon-pencil"></span></a>
 					</h3>
 					<div class="period-work">
 						<div class="date-block">
@@ -141,7 +142,7 @@ if($setup_exists)
 					<div class="setup-title">
 						<?php echo L::SETUP; ?>: <b><?php echo htmlspecialchars($this->view->content->setup->title, ENT_QUOTES, 'UTF-8'); ?></b>
 						<?php if($this->view->content->setup->userCanEdit($this->session())) :?>
-							<a href="/?q=setup/edit/<?php echo (int)$this->view->content->setup->id; ?>" title="<?php echo L::setup_EDIT; ?>" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
+							<a href="/?q=setup/edit/<?php echo (int)$this->view->content->setup->id; ?>" title="<?php echo L::setup_EDIT; ?>" class="btn btn-xs"><span class="glyphicon glyphicon-pencil"></span></a>
 						<?php endif; ?>
 					</div>
 					<div class="setup-status">
@@ -361,7 +362,7 @@ if($setup_exists)
 					<table class="table table-responsive table-bordered table-condensed mon-table">
 						<tbody>
 						<tr>
-							<td class="col-md-12">
+							<td>
 								<div>
 									<?php if ($setup_mon_exists) : ?>
 										<?php echo L::SETUP; ?>: <b><?php echo htmlspecialchars($mon->setup->title, ENT_QUOTES, 'UTF-8'); ?></b>

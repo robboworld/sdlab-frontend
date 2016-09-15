@@ -63,7 +63,7 @@
 						<div class="input-group input-group-sm">
 							<input type="password" name="session_key" placeholder="<?php echo L::session_KEY_EXAMPLE; ?>" title="<?php echo L::session_KEY_EXAMPLE2; ?>" class="form-control">
 							<span class="input-group-btn">
-								<button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-log-in">&nbsp;</span><span class="hidden-xs"><?php echo L::RESTORE; ?></span></button>
+								<button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-log-in">&nbsp;</span><span class="hidden-xs"><?php echo L::LOGIN; ?></span></button>
 								<a href="?q=session/create" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-plus">&nbsp;</span><span class="hidden-xs"><?php echo L::session_NEW_SESSION; ?></span></a>
 							</span>
 						</div>

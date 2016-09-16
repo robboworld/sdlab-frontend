@@ -409,14 +409,10 @@ function updateExperimentStatus(exp_id, uuid, onalways){
             if (uuid === ''){  // only in all status mode
                 el = $('.exp-table .exp-title .experiment-icon-record');
                 if(acnt>0){
-                    if(el.is(':hidden')){
-                        el.show().addClass('blink text-danger');
-                    }
+                    el.addClass('blink text-danger');
                 }else{
                     SDExperiment.stopTimer('MonId');  // Stop polling
-                    if(!el.is(':hidden')){
-                        el.hide().removeClass('blink text-danger');
-                    }
+                    el.removeClass('blink text-danger');
                 }
 
                 // Check errors

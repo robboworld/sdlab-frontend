@@ -49,9 +49,14 @@
 							<a href="javascript:void(0);" class="btn-remove-detection btn btn-xs text-danger pull-left" style="display: none;"><span class="glyphicon glyphicon-remove"></span></a>
 						</div>
 					</td>
-					<td><?php echo htmlspecialchars(System::datemsecformat($time, System::DATETIME_FORMAT1NANO, 'now'), ENT_QUOTES, 'UTF-8'); ?></td>
+					<td title="<?php echo htmlspecialchars(System::datemsecformat($time, System::DATETIME_FORMAT1NANO, 'now'), ENT_QUOTES, 'UTF-8'); ?>" style="white-space:nowrap;"><?php
+						echo htmlspecialchars(
+								System::datemsecformat($time, System::DATETIME_FORMAT1, 'now')
+								. '.' . (string)substr((string)((int)System::getdatemsec($time)),0,3),
+								ENT_QUOTES, 'UTF-8');
+					?></td>
 					<?php foreach ($this->view->content->displayed_sensors as $skey => $sensor) :?>
-					<td><?php 
+					<td><?php
 						if (isset($row[$skey]))
 						{
 							echo ($row[$skey]->error !== 'NaN') ? (float)$row[$skey]->detection : '';

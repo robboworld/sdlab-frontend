@@ -9,6 +9,7 @@
 	<script src="assets/js/lib/jquery-1.11.1.min.js"></script>
 	<link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
 	<link rel="stylesheet" href="assets/bootstrap/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" href="assets/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="assets/css/style.css">
 	<script src="assets/bootstrap/js/bootstrap.min.js"></script>
 	<script type="text/javascript">

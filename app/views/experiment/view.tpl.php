@@ -373,19 +373,19 @@ if($setup_exists)
 										</div>
 									<?php endif; ?>
 									<?php if ($setup_mon_exists) : ?>
-										<div class="pull-right">
+										<div class="setup-access pull-right">
 											<span class="<?php
 											switch ($mon->setup->access)
 											{
 												case Setup::$ACCESS_PRIVATE:
-													echo 'glyphicon glyphicon-align-left';
+													echo 'fa fa-user fa-lg';
 												break;
 												case Setup::$ACCESS_SINGLE:
-													echo 'glyphicon glyphicon-align-center';
+													echo 'fa fa-shield fa-lg';
 												break;
 												case Setup::$ACCESS_SHARED:
 												default:
-													echo 'glyphicon glyphicon-align-right';
+													echo 'fa fa-users fa-lg';
 												break;
 											}
 											?>" aria-hidden="true">&nbsp;</span>

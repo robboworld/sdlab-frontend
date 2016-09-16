@@ -188,6 +188,9 @@ td.exp-header { position: relative; }
 .panel.monitor-panel .panel-collapse .table {
   margin-bottom: 0;
 }
+.mon-table .setup-access {
+  padding-right: 18px;
+}
 
 .period-work {
 	display: inline-block;

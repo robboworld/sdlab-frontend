@@ -372,23 +372,28 @@ if($setup_exists)
 											<a href="/?q=experiment/setsetup/<?php echo (int)$this->view->content->experiment->id; ?>&setup_id=<?php echo (int)$mon->setup_id; ?>" class="small" title="<?php echo L::setup_SET_; ?>"><span class="glyphicon glyphicon-new-window"></span>&nbsp;<?php echo L::setup_SET_; ?></a>
 										</div>
 									<?php endif; ?>
-									<?php if ($setup_mon_exists) : ?>
+									<?php if ($setup_mon_exists) :
+										$setup_access_class = '';
+										$setup_access_title = '';
+										switch ($mon->setup->access)
+										{
+											case Setup::$ACCESS_PRIVATE:
+												$setup_access_class = 'fa fa-user fa-lg';
+												$setup_access_title = L::setup_ACCESS_PRIVATE;
+											break;
+											case Setup::$ACCESS_SINGLE:
+												$setup_access_class = 'fa fa-shield fa-lg';
+												$setup_access_title = L::setup_ACCESS_SINGLE;
+											break;
+											case Setup::$ACCESS_SHARED:
+											default:
+												$setup_access_class = 'fa fa-users fa-lg';
+												$setup_access_title = L::setup_ACCESS_SHARED;
+											break;
+										}
+									?>
 										<div class="setup-access pull-right">
-											<span class="<?php
-											switch ($mon->setup->access)
-											{
-												case Setup::$ACCESS_PRIVATE:
-													echo 'fa fa-user fa-lg';
-												break;
-												case Setup::$ACCESS_SINGLE:
-													echo 'fa fa-shield fa-lg';
-												break;
-												case Setup::$ACCESS_SHARED:
-												default:
-													echo 'fa fa-users fa-lg';
-												break;
-											}
-											?>" aria-hidden="true">&nbsp;</span>
+											<span class="<?php echo $setup_access_class; ?>" title="<?php echo $setup_access_title; ?>" aria-hidden="true">&nbsp;</span>
 										</div>
 									<?php endif; ?>
 								</div>

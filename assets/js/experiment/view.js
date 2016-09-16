@@ -98,6 +98,32 @@ $(document).ready(function(){
             }, SDExperiment.updaterSensorTime*1000);
         }
     });
+
+    $(window).resize(function(){
+        if($('#accordion-monitors').length > 0){
+            if($(window).width() < 768){
+                if ($('#accordion-monitors .monitor-control').hasClass('btn-group-vertical')){
+                    $('#accordion-monitors .monitor-control').removeClass('btn-group-vertical').addClass('btn-group btn-group-justified')
+                        .find('button').wrap('<div class="btn-group btn-group-wrap" role="group"></div>');
+                }
+            }else{
+                if ($('#accordion-monitors .monitor-control').hasClass('btn-group')){
+                    $('#accordion-monitors .monitor-control').removeClass('btn-group btn-group-justified').addClass('btn-group-vertical')
+                        .find('button').unwrap('.btn-group-wrap');
+                }
+            }
+        }
+    });
+    if($('#accordion-monitors').length > 0){
+        $(window).trigger('resize');
+        $('#accordion-monitors .panel-collapse')
+            .on('show.bs.collapse', function(){
+                $(this).siblings('.panel-heading').find('.panel-collapse-control a span').removeClass('glyphicon-chevron-up glyphicon-chevron-down').addClass('glyphicon-chevron-down');
+            })
+            .on('hide.bs.collapse', function(){
+                $(this).siblings('.panel-heading').find('.panel-collapse-control a span').removeClass('glyphicon-chevron-up glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+            });
+    }
 });
 var SDExperiment = {
     updaterSensorId : null,
@@ -232,10 +258,10 @@ function experimentAction(act, experiment_id){
     coreAPICall('Sensors.experiment'+(act ? 'Start' : 'Stop'), {
         "experiment": experiment_id
     }, function(data){
-        var el;
+        var el,btn=$('#experiment_action');
         $('#experiment_control_waiting').hide();
         if(typeof data.result !== 'undefined'){
-            var ok = false, uuid = '';
+            var ok=false,uuid='';
             if(act){
                 if((typeof data.result === 'string' || data.result instanceof String) && data.result.length>0){
                     uuid = data.result;// Start returns uuid of created monitor
@@ -248,8 +274,9 @@ function experimentAction(act, experiment_id){
             }
             if(ok){
                 // switch btn
-                $('#experiment_action').prop('disabled', false).removeClass('disabled')
-                    .text($('#experiment_action').data('text-'+(act?'1':'0')));
+                btn.prop('disabled', false).removeClass('disabled')
+                    .find('.btn-text').text(btn.data('text-'+(act?'1':'0')))
+                    .find('span:first-child').removeClass(' '+btn.data('icon-0')+' '+btn.data('icon-1')).addClass(btn.data('icon-'+(act?'1':'0')));
                 //$('#experiment_error_text').empty().hide();
                 el = $('#setup_status_active');
                 if(el.length>0){
@@ -257,17 +284,17 @@ function experimentAction(act, experiment_id){
                 }
                 location.reload();
             }else{
-                $('#experiment_action').prop('disabled', false).removeClass('disabled').addClass('btn-warning');
-                $('#experiment_error_text').html($('#experiment_action').data('text-'+(act?'0':'1'))+': '+SDLab.Language._('ERROR_NOT_COMPLETED')).show();
+                btn.prop('disabled', false).removeClass('disabled').addClass('btn-warning');
+                $('#experiment_error_text').html(btn.data('text-'+(act?'0':'1'))+': '+SDLab.Language._('ERROR_NOT_COMPLETED')).show();
             }
         } else if (typeof data.error !== 'undefined'){
             //error
-            $('#experiment_action').prop('disabled', false).removeClass('disabled').addClass('btn-warning');
-            $('#experiment_error_text').html($('#experiment_action').data('text-'+(act?'0':'1'))+': '+SDLab.Language._('ERROR_NOT_COMPLETED')+': '+data.error).show();
+            btn.prop('disabled', false).removeClass('disabled').addClass('btn-warning');
+            $('#experiment_error_text').html(btn.data('text-'+(act?'0':'1'))+': '+SDLab.Language._('ERROR_NOT_COMPLETED')+': '+data.error).show();
         } else {
             //error
-            $('#experiment_action').prop('disabled', false).removeClass('disabled').addClass('btn-warning');
-            $('#experiment_error_text').html($('#experiment_action').data('text-'+(act?'0':'1'))+': '+SDLab.Language._('ERROR_NOT_COMPLETED')).show();
+            btn.prop('disabled', false).removeClass('disabled').addClass('btn-warning');
+            $('#experiment_error_text').html(btn.data('text-'+(act?'0':'1'))+': '+SDLab.Language._('ERROR_NOT_COMPLETED')).show();
         }
     })
 }
@@ -402,7 +429,9 @@ function updateExperimentStatus(exp_id, uuid, onalways){
                     }
                 }
                 // switch btn
-                $('#experiment_action').text($('#experiment_action').data('text-'+(setup.active?'1':'0')));
+                var btn = $('#experiment_action');
+                btn.find('.btn-text').text(btn.data('text-'+(setup.active?'1':'0')))
+                   .find('span:first-child').removeClass(' '+btn.data('icon-0')+' '+btn.data('icon-1')).addClass(btn.data('icon-'+(setup.active?'1':'0')));
             }
 
             // Set global active
@@ -549,10 +578,10 @@ function showExpAlert(msg) {
     if($('table.exp-table tbody .exp-row-alert').length==0){
         $('table.exp-table tbody').append('\
             <tr class="exp-row-alert">\
-                <td colspan="2">\
+                <td>\
                     <div class="alert alert-warning alert-dismissible" role="alert">\
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>\
-                        <div>'+msg+'<div>\
+                        <div>'+msg+'</div>\
                     </div>\
                 </td>\
             </tr>\

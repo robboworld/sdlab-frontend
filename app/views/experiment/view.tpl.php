@@ -52,24 +52,6 @@ if($setup_exists)
 		}, SDExperiment.updaterMonTime*1000);
 		<?php endif;?>
 
-		$(window).resize(function(){
-			if($('#accordion-monitors').length > 0){
-				if($(window).width() < 768){
-					if ($('#accordion-monitors .monitor-control').hasClass('btn-group-vertical')){
-						$('#accordion-monitors .monitor-control').removeClass('btn-group-vertical').addClass('btn-group btn-group-justified')
-							.find('button').wrap('<div class="btn-group btn-group-wrap" role="group"></div>');
-					}
-				}else{
-					if ($('#accordion-monitors .monitor-control').hasClass('btn-group')){
-						$('#accordion-monitors .monitor-control').removeClass('btn-group btn-group-justified').addClass('btn-group-vertical')
-							.find('button').unwrap('.btn-group-wrap');
-					}
-				}
-			}
-		});
-		if($('#accordion-monitors').length > 0){
-			$(window).trigger('resize');
-		}
 	});
 </script>
 <div class="row">
@@ -323,8 +305,13 @@ if($setup_exists)
 					?>" data-monitor-expid="<?php echo (int)$mon->exp_id;
 			?>">
 				<div class="panel-heading <?php echo $heading_class; ?>" role="tab" id="panelMonHeading<?php echo $i; ?>">
+					<div class="pull-right panel-collapse-control">
+						<a href="#collapseMon<?php echo $i; ?>" role="button" class="btn-none" data-toggle="collapse" aria-expanded="<?php echo $mon->active ? 'true' : 'false'; ?>" aria-controls="#collapseMon<?php echo $i; ?>">
+							<span class="glyphicon <?php echo $mon->active ? 'glyphicon-chevron-down' : 'glyphicon-chevron-up'; ?>"></span>
+						</a>
+					</div>
 					<div class="btn-group dropdown-monitor pull-right hidden">
-						<a href="#" class="btn btn-sm btn-primary dropdown-toggle" data-target="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+						<a href="#" class="btn-none dropdown-toggle" data-target="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
 							<span class="glyphicon glyphicon-cog"></span>
 						</a>
 						<ul class="dropdown-menu dropdown-menu-right">
@@ -559,26 +546,34 @@ if($setup_exists)
 		</div>
 	</div>
 	<div class="col-xs-12 col-sm-2 col-md-2 pull-left">
+		<!-- Experiment control -->
 		<div class="row">
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
 				<button type="button" id="experiment_action" class="btn btn-default form-control <?php
-					echo (!$canSetupControl) ? 'disabled' : '';
-					?>" data-text-0="<?php echo L::START; ?>" data-text-1="<?php echo L::STOP; ?>" <?php echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><?php
-					echo ($setup_active) ? L::STOP : L::START;
-				?></button>
+					echo (!$canSetupControl) ? 'disabled' : '';?>" <?php
+					echo (!$canSetupControl) ? 'disabled="disabled"' : '';
+					?> data-text-0="<?php echo L::START; ?>" data-text-1="<?php echo L::STOP; ?>" data-icon-0="glyphicon-play" data-icon-1="glyphicon-stop">
+					<span class="glyphicon <?php echo ($setup_active) ? 'glyphicon-stop' : 'glyphicon-play'; ?>"></span>&nbsp;<span class="btn-text" ><?php echo ($setup_active) ? L::STOP : L::START;?></span>
+				</button>
 			</div>
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
 				<button type="button" id="experiment_strob" class="btn btn-default form-control <?php echo (!$canSetupControl) ? 'disabled' : '';
-					?>" <?php echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>><?php echo L::STROBE;
-				?></button>
+					?>" <?php echo (!$canSetupControl) ? 'disabled="disabled"' : ''; ?>>
+					<span class="glyphicon glyphicon-step-forward"></span>&nbsp;<span class="btn-text"><?php echo L::STROBE;?></span>
+				</button>
 			</div>
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
-				<a class="btn btn-default form-control" href="/?q=experiment/journal/<?php echo (int)$this->view->content->experiment->id; ?>"><?php echo L::JOURNAL; ?></a>
+				<a class="btn btn-default form-control" href="/?q=experiment/journal/<?php echo (int)$this->view->content->experiment->id; ?>">
+					<span class="glyphicon glyphicon-list-alt"></span>&nbsp;<?php echo L::JOURNAL; ?>
+				</a>
 			</div>
 			<div class="mrg-bot-5px col-xs-6 col-md-12 col-sm-12">
-				<a class="btn btn-default form-control" href="/?q=experiment/graph/<?php echo (int)$this->view->content->experiment->id; ?>"><?php echo L::GRAPHS; ?></a>
+				<a class="btn btn-default form-control" href="/?q=experiment/graph/<?php echo (int)$this->view->content->experiment->id; ?>">
+					<span class="glyphicon glyphicon-stats"></span>&nbsp;<?php echo L::GRAPHS; ?>
+				</a>
 			</div>
 		</div>
+		<!-- End Experiment control -->
 		<div class="row">
 			<div class="col-xs-12 col-md-12">
 				<div id="experiment_control_state" class="text-center">

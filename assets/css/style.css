@@ -182,8 +182,33 @@ td.exp-header { position: relative; }
 .panel-group-monitors.panel-group .panel {
   overflow: visible;
 }
-.dropdown-monitor .btn.dropdown-toggle {
-  padding: 2px 5px;
+.panel-primary > .panel-heading .btn-none {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+.panel-primary > .panel-heading a.btn-none,
+.panel-primary > .panel-heading a.btn-none:focus {
+  color: #fff;
+  text-decoration: none;
+}
+.panel-primary > .panel-heading a.btn-none:focus {
+  outline: 0 none;
+  /*
+  outline: thin dotted;
+  outline-offset: -2px;
+  */
+}
+.panel-primary > .panel-heading a.btn-none:active,
+.panel-primary > .panel-heading a.btn-none:hover {
+  outline: 0 none;
+}
+
+.panel-primary > .panel-heading a.btn-none:hover {
+  color: #2a6496;
+  text-decoration: none;
+}
+.monitor-panel .panel-heading .panel-collapse-control .btn-none {
+  margin-left: 10px;
 }
 .panel.monitor-panel .panel-collapse .table {
   margin-bottom: 0;

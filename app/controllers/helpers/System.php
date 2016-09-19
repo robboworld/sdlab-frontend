@@ -331,6 +331,11 @@ class System
 						'si_name'       => 'volt',
 						'si_notation'   => 'V'
 				),
+				'distance' => array(
+						'value_name'    => 'distance',
+						'si_name'       => 'meter',
+						'si_notation'   => 'm'
+				),
 		);
 
 		if (is_string($field) && isset($cat[$name]))

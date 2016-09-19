@@ -331,6 +331,11 @@ class System
 						'si_name'       => 'volt',
 						'si_notation'   => 'V'
 				),
+				'induction' => array(
+						'value_name'    => 'induction',
+						'si_name'       => 'tesla',
+						'si_notation'   => 'T'
+				),
 		);
 
 		if (is_string($field) && isset($cat[$name]))

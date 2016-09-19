@@ -360,6 +360,11 @@ class System
 						'si_name'       => 'meter',
 						'si_notation'   => 'm'
 				),
+				'induction' => array(
+						'value_name'    => 'induction',
+						'si_name'       => 'tesla',
+						'si_notation'   => 'T'
+				),
 		);
 
 		if (is_string($field) && isset($cat[$name]))

@@ -100,10 +100,10 @@ $(document).ready(function(){
     });
 
     $('#collapseMonAll').click(function() {
-        $('#accordion-monitors .panel-collapse').collapse('hide');
+        $('#accordion-monitors .panel-collapse.in').collapse('hide');
     });
     $('#expandMonAll').click(function() {
-        $('#accordion-monitors .panel-collapse').collapse('show');
+        $('#accordion-monitors .panel-collapse:not(.in)').collapse('show');
     });
 
     $(window).resize(function(){

@@ -217,10 +217,10 @@ if($setup_exists)
 		<?php if (!empty($this->view->content->monitors)) : ?>
 		<h4><?php echo L::MONITORING; ?>:
 			<div class="pull-right">
-				<a id="collapseMonAll" href="#" role="button">
+				<a id="collapseMonAll" href="javascript:void(0);" role="button">
 					<span class="glyphicon glyphicon-collapse-up"></span>
 				</a>
-				<a id="expandMonAll" href="#" role="button">
+				<a id="expandMonAll" href="javascript:void(0);" role="button">
 					<span class="glyphicon glyphicon-collapse-down"></span>
 				</a>
 			</div>

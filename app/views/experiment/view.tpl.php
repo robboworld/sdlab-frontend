@@ -118,9 +118,32 @@ if($setup_exists)
 				</td>
 			</tr>
 		<?php endif;?>
-		<?php if ($setup_exists) :?>
+		<?php if ($setup_exists) :
+			$setup_access_class = '';
+			$setup_access_title = '';
+			switch ($this->view->content->setup->access)
+			{
+				case Setup::$ACCESS_PRIVATE:
+					$setup_access_class = 'fa fa-user fa-lg';
+					$setup_access_title = L::setup_ACCESS_PRIVATE;
+				break;
+				case Setup::$ACCESS_SINGLE:
+					$setup_access_class = 'fa fa-shield fa-lg';
+					$setup_access_title = L::setup_ACCESS_SINGLE;
+				break;
+				case Setup::$ACCESS_SHARED:
+				default:
+					$setup_access_class = 'fa fa-users fa-lg';
+					$setup_access_title = L::setup_ACCESS_SHARED;
+				break;
+			}
+			?>
+
 			<tr>
 				<td>
+					<div class="setup-access pull-right">
+						<span class="<?php echo $setup_access_class; ?>" title="<?php echo $setup_access_title; ?>" aria-hidden="true">&nbsp;</span>
+					</div>
 					<div class="setup-title">
 						<?php echo L::SETUP; ?>: <b><?php echo htmlspecialchars($this->view->content->setup->title, ENT_QUOTES, 'UTF-8'); ?></b>
 						<?php if($this->view->content->setup->userCanEdit($this->session())) :?>

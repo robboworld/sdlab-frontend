@@ -113,17 +113,17 @@ if (empty($this->view->form->setup->amount))
 						<div class="col-xs-6 col-md-6 col-sm-6">
 							<div class="radio<?php echo $this->view->form->setup->id ? ' disabled' : '' ?>">
 					 			<label>
-									<input type="radio" value="0" id="setup_access0" name="access" <?php echo ($this->view->form->setup->access == 0) ? 'checked="checked"' : ''; echo $this->view->form->setup->id ? ' disabled="disabled"' : ''; ?>/> <?php echo L::setup_ACCESS_SHARED; ?>
+									<input type="radio" value="0" id="setup_access0" name="access" <?php echo ($this->view->form->setup->access == 0) ? 'checked="checked"' : ''; echo $this->view->form->setup->id ? ' disabled="disabled"' : ''; ?>/><span class="fa fa-users fa-lg" aria-hidden="true">&nbsp;</span> <?php echo L::setup_ACCESS_SHARED; ?>
 								</label>
 							</div>
 							<div class="radio<?php echo $this->view->form->setup->id ? ' disabled' : '' ?>">
 								<label>
-									<input type="radio" value="1" id="setup_access1" name="access" <?php echo ($this->view->form->setup->access == 1) ? 'checked="checked"' : ''; echo $this->view->form->setup->id ? ' disabled="disabled"' : ''; ?>/> <?php echo L::setup_ACCESS_PRIVATE; ?>
+									<input type="radio" value="1" id="setup_access1" name="access" <?php echo ($this->view->form->setup->access == 1) ? 'checked="checked"' : ''; echo $this->view->form->setup->id ? ' disabled="disabled"' : ''; ?>/><span class="fa fa-user fa-lg" aria-hidden="true">&nbsp;</span> <?php echo L::setup_ACCESS_PRIVATE; ?>
 								</label>
 							</div>
 							<div class="radio<?php echo $this->view->form->setup->id ? ' disabled' : '' ?>">
 								<label>
-									<input type="radio" value="2" id="setup_access2" name="access" <?php echo ($this->view->form->setup->access == 2) ? 'checked="checked"' : ''; echo $this->view->form->setup->id ? ' disabled="disabled"' : ''; ?>/> <?php echo L::setup_ACCESS_SINGLE; ?>
+									<input type="radio" value="2" id="setup_access2" name="access" <?php echo ($this->view->form->setup->access == 2) ? 'checked="checked"' : ''; echo $this->view->form->setup->id ? ' disabled="disabled"' : ''; ?>/><span class="fa fa-shield fa-lg" aria-hidden="true">&nbsp;</span> <?php echo L::setup_ACCESS_SINGLE; ?>
 								</label>
 							</div>
 						</div>

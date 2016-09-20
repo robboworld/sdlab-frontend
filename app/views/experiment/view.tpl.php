@@ -215,7 +215,16 @@ if($setup_exists)
 		</table>
 
 		<?php if (!empty($this->view->content->monitors)) : ?>
-		<h4><?php echo L::MONITORING; ?>:</h4>
+		<h4><?php echo L::MONITORING; ?>:
+			<div class="pull-right">
+				<a id="collapseMonAll" href="#" role="button">
+					<span class="glyphicon glyphicon-collapse-up"></span>
+				</a>
+				<a id="expandMonAll" href="#" role="button">
+					<span class="glyphicon glyphicon-collapse-down"></span>
+				</a>
+			</div>
+		</h4>
 		<!-- Monitors -->
 		<div class="panel-group panel-group-monitors" id="accordion-monitors" role="tablist" aria-multiselectable="true">
 			<?php foreach ($this->view->content->monitors as $i => $mon) :

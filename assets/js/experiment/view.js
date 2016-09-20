@@ -99,6 +99,13 @@ $(document).ready(function(){
         }
     });
 
+    $('#collapseMonAll').click(function() {
+        $('#accordion-monitors .panel-collapse').collapse('hide');
+    });
+    $('#expandMonAll').click(function() {
+        $('#accordion-monitors .panel-collapse').collapse('show');
+    });
+
     $(window).resize(function(){
         if($('#accordion-monitors').length > 0){
             if($(window).width() < 768){

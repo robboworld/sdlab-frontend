@@ -6,10 +6,11 @@
  * Api call
  * @param  string  method
  * @param  array   params
- * @param  func    callback
+ * @param  func    success callback
+ * @param  func    error callback
  * @return jqxhr object
  */
-function coreAPICall(method, params, callback){
+function coreAPICall(method, params, onSuccess, onError){
     return rq = $.ajax({
         url: '?q=api',
         method: 'get',
@@ -18,10 +19,15 @@ function coreAPICall(method, params, callback){
             params: params
         },
         success: function(result, status, jqxhr){
-            callback(result, status, jqxhr);
+            if (typeof onSuccess === "function") {
+                onSuccess(result, status, jqxhr);
+            }
         },
-        error: function(){
+        error: function(jqxhr, status, errorThrown){
             console.log('API Call error: Transport error');
+            if (typeof onError === "function") {
+                onError(jqxhr, status, errorThrown);
+            }
         }
     });
 }
@@ -130,34 +136,6 @@ function arraysEqual(a, b) {
 		if (a[i] !== b[i]) return false;
 	}
 	return true;
-}
-
-/**
- * Graph data class
- * @param   data
- */
-function Graph(data) {
-    this.data = data;
-    this.getMinValue = function(){
-        var min = null;
-        $.each(this.data, function(si, sensor){
-            $.each(sensor.data, function(pi, point){
-                var p = parseFloat(point[1]);
-                if(p < min || min == null) min = p;
-            });
-        });
-        return min;
-    };
-    this.getMaxValue = function(){
-        var max = null;
-        $.each(this.data, function(si, sensor){
-            $.each(sensor.data, function(pi, point){
-                var p = parseFloat(point[1]);
-                if(p > max || max == null) max = p;
-            });
-        });
-        return max;
-    };
 }
 
 // Only define the SDLab namespace if not defined.

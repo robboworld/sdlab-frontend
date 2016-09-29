@@ -1,82 +1,183 @@
-<script>
-	var plot;
-	var g;
-	var experiment = <?php echo (int)$this->view->content->experiment->id; ?>;
+<?php
+$timerange = 60;  // default time range
+?>
+<script type="text/javascript">
+    var g,
+        updaterPlot=null,
+        updaterPlotTime=5,
+        timerange=<?php echo (($timerange > 0) ? $timerange : null); ?>,
+        experiment=<?php echo (int)$this->view->content->experiment->id; ?>,
+        seqNum=0;
 
-	$(document).ready(function(){
-		var choiceContainer = $(".available-sensors");
+    $(document).ready(function() {
+        var now = new Date();
+        g = new TimeSeriesPlot('#graph-all', [], {
+            xaxis: {
+                min: ((timerange > 0) ? (Number(now.getTime()) - (timerange * 1000)) : null),
+                max: Number(now.getTime())
+            },
+            yaxis: {
+                min: null,
+                max: null
+            },
+            xrange: timerange,
+            plottooltip: true
+        });
+console.log('created TimeSeriesPlot:');console.log(g);
 
-		$('#graph-refesh').click(function(){
-			var list = $('input', choiceContainer);
-			var clist = list.filter(':checked');
-			var params = {'experiment': experiment};
-			if(list.length>0){
-				if(clist.length>0){
-					params['show-sensor'] = []
-					$.each(clist, function(){
-						params['show-sensor'].push($(this).val());
-					});
-				}
-				var rq = coreAPICall('Detections.getGraphDataAll', params, dataRecived);
-				rq.always(function(d,textStatus,err) {
-					if (typeof params['show-sensor'] === 'undefined' || params['show-sensor'].length == 0){
-						$('input', choiceContainer).prop('checked', true);
-					}
-				});
-			}else{
-				// error : no sensors in list
-				coreAPICall('Detections.getGraphDataAll', params, dataRecived);
-			}
-		});
+        var choiceContainer = $(".available-sensors");
 
-		/*
-		$('input', choiceContainer).click(function(){
-			$('#graph-refesh').trigger('click');
-		});
-		*/
+        // Refresh data with sensor filter
+        $('#graph-refesh').click(function() {
+            stopPlotUpdate();
+            var list = $('input', choiceContainer),
+                clist = list.filter(':checked'), selall = false,
+                params = {'experiment': experiment};
+            if (list.length>0) {
+                params['show-sensor'] = [];
 
-		coreAPICall('Detections.getGraphDataAll', {'experiment' : experiment}, dataRecived);
-	});
+                if (clist.length>0) {
+                    $.each(clist, function() {
+                        params['show-sensor'].push($(this).val());
+                    });
+                } else {
+                    selall = true;
+                    $.each(list, function() {
+                        params['show-sensor'].push($(this).val());
+                    });
+                }
+                var rq = coreAPICall('Detections.getGraphDataAll', params, dataReceivedAll);
+                rq.seqnum = ++seqNum;
+                rq.always(function(d,textStatus,err) {
+                    if (typeof params['show-sensor'] === 'undefined' || params['show-sensor'].length == 0 || selall == true) {
+                        $('input', choiceContainer).prop('checked', true);
+                    }
+                });
+            } else {
+                // no sensors in list - get all?
+                //var rq = coreAPICall('Detections.getGraphDataAll', params, dataReceivedAll);
+                //rq.seqnum = ++seqNum;
 
-	function dataRecived(data){
-		if(typeof data.error === 'undefined'){
-			if (typeof g === 'undefined'){
-				g = new Graph(data.result);
-			}else{
-				g.data = data.result;
-			}
+                // do nothing
 
-			var options = {
-				xaxis: {
-					//zoomRange: [data[0].data[0][0], data[0].data[data.length-1][0]],
-					show: true,
-					mode: 'time',
-					timeformat: "%Y-%m-%d %H:%M:%S",
-					minTickSize: [1, 'second'],
-					timezone: null
-				},
-				yaxis: {
-					min: g.getMinValue()-1,
-					max: g.getMaxValue()+3
-				},
-				grid: {
-					hoverable: true,
-					clickable: true
-				},
-				plottooltip: true
-			};
-			if (typeof plot !== 'undefined'){
-				plot.shutdown();
-			}
-			plot = buildGraph(data.result, $('#graph-all'), options);
-		}
-		else
-		{
-			$('#graph-all').empty();
+                return false;
+            }
+            return true;
+        });
 
-			setInterfaceError($('#graph-msgs'), 'API error: ' + data.error, 3000);
-		}
-	}
+        //$('input', choiceContainer).click(function() {
+        //    $('#graph-refesh').trigger('click');
+        //});
+
+        // Get data
+        // Only for all available checked sensors
+        var list = $('input', choiceContainer),
+            params = {'experiment': experiment};
+        if (list.length>0) {
+            params['show-sensor'] = [];
+            $.each(list, function() {
+                params['show-sensor'].push($(this).val());
+            });
+            var rq = coreAPICall('Detections.getGraphDataAll', params, dataReceivedAll);
+            rq.seqnum = ++seqNum;
+            // Must be checked all sensors
+            rq.always(function(d,textStatus,err) {
+                if ($('input', choiceContainer).length>0) {
+                    $('input', choiceContainer).prop('checked', true);
+                }
+            });
+        }
+    });
+
+    function setDefaultAxis(){
+        $.each(g.p.getAxes(), function(_, axis) {
+            var opts = axis.options;
+            if (axis.direction === 'y') {
+                opts.min = null;
+                opts.max = null;
+            }
+            if (axis.direction === 'x') {
+                var r = g.getRange(),
+                    now = new Date();
+                opts.max = Number(now.getTime());
+                opts.min = ((r !== null) ? (opts.max - (r * 1000)) : null);
+            }
+        });
+    }
+
+    function stopPlotUpdate(){
+console.log('call stopPlotUpdate');
+        if (updaterPlot !== null) {
+            clearInterval(updaterPlot);
+            updaterPlot = null;
+        }
+    }
+
+    function runPlotUpdate(){
+console.log('call runPlotUpdate');
+        stopPlotUpdate();
+
+        updaterPlot = setTimeout(function() {
+            // Get data
+            var params = {};
+            params.experiment = experiment;
+            if (g.xmax !== null) {
+                params.from = g.xmax_;
+                params.exclude = 1;  // not include the from-to points
+            }
+            var rq = coreAPICall('Detections.getGraphData', params, dataReceived);
+            rq.seqnum = seqNum;
+        }, updaterPlotTime*1000);
+    }
+
+    function dataReceivedAll(data, status, jqxhr){
+console.log('call dataReceivedAll');console.log(data);console.log('jqxhr.seqnum: '+jqxhr.seqnum);
+        if (jqxhr.seqnum != seqNum) {
+console.log('old seqnum,now: '+seqNum);
+            return;
+        }
+
+        if (typeof data.error === 'undefined') {
+            g.setData(data.result);
+            var pcnt = g.getTotalPointsCount(data.result);
+console.log('new count: '+pcnt);
+            if (pcnt > 0) {
+                g.refresh(true);
+            } else {
+                setDefaultAxis();
+                g.refresh(false);
+            }
+
+            // Plot data polling
+            runPlotUpdate();
+        } else {
+            //$('#graph-all').empty();
+            setInterfaceError($('#graph-msgs'), 'API error: ' + data.error, 3000);
+        }
+    }
+
+    function dataReceived(data, status, jqxhr){
+console.log('call dataReceived');console.log(data);console.log('jqxhr.seqnum: '+jqxhr.seqnum);
+        if (jqxhr.seqnum != seqNum) {
+console.log('old seqnum,now: '+seqNum);
+            return;
+        }
+
+        if(typeof data.error === 'undefined') {
+            var acnt = g.addData(data.result);
+console.log('added count: '+acnt);
+            g.refresh((acnt > 0 && g.shiftenabled) ? true : false);
+
+            // Plot data polling
+            runPlotUpdate();
+        } else {
+            //$('#graph-all').empty();
+            setInterfaceError($('#graph-msgs'), 'API error: ' + data.error, 3000);
+
+            // Plot data polling
+            runPlotUpdate();  //xxx: start new update on error too?
+        }
+    }
 </script>
 <div class="row">
 	<div class="col-md-12">
@@ -109,7 +210,7 @@
 					</tr>
 				<?php endforeach; ?>
 			</tbody>
-			<?php if ($this->view->content->list->rowCount() == 0) : ?>
+			<?php if (empty($this->view->content->list)) : ?>
 			<tfoot>
 				<tr>
 					<td colspan="2">
@@ -134,6 +235,27 @@
 
 	<div class="col-md-9">
 		<div id="graph-msgs">
+		</div>
+		<div id="control-zoom-x">
+			<label>XRange</label>
+			<div class="btn-group" role="group" aria-label="...">
+				<button type="button" class="btn btn-default" onclick="g.setRange(null);g.refresh(true);return true;">All</button>
+				<button type="button" class="btn btn-default" onclick="g.setRange(1);g.refresh(true);return true;">1s</button>
+				<button type="button" class="btn btn-default" onclick="g.setRange(30);g.refresh(true);return true;">30s</button>
+				<button type="button" class="btn btn-default" onclick="g.setRange(1*60);g.refresh(true);return true;">1m</button>
+				<button type="button" class="btn btn-default" onclick="g.setRange(30*60);g.refresh(true);return true;">30m</button>
+				<button type="button" class="btn btn-default" onclick="g.setRange(1*60*60);g.refresh(true);return true;">1h</button>
+				<button type="button" class="btn btn-default" onclick="g.setRange(12*60*60);g.refresh(true);return true;">12h</button>
+				<button type="button" class="btn btn-default" onclick="g.setRange(1*24*60*60);g.refresh(true);return true;">1d</button>
+				<button type="button" class="btn btn-default" onclick="g.setRange(1*7*24*60*60);g.refresh(true);return true;">1w</button>
+				<button type="button" class="btn btn-default" onclick="g.setRange(1*30*24*60*60);g.refresh(true);return true;">1M</button>
+				<button type="button" class="btn btn-default" onclick="g.setRange(6*30*24*60*60);g.refresh(true);return true;">6M</button>
+				<button type="button" class="btn btn-default" onclick="g.setRange(365*24*60*60);g.refresh(true);return true;">1Y</button>
+			</div>
+			<div class="btn-group" role="group" aria-label="...">
+				<button type="button" class="btn btn-default" onclick="runPlotUpdate();">Update on</button>
+				<button type="button" class="btn btn-default" onclick="stopPlotUpdate();">Update off</button>
+			</div>
 		</div>
 		<div id="graph-all" style="height: 400px; padding-left: 15px;">
 		</div>

@@ -390,10 +390,11 @@ class SetupController extends Controller
 	 * 
 	 * @param  integer $id       The id of Setup
 	 * @param  bool    $getinfo  Get additional sensors info from sensors register
+	 * @param  DB      $db       Database instance for use, or null if new
 	 * 
 	 * @return array|bool
 	 */
-	public static function getSensors($id, $getinfo = false)
+	public static function getSensors($id, $getinfo = false, $db = null)
 	{
 		// TODO: Rescan sensors for connect status
 		if(!is_numeric($id))
@@ -401,7 +402,11 @@ class SetupController extends Controller
 			return false;
 		}
 
-		$db = new DB();
+		if ($db === null)
+		{
+			$db = new DB();
+		}
+
 		if ($getinfo)
 		{
 			$stmt = $db->prepare(

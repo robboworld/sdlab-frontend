@@ -27,7 +27,7 @@
 			]
 		}];
 
-	function dataRecived(data){
+	function dataReceived(data){
 		console.log(data);
 
 		var g = new Graph(data);
@@ -51,9 +51,9 @@
 
 	$(document).ready(function(){
 
-		coreAPICall('Detections.getGraphData', {
+		coreAPICall('Detections.getGraphSingleData', {
 			plot: 1
-		}, dataRecived)
+		}, dataReceived)
 
 	})
 </script>

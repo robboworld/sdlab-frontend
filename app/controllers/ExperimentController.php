@@ -713,121 +713,182 @@ class ExperimentController extends Controller
 		}
 
 		// TODO: may be move all journal operations to separate controller/model
+
+		// Init arrays of sensors
+		$det_sensors   = array();
+		$setup_sensors = array();
+		$mon_sensors   = array();
+		$reg_sensors   = array();
+
 		$db = new DB();
 
-		// Get detections sensors
-		// (already used sensors)
-		$sql = 'select DISTINCT sensor_id, sensor_val_id '
-				. 'from detections '
-				. 'where exp_id = :exp_id '
-				. 'order by sensor_id, sensor_val_id';
-		$query = $db->prepare($sql);
-		if ($query === false)
+		// Speed up db operations within transaction
+		$db->beginTransaction();
+		try
 		{
-			error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
-		}
-		$result = $query->execute(array(':exp_id' => $experiment->id));
-		if ($result === false)
-		{
-			error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
-		}
-		$det_sensors = array();
-		while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
-		{
-			$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
-			if(!array_key_exists($key, $det_sensors))
+			// Get list of sensors available in detections
+			// (already used sensors)
+
+			// Get unique sensors list from detections data of experiment
+			$sql = 'select DISTINCT sensor_id, sensor_val_id '
+					. 'from detections '
+					. 'where exp_id = :exp_id '
+					. 'order by sensor_id, sensor_val_id';
+			$query = $db->prepare($sql);
+			if ($query === false)
 			{
-				$det_sensors[$key] = clone $row;
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute(array(
+					':exp_id' => $experiment->id
+			));
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $det_sensors))
+				{
+					$det_sensors[$key] = clone $row;
+				}
+			}
+
+			// Get list of sensors in current setup
+
+			// Get current setup
+			if ($experiment->setup_id)
+			{
+				$temp_sensors = SetupController::getSensors($experiment->setup_id, true, $db);  // +setup conf fields: name, setup_id
+				if ($temp_sensors === false)
+				{
+					$temp_sensors = array();
+				}
+				foreach ($temp_sensors as $row)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if (!array_key_exists($key, $setup_sensors))
+					{
+						$setup_sensors[$key] = clone $row;
+					}
+				}
+			}
+
+			// Get monitors sensors
+
+			// Get unique sensors list from monitors values in experiment
+			$sql = 'select DISTINCT mv.sensor as sensor_id, mv.valueidx as sensor_val_id '
+					. 'from monitors as m '
+					. 'left join monitors_values as mv on mv.uuid = m.uuid '
+					. 'where m.exp_id = :exp_id '
+					. 'order by mv.sensor, mv.valueidx';
+			$query = $db->prepare($sql);
+			if ($query === false)
+			{
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute(array(
+					':exp_id' => $experiment->id
+			));
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $mon_sensors))
+				{
+					$mon_sensors[$key] = clone $row;
+				}
+			}
+
+			// Get sensors from register with additional info
+
+			// TODO: add method Sensor::getSensors()
+			$query = $db->prepare(
+					'select sensor_id, sensor_val_id, '
+						. 'value_name, si_notation, si_name, max_range, min_range, resolution '
+					. 'from sensors'
+			);
+			if ($query === false)
+			{
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute();
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $reg_sensors))
+				{
+					$reg_sensors[$key] = clone $row;
+				}
 			}
 		}
+		catch (PDOException $e)
+		{
+			error_log('PDOException Experiment::journal(): '.var_export($e->getMessage(),true));  //DEBUG
+			//var_dump($e->getMessage());
+		}
+		$db->commit();
 
-		// Get current Setup sensors (???)
-		//$setup_sensors = array();
-		// xxx: comment out this block if not use setups data for sensors at all
-		$temp_sensors = SetupController::getSensors($experiment->setup_id, true);
-		if ($temp_sensors === false)
-		{
-			$temp_sensors = array();
-		}
-		$setup_sensors = array();
-		foreach ($temp_sensors as $row)
-		{
-			$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
-			if(!array_key_exists($key, $setup_sensors))
-			{
-				$setup_sensors[$key] = clone $row;
-			}
-		}
+		// Merge sensors
 
-		// Get sensors from register with additional info
-		// TODO: add Sensor::getSensor()
-		//a.name as name, a.setup_id as setup_id
-		$query = $db->prepare(
-					'select s.sensor_id, s.sensor_val_id, s.value_name as value_name, s.si_notation as si_notation, s.si_name as si_name, s.max_range as max_range, s.min_range as min_range, s.resolution as resolution '
-					. 'from sensors as s'
-		);
-		if ($query === false)
-		{
-			error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
-		}
-		$result = $query->execute();
-		if ($result === false)
-		{
-			error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
-		}
-		$sensors = array();
-		while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
-		{
-			$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
-			if(!array_key_exists($key, $sensors))
-			{
-				$sensors[$key] = clone $row;
-			}
-		}
+		// Merge detections sensors (older) with monitor sensors (newest)
+		$sensors = array_merge($det_sensors, $mon_sensors);
 
-		// Fill list of available sensors
-		// Merge current Setup sensors and sensors from done detections and fill additional info if needed
-		$available_sensors = array_merge($det_sensors, $setup_sensors);
-		foreach ($available_sensors as $key => $sensor)
+		// Merge detections-monitors sensors (older) with setup sensors (fullest-newest)
+		$sensors = array_merge($sensors, $setup_sensors);
+
+
+		// Fill sensors with additional info from register
+		foreach ($sensors as $key => $sensor)
 		{
-			// info from register for detections sensors list
+			// Need info from register for sensor
 			if(!property_exists($sensor, 'value_name'))
 			{
-				if (array_key_exists($key, $sensors))
+				if (array_key_exists($key, $reg_sensors))
 				{
-					// Copy additional sensor data from registry
-					$available_sensors[$key]       = clone $sensors[$key];
+					// Replace with sensor data from registry
+					$sensors[$key]       = clone $reg_sensors[$key];
 
-					// add name and setup id fields
-					$available_sensors[$key]->name = (mb_strlen($sensors[$key]->value_name,'utf-8') > 0) ?
-							constant('L::sensor_VALUE_NAME_' . strtoupper($sensors[$key]->value_name)) :
+					// add name field
+					$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
+							constant('L::sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
 							constant('L::sensor_UNKNOWN');
 				}
 				else
 				{
-					$available_sensors[$key]->value_name  = null;
-					$available_sensors[$key]->si_notation = null;
-					$available_sensors[$key]->si_name     = null;
-					$available_sensors[$key]->max_range   = null;
-					$available_sensors[$key]->min_range   = null;
-					$available_sensors[$key]->resolution  = null;
+					$sensors[$key]->value_name  = null;
+					$sensors[$key]->si_notation = null;
+					$sensors[$key]->si_name     = null;
+					$sensors[$key]->max_range   = null;
+					$sensors[$key]->min_range   = null;
+					$sensors[$key]->resolution  = null;
 
-					$available_sensors[$key]->name        = constant('L::sensor_UNKNOWN');
+					// add name field
+					$sensors[$key]->name        = constant('L::sensor_UNKNOWN');
 				}
-				$available_sensors[$key]->setup_id = 0;
+				// add setup id field
+				$sensors[$key]->setup_id = 0;
 			}
 		}
 
-		$this->view->content->available_sensors = &$available_sensors;
+		$this->view->content->available_sensors = &$sensors;
 
 		// Fill list of displayed sensors from sensors filter
 		if(!empty($sensors_show))
 		{
-			$this->view->content->displayed_sensors = array_intersect_key($available_sensors, $sensors_show);
+			$this->view->content->displayed_sensors = array_intersect_key($sensors, $sensors_show);
 		}
 		else
 		{
-			$this->view->content->displayed_sensors = $available_sensors;
+			$this->view->content->displayed_sensors = $sensors;
 		}
 
 		// Detections selection
@@ -917,7 +978,7 @@ class ExperimentController extends Controller
 			$query->execute($query_params);
 			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
 			{
-				// if sensor+value is available thn add to journal output
+				// if sensor+value is available than add to journal output
 				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
 				if(array_key_exists($key, $this->view->content->displayed_sensors))
 				{
@@ -1039,44 +1100,184 @@ class ExperimentController extends Controller
 			));
 
 			$db = new DB();
+
+			// Get plots list
 			$sql = 'select * from plots where exp_id = '.(int)$experiment->id;
-			$plots = $db->query($sql, PDO::FETCH_OBJ);
-
-			$this->view->content->list = $plots;
-
-
-			// Get available in detections sensors list
-
-			// Get unique sensors list from detections data of experiment
-			$sql = 'select a.sensor_id, a.sensor_val_id, '
-						. 's.value_name, s.si_notation, s.si_name, s.max_range, s.min_range, s.resolution '
-					. 'from detections as a '
-					. 'left join sensors as s on a.sensor_id = s.sensor_id and a.sensor_val_id = s.sensor_val_id '
-					. 'where a.exp_id = :exp_id '
-					. 'group by a.sensor_id, a.sensor_val_id order by a.sensor_id';
-			$load = $db->prepare($sql);
-			$load->execute(array(
-					':exp_id' => $experiment->id
-			));
-			$sensors = $load->fetchAll(PDO::FETCH_OBJ);
-			if(empty($sensors))
+			$stmt = $db->prepare($sql);
+			$stmt->execute();
+			$plots = $stmt->fetchAll(PDO::FETCH_OBJ);
+			if ($plots === false)
 			{
-				$sensors = array();
+				$plots = array();
 			}
+			$this->view->content->list = &$plots;
 
-			$available_sensors = array();
 
-			// Prepare available_sensors list
-			foreach($sensors as $sensor)
+			// Init arrays of sensors
+			$det_sensors   = array();
+			$setup_sensors = array();
+			$mon_sensors   = array();
+			$reg_sensors   = array();
+
+			// Speed up db operations within transaction
+			$db->beginTransaction();
+			try
 			{
-				$key = '' . $sensor->sensor_id . '#' . (int)$sensor->sensor_val_id;
-				if(!array_key_exists($key, $available_sensors))
+				// Get list of sensors available in detections
+				// (already used sensors)
+
+				// Get unique sensors list from detections data of experiment
+				$sql = 'select DISTINCT sensor_id, sensor_val_id '
+						. 'from detections '
+						. 'where exp_id = :exp_id '
+						. 'order by sensor_id, sensor_val_id';
+				$query = $db->prepare($sql);
+				if ($query === false)
 				{
-					$available_sensors[$key] = $sensor;
+					error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+				}
+				$result = $query->execute(array(
+						':exp_id' => $experiment->id
+				));
+				if ($result === false)
+				{
+					error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+				}
+				while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if(!array_key_exists($key, $det_sensors))
+					{
+						$det_sensors[$key] = clone $row;
+					}
+				}
+
+				// Get list of sensors in current setup
+
+				// Get current setup
+				if ($experiment->setup_id)
+				{
+					$temp_sensors = SetupController::getSensors($experiment->setup_id, true, $db);  // +setup conf fields: name, setup_id
+					if ($temp_sensors === false)
+					{
+						$temp_sensors = array();
+					}
+					foreach ($temp_sensors as $row)
+					{
+						$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+						if (!array_key_exists($key, $setup_sensors))
+						{
+							$setup_sensors[$key] = clone $row;
+						}
+					}
+				}
+
+				// Get monitors sensors
+
+				// Get unique sensors list from monitors values in experiment
+				$sql = 'select DISTINCT mv.sensor as sensor_id, mv.valueidx as sensor_val_id '
+						. 'from monitors as m '
+						. 'left join monitors_values as mv on mv.uuid = m.uuid '
+						. 'where m.exp_id = :exp_id '
+						. 'order by mv.sensor, mv.valueidx';
+				$query = $db->prepare($sql);
+				if ($query === false)
+				{
+					error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+				}
+				$result = $query->execute(array(
+						':exp_id' => $experiment->id
+				));
+				if ($result === false)
+				{
+					error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+				}
+				while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if(!array_key_exists($key, $mon_sensors))
+					{
+						$mon_sensors[$key] = clone $row;
+					}
+				}
+
+				// Get sensors from register with additional info
+
+				// TODO: add method Sensor::getSensors()
+				$query = $db->prepare(
+						'select sensor_id, sensor_val_id, '
+							. 'value_name, si_notation, si_name, max_range, min_range, resolution '
+						. 'from sensors'
+						);
+				if ($query === false)
+				{
+					error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+				}
+				$result = $query->execute();
+				if ($result === false)
+				{
+					error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+				}
+				while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if(!array_key_exists($key, $reg_sensors))
+					{
+						$reg_sensors[$key] = clone $row;
+					}
+				}
+			}
+			catch (PDOException $e)
+			{
+				error_log('PDOException Experiment::graph(): '.var_export($e->getMessage(),true));  //DEBUG
+				//var_dump($e->getMessage());
+			}
+			$db->commit();
+
+			// Merge sensors
+
+			// Merge detections sensors (older) with monitor sensors (newest)
+			$sensors = array_merge($det_sensors, $mon_sensors);
+
+			// Merge detections-monitors sensors (older) with setup sensors (fullest-newest)
+			$sensors = array_merge($sensors, $setup_sensors);
+
+
+			// Fill sensors with additional info from register
+			foreach ($sensors as $key => $sensor)
+			{
+				// Need info from register for sensor
+				if(!property_exists($sensor, 'value_name'))
+				{
+					if (array_key_exists($key, $reg_sensors))
+					{
+						// Replace with sensor data from registry
+						$sensors[$key]       = clone $reg_sensors[$key];
+
+						// add name field
+						$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
+								constant('L::sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+								constant('L::sensor_UNKNOWN');
+					}
+					else
+					{
+						$sensors[$key]->value_name  = null;
+						$sensors[$key]->si_notation = null;
+						$sensors[$key]->si_name     = null;
+						$sensors[$key]->max_range   = null;
+						$sensors[$key]->min_range   = null;
+						$sensors[$key]->resolution  = null;
+
+						// add name field
+						$sensors[$key]->name        = constant('L::sensor_UNKNOWN');
+					}
+					// add setup id field
+					$sensors[$key]->setup_id = 0;
 				}
 			}
 
-			$this->view->content->available_sensors = &$available_sensors;
+			// Prepare available sensors list
+			$this->view->content->available_sensors = &$sensors;
 
 			// Plot with all sensors data loads on ajax request
 			$this->view->content->detections = array();
@@ -1201,97 +1402,168 @@ class ExperimentController extends Controller
 
 			$db = new DB();
 
-			// Get detections sensors
-			// (already used sensors)
-			$sql = 'select DISTINCT sensor_id, sensor_val_id '
-					. 'from detections '
-					. 'where exp_id = :exp_id '
-					. 'order by sensor_id, sensor_val_id';
-			$query = $db->prepare($sql);
-			$query->execute(array(':exp_id' => $experiment->id));
-			$det_sensors = array();
-			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
-			{
-				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
-				if(!array_key_exists($key, $det_sensors))
-				{
-					$det_sensors[$key] = clone $row;
-				}
-			}
-
-			// Get current Setup sensors (???)
-			//$setup_sensors = array();
-			// xxx: comment out this block if not use setups data for sensors at all
-			$temp_sensors = SetupController::getSensors($experiment->setup_id, true);
-			if ($temp_sensors === false)
-			{
-				$temp_sensors = array();
-			}
+			// Init arrays of sensors
+			$det_sensors   = array();
 			$setup_sensors = array();
-			foreach ($temp_sensors as $row)
+			$mon_sensors   = array();
+			$reg_sensors   = array();
+
+			// Speed up db operations within transaction
+			$db->beginTransaction();
+			try
 			{
-				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
-				if(!array_key_exists($key, $setup_sensors))
+				// Get list of sensors available in detections
+				// (already used sensors)
+
+				// Get unique sensors list from detections data of experiment
+				$sql = 'select DISTINCT sensor_id, sensor_val_id '
+						. 'from detections '
+						. 'where exp_id = :exp_id '
+						. 'order by sensor_id, sensor_val_id';
+				$query = $db->prepare($sql);
+				if ($query === false)
 				{
-					$setup_sensors[$key] = clone $row;
+					error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+				}
+				$result = $query->execute(array(
+						':exp_id' => $experiment->id
+				));
+				if ($result === false)
+				{
+					error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+				}
+				while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if(!array_key_exists($key, $det_sensors))
+					{
+						$det_sensors[$key] = clone $row;
+					}
+				}
+
+				// Get list of sensors in current setup
+
+				// xxx: comment out this block if not use setups data for sensors at all
+				// Get current setup
+				if ($experiment->setup_id)
+				{
+					$temp_sensors = SetupController::getSensors($experiment->setup_id, true, $db);  // +setup conf fields: name, setup_id
+					if ($temp_sensors === false)
+					{
+						$temp_sensors = array();
+					}
+					foreach ($temp_sensors as $row)
+					{
+						$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+						if (!array_key_exists($key, $setup_sensors))
+						{
+							$setup_sensors[$key] = clone $row;
+						}
+					}
+				}
+
+				// Get monitors sensors
+
+				// Get unique sensors list from monitors values in experiment
+				$sql = 'select DISTINCT mv.sensor as sensor_id, mv.valueidx as sensor_val_id '
+						. 'from monitors as m '
+						. 'left join monitors_values as mv on mv.uuid = m.uuid '
+						. 'where m.exp_id = :exp_id '
+						. 'order by mv.sensor, mv.valueidx';
+				$query = $db->prepare($sql);
+				if ($query === false)
+				{
+					error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+				}
+				$result = $query->execute(array(
+						':exp_id' => $experiment->id
+				));
+				if ($result === false)
+				{
+					error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+				}
+				while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if(!array_key_exists($key, $mon_sensors))
+					{
+						$mon_sensors[$key] = clone $row;
+					}
+				}
+
+				// Get sensors from register with additional info
+
+				// TODO: add method Sensor::getSensors()
+				$query = $db->prepare(
+						'select sensor_id, sensor_val_id, '
+							. 'value_name, si_notation, si_name, max_range, min_range, resolution '
+						. 'from sensors'
+				);
+				if ($query === false)
+				{
+					error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+				}
+				$result = $query->execute();
+				if ($result === false)
+				{
+					error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+				}
+				while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if(!array_key_exists($key, $reg_sensors))
+					{
+						$reg_sensors[$key] = clone $row;
+					}
 				}
 			}
+			catch (PDOException $e)
+			{
+				error_log('PDOException Experiment::download(): '.var_export($e->getMessage(),true));  //DEBUG
+				//var_dump($e->getMessage());
+			}
+			$db->commit();
 
-			// Get sensors from register with additional info
-			// TODO: add Sensor::getSensor()
-			$query = $db->prepare(
-					'select s.sensor_id, s.sensor_val_id, s.value_name as value_name, s.si_notation as si_notation, s.si_name as si_name, s.max_range as max_range, s.min_range as min_range, s.resolution as resolution '
-					. 'from sensors as s'
-			);
-			if ($query === false)
-			{
-				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
-			}
-			$result = $query->execute();
-			if ($result === false)
-			{
-				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
-			}
-			$sensors = array();
-			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
-			{
-				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
-				if(!array_key_exists($key, $sensors))
-				{
-					$sensors[$key] = clone $row;
-				}
-			}
 
-			// Fill list of available sensors
-			// Merge current Setup sensors and sensors from done detections and fill additional info if needed
-			$available_sensors = array_merge($det_sensors, $setup_sensors);
-			foreach ($available_sensors as $key => $sensor)
+			// Merge sensors
+
+			// Merge detections sensors (older) with monitor sensors (newest)
+			$sensors = array_merge($det_sensors, $mon_sensors);
+
+			// Merge detections-monitors sensors (older) with setup sensors (fullest-newest)
+			$sensors = array_merge($sensors, $setup_sensors);
+
+
+			// Fill sensors with additional info from register
+			foreach ($sensors as $key => $sensor)
 			{
-				// info from register for detections sensors list
+				// Need info from register for sensor
 				if(!property_exists($sensor, 'value_name'))
 				{
-					if (array_key_exists($key, $sensors))
+					if (array_key_exists($key, $reg_sensors))
 					{
-						// Copy additional sensor data from registry
-						$available_sensors[$key]       = clone $sensors[$key];
+						// Replace with sensor data from registry
+						$sensors[$key]       = clone $reg_sensors[$key];
 
-						// add name and setup id fields
-						$available_sensors[$key]->name = (mb_strlen($sensors[$key]->value_name,'utf-8') > 0) ?
-								constant('L::sensor_VALUE_NAME_' . strtoupper($sensors[$key]->value_name)) :
+						// add name field
+						$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
+								constant('L::sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
 								constant('L::sensor_UNKNOWN');
 					}
 					else
 					{
-						$available_sensors[$key]->value_name  = null;
-						$available_sensors[$key]->si_notation = null;
-						$available_sensors[$key]->si_name     = null;
-						$available_sensors[$key]->max_range   = null;
-						$available_sensors[$key]->min_range   = null;
-						$available_sensors[$key]->resolution  = null;
+						$sensors[$key]->value_name  = null;
+						$sensors[$key]->si_notation = null;
+						$sensors[$key]->si_name     = null;
+						$sensors[$key]->max_range   = null;
+						$sensors[$key]->min_range   = null;
+						$sensors[$key]->resolution  = null;
 
-						$available_sensors[$key]->name        = constant('L::sensor_UNKNOWN');
+						// add name field
+						$sensors[$key]->name        = constant('L::sensor_UNKNOWN');
 					}
-					$available_sensors[$key]->setup_id = 0;
+					// add setup id field
+					$sensors[$key]->setup_id = 0;
 				}
 			}
 
@@ -1306,11 +1578,11 @@ class ExperimentController extends Controller
 			}
 			if(!empty($sensors_show))
 			{
-				$displayed_sensors = array_intersect_key($available_sensors, $sensors_show);
+				$displayed_sensors = array_intersect_key($sensors, $sensors_show);
 			}
 			else
 			{
-				$displayed_sensors = $available_sensors;
+				$displayed_sensors = $sensors;
 			}
 
 			// Detections selection
@@ -1427,6 +1699,7 @@ class ExperimentController extends Controller
 					{
 						/*
 						Examples of CSV:
+						@see RFC 4180 (https://www.ietf.org/rfc/rfc4180.txt) with delimeter ";" (Microsoft Excel format)
 
 						field_name;field_name;field_name CRLF
 						aaa;bbb;ccc CRLF

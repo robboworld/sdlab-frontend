@@ -36,10 +36,10 @@ $(document).ready(function(){
 		// Post/get data
 		var url_export = '?q=experiment/download/'+form.exp_id.value;
 		var rqdata = {
-			"exp_id":  form.exp_id.value,
-			"form-id": form['form-id'].value,
-			"type":    doc_type
-			//,"dtfrom": null, "dtto": null
+				"exp_id":  form.exp_id.value,
+				"form-id": form['form-id'].value,
+				"type":    doc_type
+				//,"dtfrom": null, "dtto": null
 		};
 		if (sens.length){
 			rqdata["show-sensor"] = sens;

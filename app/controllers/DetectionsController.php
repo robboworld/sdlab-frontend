@@ -21,7 +21,7 @@ class DetectionsController extends Controller
 	 *
 	 * @return array  Result in form array('result' => array of objects) or False on error
 	 */
-	public function getGraphData($params)
+	public function getGraphSingleData($params)
 	{
 		if(empty($params['plot']))
 		{
@@ -123,9 +123,381 @@ class DetectionsController extends Controller
 		return false;
 	}
 
+	/**
+	 * Get experiment detections for timeseries plot with datetime filter.
+	 * API method: Detections.getGraphData
+	 * API params: experiment, show-sensor[], from, to, exclude
+	 *
+	 * @param  array  $params  Array of parameters:
+	 *                           experiment  - id of experiment,
+	 *                           show-sensor - list of sensors identificators strings in format "sensor_id + # + value_id"
+	 *                           from, to    - datetime in ISO format (RFC3339 with nanoseconds) "Y-m-dTH:i:s.uZ"
+	 *                           exclude     - integer, set 1 for exclude from-to datetime data from result, default 0.
+	 *
+	 * @return array  Result in form array('result' => array of objects) or False on error
+	 */
+	public function getGraphData($params)
+	{
+		if(empty($params['experiment']))
+		{
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+
+			return false;
+		}
+
+		// Load experiment
+		$experiment = (new Experiment())->load($params['experiment']);
+		if(!$experiment)
+		{
+			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+
+			return false;
+		}
+
+		// Check access to experiment
+		if(!$experiment->userCanView($this->session()))
+		{
+			$this->error = L::ACCESS_DENIED;
+
+			return false;
+		}
+
+		// Get filter parameters
+		// Filter sensors
+		$sensors_show = array();
+		if(isset($params['show-sensor']) && !empty($params['show-sensor']) && is_array($params['show-sensor']))
+		{
+			foreach($params['show-sensor'] as $sensor_show_id)
+			{
+				$sensors_show[$sensor_show_id] = $sensor_show_id;
+			}
+		}
+		// Filter datetimes
+		$from = null;
+		if(isset($params['from']) && strlen($params['from']) !== '')
+		{
+			// UTC time with seconds parts
+			try
+			{
+				$from = System::datemsecformat($params['from'], 'Y-m-d\TH:i:s.u\Z', null);  // XXX: Cannot use DateTime, because only 6 milli digits supported.
+			}
+			catch (Exception $e)
+			{
+				// error on invalid format
+				$this->error = L::ERROR_INVALID_PARAMETERS;
+
+				return false;
+			}
+		}
+		$to = null;
+		if(isset($params['to']) && strlen($params['to']) !== '')
+		{
+			// UTC time with seconds parts
+			try
+			{
+				$to = System::datemsecformat($params['to'], 'Y-m-d\TH:i:s.u\Z', null);  // XXX: Cannot use DateTime, because only 6 milli digits supported.
+			}
+			catch (Exception $e)
+			{
+				// error on invalid format
+				$this->error = L::ERROR_INVALID_PARAMETERS;
+
+				return false;
+			}
+		}
+
+		$exclude = false;
+		if(isset($params['exclude']))
+		{
+			$exclude = (int)$params['exclude'] ? true : false;
+		}
+
+		$db = new DB();
+
+		// Init arrays of sensors
+		$det_sensors   = array();
+		$setup_sensors = array();
+		$mon_sensors   = array();
+		$reg_sensors   = array();
+
+
+		// Speed up db operations within transaction
+		$db->beginTransaction();
+		try
+		{
+			// Get list of sensors available in detections
+			// (already used sensors)
+
+			// Get unique sensors list from detections data of experiment
+			$sql = 'select DISTINCT sensor_id, sensor_val_id '
+					. 'from detections '
+					. 'where exp_id = :exp_id '
+					. 'order by sensor_id, sensor_val_id';
+			$query = $db->prepare($sql);
+			if ($query === false)
+			{
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute(array(
+					':exp_id' => $experiment->id
+			));
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $det_sensors))
+				{
+					$det_sensors[$key] = clone $row;
+				}
+			}
+
+			// Get list of sensors in current setup
+
+			// Get current setup
+			if ($experiment->setup_id)
+			{
+				$temp_sensors = SetupController::getSensors($experiment->setup_id, true, $db);  // +setup conf fields: name, setup_id
+				if ($temp_sensors === false)
+				{
+					$temp_sensors = array();
+				}
+				foreach ($temp_sensors as $row)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if (!array_key_exists($key, $setup_sensors))
+					{
+						$setup_sensors[$key] = clone $row;
+					}
+				}
+			}
+
+			// Get monitors sensors
+
+			// Get unique sensors list from monitors values in experiment
+			$sql = 'select DISTINCT mv.sensor as sensor_id, mv.valueidx as sensor_val_id '
+					. 'from monitors as m '
+					. 'left join monitors_values as mv on mv.uuid = m.uuid '
+					. 'where m.exp_id = :exp_id '
+					. 'order by mv.sensor, mv.valueidx';
+			$query = $db->prepare($sql);
+			if ($query === false)
+			{
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute(array(
+					':exp_id' => $experiment->id
+			));
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $mon_sensors))
+				{
+					$mon_sensors[$key] = clone $row;
+				}
+			}
+
+			// Get sensors from register with additional info
+
+			// TODO: add method Sensor::getSensors()
+			$query = $db->prepare(
+					'select sensor_id, sensor_val_id, '
+					. 'value_name, si_notation, si_name, max_range, min_range, resolution '
+					. 'from sensors'
+			);
+			if ($query === false)
+			{
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute();
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $reg_sensors))
+				{
+					$reg_sensors[$key] = clone $row;
+				}
+			}
+		}
+		catch (PDOException $e)
+		{
+			error_log('PDOException Experiment::graph(): '.var_export($e->getMessage(),true));  //DEBUG
+			//var_dump($e->getMessage());
+		}
+		$db->commit();
+
+
+		// Merge sensors
+
+		// Merge detections sensors (older) with monitor sensors (newest)
+		$sensors = array_merge($det_sensors, $mon_sensors);
+
+		// Merge detections-monitors sensors (older) with setup sensors (fullest-newest)
+		$sensors = array_merge($sensors, $setup_sensors);
+
+
+		// Fill sensors with additional info from register
+		foreach ($sensors as $key => $sensor)
+		{
+			// Need info from register for sensor
+			if(!property_exists($sensor, 'value_name'))
+			{
+				if (array_key_exists($key, $reg_sensors))
+				{
+					// Replace with sensor data from registry
+					$sensors[$key]       = clone $reg_sensors[$key];
+
+					// add name field
+					$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
+					constant('L::sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+					constant('L::sensor_UNKNOWN');
+				}
+				else
+				{
+					$sensors[$key]->value_name  = null;
+					$sensors[$key]->si_notation = null;
+					$sensors[$key]->si_name     = null;
+					$sensors[$key]->max_range   = null;
+					$sensors[$key]->min_range   = null;
+					$sensors[$key]->resolution  = null;
+
+					// add name field
+					$sensors[$key]->name        = constant('L::sensor_UNKNOWN');
+				}
+				// add setup id field
+				$sensors[$key]->setup_id = 0;
+			}
+		}
+
+		// Prepare available sensors list
+		//$result['available_sensors'] = $sensors;
+
+		// Filter requested sensors
+		$displayed_sensors = array();
+		if(!empty($sensors_show))
+		{
+			$displayed_sensors = array_intersect_key($sensors, $sensors_show);
+		}
+		else
+		{
+			$displayed_sensors = $sensors;
+		}
+
+		// Get current timezone offset in seconds to correct timestamps
+		$tz_offset = (new DateTime())->format('Z');
+
+		// Get time in milliseconds in local timezone
+		$where = array();
+		if ($from !== null) {
+			$where[':timefrom'] = 'time ' . ($exclude ? '>' : '>=') . ' :timefrom';
+		}
+		if ($to !== null) {
+			$where[':timeto']   = 'time ' . ($exclude ? '<' : '<=') . ' :timeto';
+		}
+
+		// Special raw data for plot [x, y, bottom,...{custom}], bottom is not used (0 by default), other fields are custom
+		$sql = //'select time, strftime(\'%Y.%m.%d %H:%M:%f\', time) as mstime, detection '
+			'select (strftime(\'%s\',time) - strftime(\'%S\',time) + strftime(\'%f\',time)' . ($tz_offset>=0 ? ' + ' : ' ')  . $tz_offset . ')*1000 as mstime, detection, 0, time, error '
+			. 'from detections '
+			. 'where exp_id = :exp_id and sensor_id = :sensor_id and sensor_val_id = :sensor_val_id and (error isnull or error = \'\') '
+			. ((!empty($where)) ? ('and (' . implode(') and (', $where) . ') ') : '')
+			//. 'order by strftime(\'%s\', time),strftime(\'%f\', time)';
+			. 'order by strftime(\'%Y-%m-%dT%H:%M:%f\', time), id';
+		$query = $db->prepare($sql);
+
+		$result = array();
+		$i = 0;
+		foreach($displayed_sensors as $sensor)
+		{
+			$data = new stdClass();
+			// TODO: add name of sensor to label from setup_info (but unknown which setup id was used for each detection, setup can be changed)
+			$data->label         = empty($sensor->value_name) ? L::sensor_UNKNOWN : constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name));
+			$data->sensor_id     = $sensor->sensor_id;
+			$data->sensor_val_id = (int)$sensor->sensor_val_id;
+			$data->color         = ++$i;
+
+			$inp_params = array(
+					':exp_id'        => $experiment->id,
+					':sensor_id'     => $sensor->sensor_id,
+					':sensor_val_id' => $sensor->sensor_val_id
+			);
+			if(isset($where[':timefrom']))
+			{
+				$inp_params[':timefrom'] = $from;
+			}
+			if(isset($where[':timeto']))
+			{
+				$inp_params[':timeto'] = $to;
+			}
+
+			$res = $query->execute($inp_params);
+			$detections = $query->fetchAll(PDO::FETCH_NUM);
+
+			if(!empty($detections))
+			{
+				$data->data = $detections;
+				foreach ($data->data as $k => $val)
+				{
+					// Detection axis coordinates values must be numbers, not strings (Plot restrictions)
+
+					// XValue
+					$t = (string)$val[0];  // XXX: return time in milliseconds (Warning! use string, int value > PHP_INT_MAX)
+					$dotpos = strpos($t,'.');
+					if ($dotpos !== false )
+					{
+						// cut fractional part with dot from time in msec (14235464000.0 -> 14235464000)
+						$data->data[$k][0] = (float)substr($t, 0, $dotpos);
+					}
+					else
+					{
+						$data->data[$k][0] = (float)$val[0];
+					}
+
+					// YValue
+					if ($val[1] != '' && $val[1] !== 'NaN')
+					{
+						$data->data[$k][1] = (float)$val[1];
+					}
+					else
+					{
+						$data->data[$k][1] = null;
+					}
+
+					// Check erroneous detection value
+					// TODO: check $data->data[$k][4] for error text (NaN) and $data->data[$k][1] for empty detection value (NULL)
+					if ($val[4] != '' || $val[4] === 'NaN')
+					{
+						// Special case for plot. Null to skip point and break line that connects points on plot
+						$data->data[$k][1] = null;
+					}
+
+					// "bottom" value
+					$data->data[$k][2] = (int)$val[2];
+				}
+			}
+			else
+			{
+				$data->data = array();
+			}
+
+			$result[] = $data;
+		}
+
+		return array('result' => $result);
+	}
 
 	/**
-	 * Get experiment detections for timeseries graph.
+	 * Get experiment detections for timeseries plot.
 	 * API method: Detections.getGraphDataAll
 	 * API params: experiment, show-sensor[]
 	 * 
@@ -146,7 +518,7 @@ class DetectionsController extends Controller
 
 		// Load experiment
 		$experiment = (new Experiment())->load($params['experiment']);
-		if(!$experiment || empty($experiment->setup_id))
+		if(!$experiment)
 		{
 			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
 
@@ -162,6 +534,7 @@ class DetectionsController extends Controller
 		}
 
 		// Get filter parameters
+		// Filter sensors
 		$sensors_show = array();
 		if(isset($params['show-sensor']) && !empty($params['show-sensor']) && is_array($params['show-sensor']))
 		{
@@ -173,51 +546,190 @@ class DetectionsController extends Controller
 
 		$db = new DB();
 
-		// Get unique sensors list from detections data of experiment
-		$sql = 'select a.sensor_id, a.sensor_val_id, '
-					. 's.value_name, s.si_notation, s.si_name, s.max_range, s.min_range, s.resolution '
-				. 'from detections as a '
-				. 'left join sensors as s on a.sensor_id = s.sensor_id and a.sensor_val_id = s.sensor_val_id '
-				. 'where a.exp_id = :exp_id '
-				. 'group by a.sensor_id, a.sensor_val_id order by a.sensor_id';
-		$query = $db->prepare($sql);
-		$query->execute(array(
-				':exp_id' => $experiment->id
-		));
-		$sensors = $query->fetchAll(PDO::FETCH_OBJ);
-		if(empty($sensors))
-		{
-			$sensors = array();
-		}
+		// Init arrays of sensors
+		$det_sensors   = array();
+		$setup_sensors = array();
+		$mon_sensors   = array();
+		$reg_sensors   = array();
 
-		$available_sensors = $displayed_sensors = array();
 
-		// Prepare available_sensors list
-		foreach($sensors as $sensor)
+		// Speed up db operations within transaction
+		$db->beginTransaction();
+		try
 		{
-			$key = '' . $sensor->sensor_id . '#' . (int)$sensor->sensor_val_id;
-			if(!array_key_exists($key, $available_sensors))
+			// Get list of sensors available in detections
+			// (already used sensors)
+
+			// Get unique sensors list from detections data of experiment
+			$sql = 'select DISTINCT sensor_id, sensor_val_id '
+					. 'from detections '
+					. 'where exp_id = :exp_id '
+					. 'order by sensor_id, sensor_val_id';
+			$query = $db->prepare($sql);
+			if ($query === false)
 			{
-				$available_sensors[$key] = $sensor;
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute(array(
+					':exp_id' => $experiment->id
+			));
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $det_sensors))
+				{
+					$det_sensors[$key] = clone $row;
+				}
+			}
+
+			// Get list of sensors in current setup
+
+			// Get current setup
+			if ($experiment->setup_id)
+			{
+				$temp_sensors = SetupController::getSensors($experiment->setup_id, true, $db);  // +setup conf fields: name, setup_id
+				if ($temp_sensors === false)
+				{
+					$temp_sensors = array();
+				}
+				foreach ($temp_sensors as $row)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if (!array_key_exists($key, $setup_sensors))
+					{
+						$setup_sensors[$key] = clone $row;
+					}
+				}
+			}
+
+			// Get monitors sensors
+
+			// Get unique sensors list from monitors values in experiment
+			$sql = 'select DISTINCT mv.sensor as sensor_id, mv.valueidx as sensor_val_id '
+					. 'from monitors as m '
+					. 'left join monitors_values as mv on mv.uuid = m.uuid '
+					. 'where m.exp_id = :exp_id '
+					. 'order by mv.sensor, mv.valueidx';
+			$query = $db->prepare($sql);
+			if ($query === false)
+			{
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute(array(
+					':exp_id' => $experiment->id
+			));
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $mon_sensors))
+				{
+					$mon_sensors[$key] = clone $row;
+				}
+			}
+
+			// Get sensors from register with additional info
+
+			// TODO: add method Sensor::getSensors()
+			$query = $db->prepare(
+					'select sensor_id, sensor_val_id, '
+					. 'value_name, si_notation, si_name, max_range, min_range, resolution '
+					. 'from sensors'
+					);
+			if ($query === false)
+			{
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute();
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $reg_sensors))
+				{
+					$reg_sensors[$key] = clone $row;
+				}
 			}
 		}
-		//$result['available_sensors'] = $available_sensors;
+		catch (PDOException $e)
+		{
+			error_log('PDOException Experiment::graph(): '.var_export($e->getMessage(),true));  //DEBUG
+			//var_dump($e->getMessage());
+		}
+		$db->commit();
+
+
+		// Merge sensors
+
+		// Merge detections sensors (older) with monitor sensors (newest)
+		$sensors = array_merge($det_sensors, $mon_sensors);
+
+		// Merge detections-monitors sensors (older) with setup sensors (fullest-newest)
+		$sensors = array_merge($sensors, $setup_sensors);
+
+
+		// Fill sensors with additional info from register
+		foreach ($sensors as $key => $sensor)
+		{
+			// Need info from register for sensor
+			if(!property_exists($sensor, 'value_name'))
+			{
+				if (array_key_exists($key, $reg_sensors))
+				{
+					// Replace with sensor data from registry
+					$sensors[$key]       = clone $reg_sensors[$key];
+
+					// add name field
+					$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
+							constant('L::sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+							constant('L::sensor_UNKNOWN');
+				}
+				else
+				{
+					$sensors[$key]->value_name  = null;
+					$sensors[$key]->si_notation = null;
+					$sensors[$key]->si_name     = null;
+					$sensors[$key]->max_range   = null;
+					$sensors[$key]->min_range   = null;
+					$sensors[$key]->resolution  = null;
+
+					// add name field
+					$sensors[$key]->name        = constant('L::sensor_UNKNOWN');
+				}
+				// add setup id field
+				$sensors[$key]->setup_id = 0;
+			}
+		}
+
+		// Prepare available sensors list
+		//$result['available_sensors'] = $sensors;
 
 		// Filter requested sensors
+		$displayed_sensors = array();
 		if(!empty($sensors_show))
 		{
-			$displayed_sensors = array_intersect_key($available_sensors, $sensors_show);
+			$displayed_sensors = array_intersect_key($sensors, $sensors_show);
 		}
 		else
 		{
-			$displayed_sensors = $available_sensors;
+			$displayed_sensors = $sensors;
 		}
 
 		// Get current timezone offset in seconds to correct timestamps
 		$tz_offset = (new DateTime())->format('Z');
 
 		// Get time in milliseconds in local timezone
-		// Special raw data for plot [x, y, bottom,...], bottom is not used (0 by default), other fields are custom
+		// Special raw data for plot [x, y, bottom,...{custom}], bottom is not used (0 by default), other fields are custom
 		$sql = //'select time, strftime(\'%Y.%m.%d %H:%M:%f\', time) as mstime, detection '
 				 'select (strftime(\'%s\',time) - strftime(\'%S\',time) + strftime(\'%f\',time)' . ($tz_offset>=0 ? ' + ' : ' ')  . $tz_offset . ')*1000 as mstime, detection, 0, time, error '
 				. 'from detections '
@@ -234,7 +746,7 @@ class DetectionsController extends Controller
 			// TODO: add name of sensor to label from setup_info (but unknown which setup id was used for each detection, setup can be changed)
 			$data->label         = empty($sensor->value_name) ? L::sensor_UNKNOWN : constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name));
 			$data->sensor_id     = $sensor->sensor_id;
-			$data->sensor_val_id = $sensor->sensor_val_id;
+			$data->sensor_val_id = (int)$sensor->sensor_val_id;
 			$data->color         = ++$i;
 
 			$res = $query->execute(array(
@@ -249,19 +761,40 @@ class DetectionsController extends Controller
 				$data->data = $detections;
 				foreach ($data->data as $k => $val)
 				{
+					// Detection axis coordinates values must be numbers, not strings (Plot restrictions)
+
+					// XValue
 					$t = (string)$val[0];  // XXX: return time in milliseconds (Warning! use string, int value > PHP_INT_MAX)
 					$dotpos = strpos($t,'.');
 					if ($dotpos !== false )
 					{
 						// cut fractional part with dot from time in msec (14235464000.0 -> 14235464000)
-						$data->data[$k][0] = substr($t, 0, $dotpos);
+						$data->data[$k][0] = (float)substr($t, 0, $dotpos);
 					}
-					// TODO: check $data->data[$k][3] for error text (NaN) and $data->data[$k][2] for empty detection value (NULL)
-					if ($data->data[$k][4] != '' || $data->data[$k][4] === 'NaN')
+					else
 					{
-						// Special case for plot graph - null - skip point and break line that connect points on plot
+						$data->data[$k][0] = (float)$val[0];
+					}
+
+					// YValue
+					if ($val[1] != '' && $val[1] !== 'NaN')
+					{
+						$data->data[$k][1] = (float)$val[1];
+					}
+					else
+					{
 						$data->data[$k][1] = null;
 					}
+					// Check erroneous detection value
+					// TODO: check $data->data[$k][4] for error text (NaN) and $data->data[$k][1] for empty detection value (NULL)
+					if ($val[4] != '' || $val[4] === 'NaN')
+					{
+						// Special case for plot. Null to skip point and break line that connects points on plot
+						$data->data[$k][1] = null;
+					}
+
+					// "bottom" value
+					$data->data[$k][2] = (int)$val[2];
 				}
 			}
 			else
@@ -347,7 +880,8 @@ class DetectionsController extends Controller
 			$current_session = $this->session()->getKey();
 
 			$exp_det_query = $db->prepare(
-					'select d.id, d.exp_id, e.session_key from detections as d '
+					'select d.id, d.exp_id, e.session_key '
+					. 'from detections as d '
 					. 'left join experiments as e on e.id = d.exp_id ' 
 					. 'where e.exp_id notnull and d.id in (' . implode(',', array_fill(0, $cnt_ids, '?')) . ')'
 			);

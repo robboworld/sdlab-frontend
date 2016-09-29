@@ -190,7 +190,6 @@ console.log('added count: '+acnt);
                 document.body.appendChild(canvas);
 
                 var imgData = canvas.toDataURL('image/png');
-console.log('Report Image URL: '+imgData);
                 var doc = new jsPDF('landscape');
 
                 doc.addImage(imgData, 'PNG', 10, 10, 190, 95);

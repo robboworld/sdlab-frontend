@@ -203,7 +203,7 @@ console.log('call exportPlot');console.log(width);console.log(height);console.lo
                 switch (ftype) {
                 case "pdf":
                     var doc = new jsPDF('landscape', 'mm', 'a4');
-                    doc.addImage(canvas.toDataURL('image/png'), 'PNG', 10, 10, nw+10, nh);
+                    doc.addImage(canvas.toDataURL('image/png'), 'PNG', 10, 10, nw+10, nh+10);
                     doc.save(filename+'.pdf');
                     break;
                 case "jpg":

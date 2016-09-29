@@ -65,9 +65,10 @@ console.log('created TimeSeriesPlot:');console.log(g);
             return true;
         });
 
-        $("#graph-export").on("click", function(e) {
+        $(".btn-graph-export").on("click", function(e) {
             e.preventDefault();
-            exportPlot();
+            var ft = $(this).data('filetype') || "png";
+            exportPlot(g.p, ft, "#graph_export_image");
         });
 
         //$('input', choiceContainer).click(function() {
@@ -184,16 +185,53 @@ console.log('added count: '+acnt);
         }
     }
 
-    function exportPlot(){
-        html2canvas(g.p.getPlaceholder().get(0), {
+    function exportPlot(plot,ftype,tmpsel){
+        //var tmpimg = $(tmpsel);
+        //if (tmpimg.length==0) return false;
+        if (ftype !== 'pdf' && ftype !== 'jpg' && ftype !== 'png') return false;
+        html2canvas(plot.getPlaceholder().get(0), {
             onrendered: function(canvas) {
-                document.body.appendChild(canvas);
+                var width = canvas.width,
+                    height = canvas.height,
+                    k = height/width,
+                    nw = 180, nh = nw*k,
+                    imgData = canvas.toDataURL('image/png'),
+                    filename = 'plot'+(new Date()).getTime();
+console.log('call exportPlot');console.log(width);console.log(height);console.log(k );console.log(nw);console.log(nh);console.log(imgData);console.log(filename);
+                //tmpimg.get(0).appendChild(canvas);
 
-                var imgData = canvas.toDataURL('image/png');
-                var doc = new jsPDF('landscape');
+                switch (ftype) {
+                case "pdf":
+                    var doc = new jsPDF('landscape', 'mm', 'a4');
+                    doc.addImage(canvas.toDataURL('image/png'), 'PNG', 10, 10, nw+10, nh);
+                    doc.save(filename+'.pdf');
+                    break;
+                case "jpg":
+                    var imgData = canvas.toDataURL('image/jpeg');
+                    window.open(imgData);
 
-                doc.addImage(imgData, 'PNG', 10, 10, 190, 95);
-                doc.save('plot'+(new Date()).getTime()+'.pdf');
+                    /*
+                    var a = document.createElement('a');
+                    // toDataURL defaults to png, so we need to request a jpeg, then convert for file download.
+                    a.href = canvas.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
+                    a.download = filename+'.jpg';
+                    a.click();
+                    */
+                    break;
+                case "png":
+                default:
+                    var imgData = canvas.toDataURL('image/png');
+                    window.open(imgData);
+
+                    /*
+                    var a = document.createElement('a');
+                    // toDataURL defaults to png, so we need to request a jpeg, then convert for file download.
+                    a.href = canvas.toDataURL('image/png');
+                    a.download = filename+'.png';
+                    a.click();
+                    */
+                    break;
+                }
             }
         });
     }
@@ -275,8 +313,16 @@ console.log('added count: '+acnt);
 				<button type="button" class="btn btn-default" onclick="runPlotUpdate();">Update on</button>
 				<button type="button" class="btn btn-default" onclick="stopPlotUpdate();">Update off</button>
 			</div>
-			<div class="btn-group" role="group" aria-label="...">
-				<button type="button" id="graph-export" class="btn btn-info">Export</button>
+			<div class="btn-group graph-export">
+				<button type="button" class="btn btn-info btn-graph-export" data-filetype="png"><?php echo L::graph_EXPORT; ?></button>
+				<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<span class="caret"></span>
+					<span class="sr-only"><?php echo L::TOGGLE_DROPDOWN; ?></span>
+				</button>
+				<ul class="dropdown-menu">
+					<li><a href="javascript:void(0);" class="btn-graph-export" role="button" data-filetype="jpg">jpeg</a></li>
+					<li><a href="javascript:void(0);" class="btn-graph-export" role="button" data-filetype="pdf">pdf</a></li>
+				</ul>
 			</div>
 		</div>
 		<div id="graph-all" style="height: 400px; padding-left: 15px;">
@@ -301,5 +347,7 @@ console.log('added count: '+acnt);
 			<?php endforeach; ?>
 		</ul>
 		<button type="button" id="graph-refesh" class="btn btn-primary"><?php echo L::REFRESH; ?></button>
+	</div>
+	<div id="graph_export_image" style="display:none;">
 	</div>
 </div>

@@ -65,6 +65,11 @@ console.log('created TimeSeriesPlot:');console.log(g);
             return true;
         });
 
+        $("#graph-export").on("click", function(e) {
+            e.preventDefault();
+            exportPlot();
+        });
+
         //$('input', choiceContainer).click(function() {
         //    $('#graph-refesh').trigger('click');
         //});
@@ -178,6 +183,21 @@ console.log('added count: '+acnt);
             runPlotUpdate();  //xxx: start new update on error too?
         }
     }
+
+    function exportPlot(){
+        html2canvas(g.p.getPlaceholder().get(0), {
+            onrendered: function(canvas) {
+                document.body.appendChild(canvas);
+
+                var imgData = canvas.toDataURL('image/png');
+console.log('Report Image URL: '+imgData);
+                var doc = new jsPDF('landscape');
+
+                doc.addImage(imgData, 'PNG', 10, 10, 190, 95);
+                doc.save('plot'+(new Date()).getTime()+'.pdf');
+            }
+        });
+    }
 </script>
 <div class="row">
 	<div class="col-md-12">
@@ -255,6 +275,9 @@ console.log('added count: '+acnt);
 			<div class="btn-group" role="group" aria-label="...">
 				<button type="button" class="btn btn-default" onclick="runPlotUpdate();">Update on</button>
 				<button type="button" class="btn btn-default" onclick="stopPlotUpdate();">Update off</button>
+			</div>
+			<div class="btn-group" role="group" aria-label="...">
+				<button type="button" id="graph-export" class="btn btn-info">Export</button>
 			</div>
 		</div>
 		<div id="graph-all" style="height: 400px; padding-left: 15px;">

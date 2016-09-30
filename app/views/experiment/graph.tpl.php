@@ -68,7 +68,7 @@ console.log('created TimeSeriesPlot:');console.log(g);
         $(".btn-graph-export").on("click", function(e) {
             e.preventDefault();
             var ft = $(this).data('filetype') || "png";
-            exportPlot(g.p, ft, "#graph_export_image");
+            exportPlot(g.p, ft);
         });
 
         //$('input', choiceContainer).click(function() {
@@ -184,57 +184,6 @@ console.log('added count: '+acnt);
             runPlotUpdate();  //xxx: start new update on error too?
         }
     }
-
-    function exportPlot(plot,ftype,tmpsel){
-        //var tmpimg = $(tmpsel);
-        //if (tmpimg.length==0) return false;
-        if (ftype !== 'pdf' && ftype !== 'jpg' && ftype !== 'png') return false;
-        html2canvas(plot.getPlaceholder().get(0), {
-            onrendered: function(canvas) {
-                var width = canvas.width,
-                    height = canvas.height,
-                    k = height/width,
-                    nw = 180, nh = nw*k,
-                    imgData = canvas.toDataURL('image/png'),
-                    filename = 'plot'+(new Date()).getTime();
-console.log('call exportPlot');console.log(width);console.log(height);console.log(k );console.log(nw);console.log(nh);console.log(imgData);console.log(filename);
-                //tmpimg.get(0).appendChild(canvas);
-
-                switch (ftype) {
-                case "pdf":
-                    var doc = new jsPDF('landscape', 'mm', 'a4');
-                    doc.addImage(canvas.toDataURL('image/png'), 'PNG', 10, 10, nw+10, nh+10);
-                    doc.save(filename+'.pdf');
-                    break;
-                case "jpg":
-                    var imgData = canvas.toDataURL('image/jpeg');
-                    window.open(imgData);
-
-                    /*
-                    var a = document.createElement('a');
-                    // toDataURL defaults to png, so we need to request a jpeg, then convert for file download.
-                    a.href = canvas.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
-                    a.download = filename+'.jpg';
-                    a.click();
-                    */
-                    break;
-                case "png":
-                default:
-                    var imgData = canvas.toDataURL('image/png');
-                    window.open(imgData);
-
-                    /*
-                    var a = document.createElement('a');
-                    // toDataURL defaults to png, so we need to request a jpeg, then convert for file download.
-                    a.href = canvas.toDataURL('image/png');
-                    a.download = filename+'.png';
-                    a.click();
-                    */
-                    break;
-                }
-            }
-        });
-    }
 </script>
 <div class="row">
 	<div class="col-md-12">
@@ -347,7 +296,5 @@ console.log('call exportPlot');console.log(width);console.log(height);console.lo
 			<?php endforeach; ?>
 		</ul>
 		<button type="button" id="graph-refesh" class="btn btn-primary"><?php echo L::REFRESH; ?></button>
-	</div>
-	<div id="graph_export_image" style="display:none;">
 	</div>
 </div>

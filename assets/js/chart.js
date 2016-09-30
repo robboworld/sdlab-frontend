@@ -560,3 +560,49 @@ console.log('newopts:');console.log(opts);
         return 0;
     };
 }
+
+function exportPlot(plot,ftype) {
+    if (ftype !== 'pdf' && ftype !== 'jpg' && ftype !== 'png') return false;
+
+    var oldbg = plot.getPlaceholder().get(0).style.backgroundColor;  // save bg
+    plot.getPlaceholder().get(0).style.backgroundColor = "white";  // change bg
+
+    html2canvas(plot.getPlaceholder().get(0), {
+        onrendered: function(canvas) {
+            plot.getPlaceholder().get(0).style.backgroundColor = oldbg;  // restore bg
+
+            var filename = 'plot'+(new Date()).getTime();
+            switch (ftype) {
+            case "pdf":
+                var mimeType = "image/png",
+                    imgData = canvas.toDataURL(mimeType),
+                    width = canvas.width,
+                    height = canvas.height,
+                    k = height/width,
+                    nw = 180, nh = nw*k;
+                var doc = new jsPDF('landscape', 'mm', 'a4');
+                doc.addImage(imgData, 'PNG', 10, 10, nw+10, nh+10);
+                doc.save(filename+'.pdf');
+                break;
+
+            case "jpg":
+                var mimeType = "image/jpeg",
+                    // toDataURL defaults to png, so we need to request a jpeg, then convert for file download.
+                    imgData = canvas.toDataURL(mimeType).replace(mimeType, "image/octet-stream");
+
+                //window.open(imgData);
+                return downloadData(imgData, filename + ".jpg", mimeType);
+                break;
+
+            case "png":
+            default:
+                var mimeType = "image/png",
+                    imgData = canvas.toDataURL(mimeType);
+
+                //window.open(imgData);
+                return downloadData(imgData, filename + ".png", mimeType);
+                break;
+            }
+        }
+    });
+}

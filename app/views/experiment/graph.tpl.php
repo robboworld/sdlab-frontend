@@ -257,7 +257,7 @@ console.log('added count: '+acnt);
 				<button type="button" class="btn btn-default" onclick="stopPlotUpdate();">Update off</button>
 			</div>
 		</div>
-		<div id="graph-all" style="height: 400px; padding-left: 15px;">
+		<div id="graph-all" style="width: 900px; height: 400px; padding-left: 15px;">
 		</div>
 	</div>
 	<div class="col-md-3">

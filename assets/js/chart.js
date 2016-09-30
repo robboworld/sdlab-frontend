@@ -53,6 +53,8 @@ function TimeSeriesPlot(placeholder, data, options) {
 
     this.xrange      = 3600;  // Time window/range in seconds (default 1h)
 
+    var self = this;
+
     this._defaults = {
             // Plot and plugins settings
             series: {
@@ -127,30 +129,22 @@ function TimeSeriesPlot(placeholder, data, options) {
                 //cursor: "move",      // CSS mouse cursor value used when dragging, e.g. "pointer"
                 //frameRate: 20,
             },
+            hooks : {
+                plotpan: [function(event, plot) {
+                    self.shiftenabled = false;  // disable update-shift on navigation
+                }],
+                plotzoom: [function(event, plot) {
+                    self.shiftenabled = false;  // disable update-shift on navigation
+                }]
+            },
 
             // Custom settings
             plottooltip: true,
             xrange     : this.xrange,
     };
 
-    var self = this;
-
-    // Plugin: navigate
-    /*
-    // TODO: fix init plugin hooks after options merge
-    this._defaults.hooks = {
-            plotpan: [function(event, plot) {
-console.log('call plotpan:');console.log(arguments);
-                self.shiftenabled = false;  // disable update-shift on navigation
-            }],
-            plotzoom: [function(event, plot) {
-console.log('call plotzoom:');console.log(arguments);
-                self.shiftenabled = false;  // disable update-shift on navigation
-            }]
-    };
-    */
-
-    var settings = {};//global settings
+    // Merge settings
+    var settings = {};  //global settings
     if (typeof options !== 'undefined') {
         $.extend(true, settings, this._defaults, options);
     } else {
@@ -162,34 +156,20 @@ console.log('call plotzoom:');console.log(arguments);
     this.p = $.plot(this.placeholder, this.data, settings);
 console.log('init plot');console.log(this.data);console.log(settings);
 
-    // attach plugins hooks (not works through options.hooks)
+    // attach plugins hooks (no autoadd through options.hooks)
     // add unknown hooks from options
-    /*
-    if (typeof this.p.getOptions().hooks !== 'undefined' && this.p.getOptions().hooks.length>0) {
+    if (typeof this.p.getOptions().hooks !== 'undefined' && !jQuery.isEmptyObject(this.p.getOptions().hooks)) {
         for (var n in this.p.getOptions().hooks) {
             if (!this.p.hooks[n] && this.p.getOptions().hooks[n].length>0) {
                 for (var i = 0; i < this.p.getOptions().hooks[n].length; i++) {
                     this.p.getPlaceholder().bind(n, self.p.getOptions().hooks[n][i]);
-                    //this.p.getPlaceholder().bind(n, function(){
-                    //    self.p.getOptions().hooks[n][i].apply(window, arguments);
-                    //});
                 }
             }
         }
     }
-    */
 
-    // XXX: temporary fix plugins hooks merge without init options
-    (this.p.getPlaceholder()).bind('plotpan', function(event, plot) {
-console.log('call plotpan:');console.log(arguments);
-        self.shiftenabled = false;  // disable update-shift on navigation
-    });
-    (this.p.getPlaceholder()).bind('plotzoom', function(event, plot) {
-console.log('call plotzoom:');console.log(arguments);
-        self.shiftenabled = false;  // disable update-shift on navigation
-    });
-
-    // Custom settings
+    // Fill properties with settings
+    // Time range: x axis
     this.xrange = (settings.xrange === null ? null : (isNaN(settings.xrange) ? null : parseInt(settings.xrange)) );
 
     // Tooltips init

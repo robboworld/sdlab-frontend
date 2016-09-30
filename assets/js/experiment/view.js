@@ -282,8 +282,8 @@ function experimentAction(act, experiment_id){
             if(ok){
                 // switch btn
                 btn.prop('disabled', false).removeClass('disabled')
-                    .find('.btn-text').text(btn.data('text-'+(act?'1':'0')))
-                    .find('span:first-child').removeClass(' '+btn.data('icon-0')+' '+btn.data('icon-1')).addClass(btn.data('icon-'+(act?'1':'0')));
+                    .find('.btn-text').text(btn.data('text-'+(act?'1':'0')));
+                btn.find('span:first-child').removeClass(' '+btn.data('icon-0')+' '+btn.data('icon-1')).addClass(btn.data('icon-'+(act?'1':'0')));
                 //$('#experiment_error_text').empty().hide();
                 el = $('#setup_status_active');
                 if(el.length>0){
@@ -437,8 +437,8 @@ function updateExperimentStatus(exp_id, uuid, onalways){
                 }
                 // switch btn
                 var btn = $('#experiment_action');
-                btn.find('.btn-text').text(btn.data('text-'+(setup.active?'1':'0')))
-                   .find('span:first-child').removeClass(' '+btn.data('icon-0')+' '+btn.data('icon-1')).addClass(btn.data('icon-'+(setup.active?'1':'0')));
+                btn.find('.btn-text').text(btn.data('text-'+(setup.active?'1':'0')));
+                btn.find('span:first-child').removeClass(' '+btn.data('icon-0')+' '+btn.data('icon-1')).addClass(btn.data('icon-'+(setup.active?'1':'0')));
             }
 
             // Set global active

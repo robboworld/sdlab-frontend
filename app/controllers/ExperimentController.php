@@ -1091,6 +1091,8 @@ class ExperimentController extends Controller
 			self::addJs('lib/jquery.flot');
 			self::addJs('lib/jquery.flot.time.min');
 			self::addJs('lib/jquery.flot.navigate');
+			self::addJs('lib/jspdf.min');
+			self::addJs('lib/html2canvas');
 			self::addJs('functions');
 			self::addJs('chart');
 			// Add language translates for scripts

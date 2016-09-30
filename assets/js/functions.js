@@ -160,3 +160,73 @@ SDLab.Language = {
         });
     }
 };
+
+function downloadData(dataURI, filename, mimeType) {
+    var mt = mimeType || "text/plain";
+
+    // try window.MSBlobBuilder
+    if (window.MSBlobBuilder) {
+        /* Saves a text string as a blob file*/  
+        var ie = navigator.userAgent.match(/MSIE\s([\d.]+)/),
+            ie11 = navigator.userAgent.match(/Trident\/7.0/) && navigator.userAgent.match(/rv:11/),
+            ieEDGE = navigator.userAgent.match(/Edge/g),
+            ieVer = (ie ? ie[1] : (ie11 ? 11 : (ieEDGE ? 12 : -1)));
+
+        if (ie && ieVer<10) {
+            //console.log("No blobs on IE ver<10");
+            return false;
+        }
+
+        // atob to base64_decode the data-URI
+        var b_data = atob(dataURI.split(',')[1]);
+        // Use typed arrays to convert the binary data to a Blob
+        var arraybuffer = new ArrayBuffer(b_data.length);
+        var view = new Uint8Array(arraybuffer);
+        for (var i=0; i<b_data.length; i++) {
+            view[i] = b_data.charCodeAt(i) & 0xff;
+        }
+
+        // The BlobBuilder API has been deprecated in favour of Blob, but older
+        // browsers don't know about the Blob constructor
+        // IE10 also supports BlobBuilder, but since the `Blob` constructor
+        // also works, there's no need to add `MSBlobBuilder`.
+        var dataFileAsBlob = new Blob([arraybuffer], {type: 'application/octet-stream'});
+        //var dataFileAsBlob = new MSBlobBuilder();
+        //dataFileAsBlob.append(dataURI);
+
+        if (ieVer>-1) {
+            return window.navigator.msSaveBlob(dataFileAsBlob, filename);
+        } else {
+            return false
+            // try a.download method next?
+        }
+    }
+
+    // try use a.download prop:
+    //build download link:
+    var a = document.createElement("a");
+    a.href = dataURI;
+    if ('download' in a) {
+        a.setAttribute("download", filename);
+        a.style.display = "none";
+        a.innerHTML = "downloading...";
+        document.body.appendChild(a);
+        setTimeout(function() {
+            var e = document.createEvent("MouseEvents");
+            e.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+            a.dispatchEvent(e);
+            document.body.removeChild(a);
+        }, 100);
+        return true;
+    }
+
+    //try iframe dataURL download:
+    var f = document.createElement("iframe");
+    document.body.appendChild(f);
+    f.src = "data:" + (mt ? mt : "application/octet-stream") + (window.btoa ? ";base64" : "") + "," + (window.btoa ? window.btoa : escape)(dataURI);
+    setTimeout(function() {
+        document.body.removeChild(f);
+    }, 400);
+
+    return true;
+}

@@ -65,6 +65,12 @@ console.log('created TimeSeriesPlot:');console.log(g);
             return true;
         });
 
+        $(".btn-graph-export").on("click", function(e) {
+            e.preventDefault();
+            var ft = $(this).data('filetype') || "png";
+            exportPlot(g.p, ft);
+        });
+
         //$('input', choiceContainer).click(function() {
         //    $('#graph-refesh').trigger('click');
         //});
@@ -255,6 +261,17 @@ console.log('added count: '+acnt);
 			<div class="btn-group" role="group" aria-label="...">
 				<button type="button" class="btn btn-default" onclick="runPlotUpdate();">Update on</button>
 				<button type="button" class="btn btn-default" onclick="stopPlotUpdate();">Update off</button>
+			</div>
+			<div class="btn-group graph-export">
+				<button type="button" class="btn btn-info btn-graph-export" data-filetype="png"><?php echo L::graph_EXPORT; ?></button>
+				<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<span class="caret"></span>
+					<span class="sr-only"><?php echo L::TOGGLE_DROPDOWN; ?></span>
+				</button>
+				<ul class="dropdown-menu">
+					<li><a href="javascript:void(0);" class="btn-graph-export" role="button" data-filetype="jpg">jpeg</a></li>
+					<li><a href="javascript:void(0);" class="btn-graph-export" role="button" data-filetype="pdf">pdf</a></li>
+				</ul>
 			</div>
 		</div>
 		<div id="graph-all" style="width: 900px; height: 400px; padding-left: 15px;">

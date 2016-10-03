@@ -11,7 +11,7 @@ $timerange = 60;  // default time range
 
     $(document).ready(function() {
         var now = new Date();
-        g = new TimeSeriesPlot('#graph-all', [], {
+        g = new TimeSeriesPlot('#graph_all', [], {
             xaxis: {
                 min: ((timerange > 0) ? (Number(now.getTime()) - (timerange * 1000)) : null),
                 max: Number(now.getTime())
@@ -28,7 +28,7 @@ console.log('created TimeSeriesPlot:');console.log(g);
         var choiceContainer = $(".available-sensors");
 
         // Refresh data with sensor filter
-        $('#graph-refesh').click(function() {
+        $('#graph_refesh').click(function() {
             stopPlotUpdate();
             var list = $('input', choiceContainer),
                 clist = list.filter(':checked'), selall = false,
@@ -72,7 +72,7 @@ console.log('created TimeSeriesPlot:');console.log(g);
         });
 
         //$('input', choiceContainer).click(function() {
-        //    $('#graph-refesh').trigger('click');
+        //    $('#graph_refesh').trigger('click');
         //});
 
         // Get data
@@ -157,8 +157,8 @@ console.log('new count: '+pcnt);
             // Plot data polling
             runPlotUpdate();
         } else {
-            //$('#graph-all').empty();
-            setInterfaceError($('#graph-msgs'), 'API error: ' + data.error, 3000);
+            //$('#graph_all').empty();
+            setInterfaceError($('#graph_msgs'), 'API error: ' + data.error, 3000);
         }
     }
 
@@ -177,12 +177,51 @@ console.log('added count: '+acnt);
             // Plot data polling
             runPlotUpdate();
         } else {
-            //$('#graph-all').empty();
-            setInterfaceError($('#graph-msgs'), 'API error: ' + data.error, 3000);
+            //$('#graph_all').empty();
+            setInterfaceError($('#graph_msgs'), 'API error: ' + data.error, 3000);
 
             // Plot data polling
             runPlotUpdate();  //xxx: start new update on error too?
         }
+    }
+
+    function clickSetRange(el,range) {
+        g.setRange(range);
+        g.refresh(true)
+        // Fix buttons state
+        $(".control-zoom-range-x .btn-zoom-x").removeClass("active");
+        $(".control-zoom-range-x .dropdown-toggle").removeClass("active");
+        if (el) {  // use btn
+            $(el).addClass("active");
+            if ($(el).parent(".dropdown-menu").length) {
+                $(el).parent(".dropdown-menu").siblings(".dropdown-toggle").addClass("active");
+            }
+        } else {  // found btn by range
+            $(".control-zoom-range-x .btn-zoom-x").each(function(idx,elem) {
+                if ($(elem).data("value") == range) {
+                    $(elem).addClass("active");
+                    if ($(elem).parent(".dropdown-menu").length) {
+                        $(elem).parent(".dropdown-menu").siblings(".dropdown-toggle").addClass("active");
+                    }
+                    return false;
+                }
+            });
+        }
+        return true;
+    }
+    function resetZoom(shifton) {
+        var active = $(".control-zoom-range-x .btn-zoom-x.active");
+        if (active.length) {
+            clickSetRange(active.get(0),active.data("value"));
+        } else {
+            clickSetRange(null,timerange);  // use default
+        }
+        if (shifton === true) {
+            g.shiftenabled = true;
+        } else if (shifton === false) {
+            g.shiftenabled = false;
+        }
+        return true;
     }
 </script>
 <div class="row">
@@ -239,54 +278,92 @@ console.log('added count: '+acnt);
 		<h3><?php echo L::graph_TITLE_ALL_DETECTIONS_BY_TIME; ?></h3>
 	</div>
 
-	<div class="col-md-9">
-		<div id="graph-msgs">
+	<div class="col-lg-9 col-md-12">
+		<div id="graph_msgs">
 		</div>
-		<div id="control-zoom-x">
-			<label>XRange</label>
-			<div class="btn-group" role="group" aria-label="...">
-				<button type="button" class="btn btn-default" onclick="g.setRange(null);g.refresh(true);return true;">All</button>
-				<button type="button" class="btn btn-default" onclick="g.setRange(1);g.refresh(true);return true;">1s</button>
-				<button type="button" class="btn btn-default" onclick="g.setRange(30);g.refresh(true);return true;">30s</button>
-				<button type="button" class="btn btn-default" onclick="g.setRange(1*60);g.refresh(true);return true;">1m</button>
-				<button type="button" class="btn btn-default" onclick="g.setRange(30*60);g.refresh(true);return true;">30m</button>
-				<button type="button" class="btn btn-default" onclick="g.setRange(1*60*60);g.refresh(true);return true;">1h</button>
-				<button type="button" class="btn btn-default" onclick="g.setRange(12*60*60);g.refresh(true);return true;">12h</button>
-				<button type="button" class="btn btn-default" onclick="g.setRange(1*24*60*60);g.refresh(true);return true;">1d</button>
-				<button type="button" class="btn btn-default" onclick="g.setRange(1*7*24*60*60);g.refresh(true);return true;">1w</button>
-				<button type="button" class="btn btn-default" onclick="g.setRange(1*30*24*60*60);g.refresh(true);return true;">1M</button>
-				<button type="button" class="btn btn-default" onclick="g.setRange(6*30*24*60*60);g.refresh(true);return true;">6M</button>
-				<button type="button" class="btn btn-default" onclick="g.setRange(365*24*60*60);g.refresh(true);return true;">1Y</button>
-			</div>
-			<div class="btn-group" role="group" aria-label="...">
-				<button type="button" class="btn btn-default" onclick="runPlotUpdate();">Update on</button>
-				<button type="button" class="btn btn-default" onclick="stopPlotUpdate();">Update off</button>
-			</div>
-			<div class="btn-group graph-export">
-				<button type="button" class="btn btn-info btn-graph-export" data-filetype="png"><?php echo L::graph_EXPORT; ?></button>
-				<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-					<span class="caret"></span>
-					<span class="sr-only"><?php echo L::TOGGLE_DROPDOWN; ?></span>
-				</button>
-				<ul class="dropdown-menu">
-					<li><a href="javascript:void(0);" class="btn-graph-export" role="button" data-filetype="jpg">jpeg</a></li>
-					<li><a href="javascript:void(0);" class="btn-graph-export" role="button" data-filetype="pdf">pdf</a></li>
-				</ul>
+		<div class="plot-control-panel-top">
+			<div class="btn-toolbar" role="toolbar" aria-label="...">
+				<div class="btn-group btn-group-sm" role="group" aria-label="...">
+					<button type="button" class="btn btn-sm btn-link" onclick="resetZoom(true);"><span class="glyphicon glyphicon-eye-open"></span></button>
+				</div>
+				<div class="btn-group btn-group-sm control-zoom-range-x" role="group" aria-label="...">
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 0;             echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_ALL; ?>"><?php echo L::graph_ZOOM_ALL; ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 30;            echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_30S; ?>"><?php echo L::graph_ZOOM_30S_SHORT; ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 1*60;          echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_1M; ?>"><?php echo L::graph_ZOOM_1M_SHORT; ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 15*60;         echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_15M; ?>"><?php echo L::graph_ZOOM_15M_SHORT; ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 30*60;         echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_30M; ?>"><?php echo L::graph_ZOOM_30M_SHORT; ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 1*60*60;       echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_1H; ?>"><?php echo L::graph_ZOOM_1H_SHORT; ?></button>
+					<div class="btn-group btn-group-sm" role="group">
+						<button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							<?php echo L::graph_ZOOM; ?>
+							<span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu">
+							<li class="btn-zoom-x<?php $thisrange = 1;             echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1S; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 12*60*60;      echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_12H; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 1*24*60*60;    echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1D; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 1*7*24*60*60;  echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1W; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 1*30*24*60*60; echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1MM; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 6*30*24*60*60; echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_6MM; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 365*24*60*60;  echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1Y; ?></a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="btn-group btn-group-sm" role="group" aria-label="...">
+					<button type="button" class="btn btn-sm btn-default" onclick="runPlotUpdate();"><span class="fa fa-play"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="stopPlotUpdate();"><span class="fa fa-pause"></span></button>
+				</div>
+				<div class="btn-group btn-group-sm graph-export">
+					<button type="button" class="btn btn-sm btn-info btn-graph-export" data-filetype="png"><span class="fa fa-download"></span><span class="hidden-xs">&nbsp;<?php echo L::graph_EXPORT; ?></span></button>
+					<button type="button" class="btn btn-sm btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<span class="caret"></span>
+						<span class="sr-only"><?php echo L::TOGGLE_DROPDOWN; ?></span>
+					</button>
+					<ul class="dropdown-menu">
+						<li><a href="javascript:void(0);" class="btn-graph-export" role="button" data-filetype="png"><span class="fa fa-file-image-o"></span><span class="">&nbsp;png</span></a></li>
+						<li><a href="javascript:void(0);" class="btn-graph-export" role="button" data-filetype="jpg"><span class="fa fa-file-image-o"></span><span class="">&nbsp;jpeg</span></a></li>
+						<li><a href="javascript:void(0);" class="btn-graph-export" role="button" data-filetype="pdf"><span class="fa fa-file-pdf-o"></span><span class="">&nbsp;pdf</span></a></li>
+					</ul>
+				</div>
 			</div>
 		</div>
-		<div id="graph-all" style="width: 900px; height: 400px; padding-left: 15px;">
+		<div style="position:relative;">
+			<div class="plot-control-panel-left" style="position:absolute;bottom:20px;">
+				<div class="btn-group-vertical btn-group-sm control-zoom-y" role="group" aria-label="...">
+					<button type="button" class="btn btn-sm btn-default" onclick="zoomIn(alert('todo'),'y');"><span class="fa fa-expand"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="zoomOut(alert('todo'),'y');"><span class="fa fa-compress"></span></button>
+				</div><br/><br/>
+				<div class="btn-group-vertical btn-group-sm control-pan-y" role="group" aria-label="...">
+					<button type="button" class="btn btn-sm btn-default" onclick="panMinus(alert('todo'),'y');"><span class="fa fa-long-arrow-up"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="panMinus(alert('todo'),'y');"><span class="fa fa-long-arrow-down"></span></button>
+				</div>
+			</div>
+			<div id="graph_all" style="width: 870px; height: 400px; margin-left: 40px;">
+			</div>
+		</div>
+		<div class="plot-control-panel-bottom" style="padding-left:40px;">
+			<div class="btn-toolbar" role="toolbar" aria-label="...">
+				<div class="btn-group btn-group-sm control-pan-x" role="group" aria-label="...">
+					<button type="button" class="btn btn-sm btn-default" onclick="panMinus(alert('todo'),'x');"><span class="fa fa-long-arrow-left"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="panPlus(alert('todo'),'x');"><span class="fa fa-long-arrow-right"></span></button>
+				</div>
+				<div class="btn-group btn-group-sm control-zoom-x" role="group" aria-label="...">
+					<button type="button" class="btn btn-sm btn-default" onclick="zoomIn(alert('todo'),'x');"><span class="fa fa-expand"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="zoomOut(alert('todo'),'x');"><span class="fa fa-compress"></span></button>
+				</div>
+			</div>
 		</div>
 	</div>
-	<div class="col-md-3">
+	<div class="col-lg-3 col-md-12">
 		<h4><?php echo L::SENSORS; ?></h4>
 
 		<?php if (empty($this->view->content->available_sensors)) : ?>
 		<div><?php echo L::graph_NO_SENSORS; ?></div>
 		<?php endif; ?>
-		<ul class="nav available-sensors">
-			<?php foreach ($this->view->content->available_sensors as $sensor) :?>
+		<ul class="list-unstyled available-sensors small">
+			<?php foreach ($this->view->content->available_sensors as $sensor) : ?>
 				<li>
-					<label class="chechbox"><input type="checkbox" <?php /* if (array_key_exists($sensor->sensor_id, $this->view->content->displayed_sensors)) echo 'checked';*/?> checked name="show-sensor[]" value="<?php 
+					<label class="checkbox"><input type="checkbox" <?php /* if (array_key_exists($sensor->sensor_id, $this->view->content->displayed_sensors)) echo 'checked';*/?> checked name="show-sensor[]" value="<?php 
 						echo htmlspecialchars($sensor->sensor_id . '#' . (int)$sensor->sensor_val_id, ENT_QUOTES, 'UTF-8'); ?>"/>&nbsp;<?php 
 						echo htmlspecialchars(constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8') . ','
 							. htmlspecialchars(constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)), ENT_QUOTES, 'UTF-8')
@@ -295,6 +372,6 @@ console.log('added count: '+acnt);
 				</li>
 			<?php endforeach; ?>
 		</ul>
-		<button type="button" id="graph-refesh" class="btn btn-primary"><?php echo L::REFRESH; ?></button>
+		<button type="button" id="graph_refesh" class="btn btn-primary"><?php echo L::REFRESH; ?></button>
 	</div>
 </div>

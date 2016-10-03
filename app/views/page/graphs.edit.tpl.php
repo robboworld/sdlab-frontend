@@ -3,7 +3,7 @@
 <script src="assets/js/chart.js"></script>
 <script>
 $(document).ready(function(){
-	testFlot($('#graph-workspace'))
+	testFlot($('#graph_workspace'))
 })
 </script>
 
@@ -79,7 +79,7 @@ $(document).ready(function(){
 
 <div class="clearfix"></div>
 <br><br>
-<div class="col-md-12" id="graph-workspace" style="width: 100%; height: 300px;">
+<div class="col-md-12" id="graph_workspace" style="width: 100%; height: 300px;">
 	&nbsp;
 </div>
 

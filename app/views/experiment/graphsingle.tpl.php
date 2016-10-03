@@ -46,7 +46,7 @@
 			}
 		};
 
-		buildGraph(data, $('#graph-workspace'), options)
+		buildGraph(data, $('#graph_workspace'), options)
 	}
 
 	$(document).ready(function(){
@@ -102,7 +102,7 @@
 </div>
 
 <div class="col-md-12">
-	<div class="col-md-12" id="graph-workspace" style="height: 400px; padding-left: 15px;">
+	<div class="col-md-12" id="graph_workspace" style="height: 400px; padding-left: 15px;">
 		&nbsp;
 	</div>
 </div>

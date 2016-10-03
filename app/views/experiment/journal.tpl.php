@@ -76,10 +76,10 @@
 			</a>
 		</h3>
 		<div class="collapse in" id="collapseSensors">
-			<ul class="nav">
+			<ul class="list-unstyled small">
 				<?php foreach ($this->view->content->available_sensors as $skey => $sensor) :?>
 					<li>
-						<label><input type="checkbox" <?php if (array_key_exists($skey, $this->view->content->displayed_sensors)) echo 'checked';?> name="show-sensor[]" value="<?php echo htmlspecialchars($skey, ENT_QUOTES, 'UTF-8'); ?>"/> <?php echo htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?></label>
+						<label class="checkbox"><input type="checkbox" <?php if (array_key_exists($skey, $this->view->content->displayed_sensors)) echo 'checked';?> name="show-sensor[]" value="<?php echo htmlspecialchars($skey, ENT_QUOTES, 'UTF-8'); ?>"/> <?php echo htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?></label>
 					</li>
 				<?php endforeach; ?>
 			</ul>

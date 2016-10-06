@@ -1,11 +1,16 @@
 <?php
-$timerange = 60;  // default time range
+$timerange = 60;        // default time range in seconds, int or null|0 for all range
+$scrollenabled = true;  // plot auto scroll on new data
+$scrollenabled = true;  // plot auto scroll on new data
+$xrangeymode = 'auto';
 ?>
 <script type="text/javascript">
     var g,
         updaterPlot=null,
         updaterPlotTime=5,
-        timerange=<?php echo (($timerange > 0) ? $timerange : null); ?>,
+        timerange=<?php echo (int)$timerange; ?>,
+        scrollenabled=<?php echo $scrollenabled ? 'true' : 'false'; ?>,
+        xrangeymode='<?php echo addcslashes($xrangeymode , "'"); ?>',
         experiment=<?php echo (int)$this->view->content->experiment->id; ?>,
         seqNum=0;
 
@@ -20,10 +25,33 @@ $timerange = 60;  // default time range
                 min: null,
                 max: null
             },
+            hooks : {
+                plotpan: [function(event, plot, args) {
+                    var dx = ((!args) ? 0 : ((!args.left) ? 0 : args.left));
+                    var dy = ((!args) ? 0 : ((!args.top)  ? 0 : args.top));
+                    // disable auto scroll when pan x
+                    if (dx) {
+                        var oldstate = g.scrollenabled;
+                        g.scrollenabled = false;
+                        onPlotScrollChange(oldstate, g.scrollenabled);
+                    }
+                }],
+                plotzoom: [function(event, plot, args) {
+                    var axis = ((!args) ? null : ((!args.axis) ? null : args.axis));
+
+                    // disable auto scroll when zoom x
+                    if (axis === null || axis === "x") {
+                        var oldstate = g.scrollenabled;
+                        g.scrollenabled = false;
+                        onPlotScrollChange(oldstate, g.scrollenabled);
+                    }
+                }]
+            },
             xrange: timerange,
+            "scrollenabled": scrollenabled,
+            "xrangeymode": xrangeymode,
             plottooltip: true
         });
-console.log('created TimeSeriesPlot:');console.log(g);
 
         var choiceContainer = $(".available-sensors");
 
@@ -31,7 +59,8 @@ console.log('created TimeSeriesPlot:');console.log(g);
         $('#graph_refesh').click(function() {
             stopPlotUpdate();
             var list = $('input', choiceContainer),
-                clist = list.filter(':checked'), selall = false,
+                clist = list.filter(':checked'),
+                selall = false,
                 params = {'experiment': experiment};
             if (list.length>0) {
                 params['show-sensor'] = [];
@@ -69,6 +98,10 @@ console.log('created TimeSeriesPlot:');console.log(g);
             e.preventDefault();
             var ft = $(this).data('filetype') || "png";
             exportPlot(g.p, ft);
+        });
+
+        $("#chk_xrange_autozoom_y").on("change", function() {
+            setRangeXAutozoomY($(this).is(":checked")?"auto":"manual");
         });
 
         //$('input', choiceContainer).click(function() {
@@ -137,9 +170,8 @@ console.log('call runPlotUpdate');
     }
 
     function dataReceivedAll(data, status, jqxhr){
-console.log('call dataReceivedAll');console.log(data);console.log('jqxhr.seqnum: '+jqxhr.seqnum);
+console.log('call dataReceivedAll');
         if (jqxhr.seqnum != seqNum) {
-console.log('old seqnum,now: '+seqNum);
             return;
         }
 
@@ -147,12 +179,13 @@ console.log('old seqnum,now: '+seqNum);
             g.setData(data.result);
             var pcnt = g.getTotalPointsCount(data.result);
 console.log('new count: '+pcnt);
-            if (pcnt > 0) {
-                g.refresh(true);
-            } else {
+            if (!pcnt) {
                 setDefaultAxis();
-                g.refresh(false);
             }
+            var oldstate = g.scrollenabled;
+            g.scrollenabled = true; // TODO: setScroll(true/false) with change icon state
+            g.refresh();
+            onPlotScrollChange(oldstate, g.scrollenabled);
 
             // Plot data polling
             runPlotUpdate();
@@ -163,16 +196,15 @@ console.log('new count: '+pcnt);
     }
 
     function dataReceived(data, status, jqxhr){
-console.log('call dataReceived');console.log(data);console.log('jqxhr.seqnum: '+jqxhr.seqnum);
+console.log('call dataReceived');
         if (jqxhr.seqnum != seqNum) {
-console.log('old seqnum,now: '+seqNum);
             return;
         }
 
-        if(typeof data.error === 'undefined') {
+        if (typeof data.error === 'undefined') {
             var acnt = g.addData(data.result);
 console.log('added count: '+acnt);
-            g.refresh((acnt > 0 && g.shiftenabled) ? true : false);
+            g.refresh();
 
             // Plot data polling
             runPlotUpdate();
@@ -185,16 +217,27 @@ console.log('added count: '+acnt);
         }
     }
 
-    function clickSetRange(el,range) {
+    function changeScrollState(state) {
+        var oldstate = g.scrollenabled;
+        g.scrollenabled = (state ? true : false);
+        g.refresh();
+        onPlotScrollChange(oldstate, (state ? true : false));
+    }
+
+    function clickSetLastXRange(btn,range,scroll) {
         g.setRange(range);
-        g.refresh(true)
-        // Fix buttons state
+        var oldstate = g.xrangeymode;
+        //g.xrangeymode = 'auto';
+        onPlotRangeXAutozoomYChange(oldstate, g.xrangeymode);
+        g.refresh(true);
+
+        // Fix range buttons state
         $(".control-zoom-range-x .btn-zoom-x").removeClass("active");
         $(".control-zoom-range-x .dropdown-toggle").removeClass("active");
-        if (el) {  // use btn
-            $(el).addClass("active");
-            if ($(el).parent(".dropdown-menu").length) {
-                $(el).parent(".dropdown-menu").siblings(".dropdown-toggle").addClass("active");
+        if (btn) {  // use btn
+            $(btn).addClass("active");
+            if ($(btn).parent(".dropdown-menu").length) {
+                $(btn).parent(".dropdown-menu").siblings(".dropdown-toggle").addClass("active");
             }
         } else {  // found btn by range
             $(".control-zoom-range-x .btn-zoom-x").each(function(idx,elem) {
@@ -209,19 +252,58 @@ console.log('added count: '+acnt);
         }
         return true;
     }
-    function resetZoom(shifton) {
+    function resetZoom() {
         var active = $(".control-zoom-range-x .btn-zoom-x.active");
         if (active.length) {
-            clickSetRange(active.get(0),active.data("value"));
+            clickSetLastXRange(active.get(0),active.data("value"));
         } else {
-            clickSetRange(null,timerange);  // use default
-        }
-        if (shifton === true) {
-            g.shiftenabled = true;
-        } else if (shifton === false) {
-            g.shiftenabled = false;
+            clickSetLastXRange(null,timerange);  // use default
         }
         return true;
+    }
+    function zoomPlot(args, dir) {
+        return ((typeof dir !== "undefined" && dir === "out") ? g.zoomOut(args) : g.zoom(args));
+    }
+
+    function setRangeXAutozoomY(state) {
+        var oldstate = g.xrangeymode;
+        g.xrangeymode = state;
+        onPlotRangeXAutozoomYChange(oldstate, g.xrangeymode);
+        return true;
+    }
+    function autozoomY() {
+        //Todo: add autozoomY
+        return true;
+    }
+
+    function onPlotScrollChange(oldstate, newstate) {
+        var el = $("#btn_scroll_x"), icon;
+        if (el.length) {
+            el.toggleClass('active', newstate ? true : false)
+                .toggleClass('btn-', newstate ? true : false)
+                .toggleClass('btn-info', newstate ? true : false);
+            el.data('state', newstate ? 1 : 0);
+            icon = el.children('span')
+            if (icon.length) {
+                icon.removeClass(""+icon.data('icon-0')+" "+icon.data('icon-1')).addClass(newstate ? icon.data('icon-1') : icon.data('icon-0'));
+            }
+        }
+    }
+    function onPlotRangeXAutozoomYChange(oldstate, newstate) {
+        var el = $("#chk_xrange_autozoom_y"),chk;
+        if (el.length) {
+            chk = el.is(":checked");
+            // fix incorrect checkbox state
+            if (chk) {
+                if (newstate !== 'auto') {
+                    el.prop('checked', false);
+                }
+            } else {
+                if (newstate === 'auto') {
+                    el.prop('checked', true);
+                }
+            }
+        }
     }
 </script>
 <div class="row">
@@ -284,28 +366,32 @@ console.log('added count: '+acnt);
 		<div class="plot-control-panel-top">
 			<div class="btn-toolbar" role="toolbar" aria-label="...">
 				<div class="btn-group btn-group-sm" role="group" aria-label="...">
-					<button type="button" class="btn btn-sm btn-link" onclick="resetZoom(true);"><span class="glyphicon glyphicon-eye-open"></span></button>
+					<button type="button" id="btn_scroll_x" class="btn btn-sm btn-default <?php if ($scrollenabled) echo 'active'; ?>" onclick="return changeScrollState(!$(this).data('state'));" data-state="<?php $scrollenabled ? '1' : '0'; ?>"><span class="fa fa-lg <?php $scrollenabled ? 'fa-eye' : 'fa-eye-slash'; ?>" data-icon-0="fa-eye-slash" data-icon-1="fa-eye"></span></button>
 				</div>
 				<div class="btn-group btn-group-sm control-zoom-range-x" role="group" aria-label="...">
-					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 0;             echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_ALL; ?>"><?php echo L::graph_ZOOM_ALL; ?></button>
-					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 30;            echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_30S; ?>"><?php echo L::graph_ZOOM_30S_SHORT; ?></button>
-					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 1*60;          echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_1M; ?>"><?php echo L::graph_ZOOM_1M_SHORT; ?></button>
-					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 15*60;         echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_15M; ?>"><?php echo L::graph_ZOOM_15M_SHORT; ?></button>
-					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 30*60;         echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_30M; ?>"><?php echo L::graph_ZOOM_30M_SHORT; ?></button>
-					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 1*60*60;       echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_1H; ?>"><?php echo L::graph_ZOOM_1H_SHORT; ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 0;             echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_ALL; ?>"><?php echo L::graph_ZOOM_ALL; ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 30;            echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_30S; ?>"><?php echo L::graph_ZOOM_30S_SHORT; ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 1*60;          echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_1M; ?>"><?php echo L::graph_ZOOM_1M_SHORT; ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 15*60;         echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_15M; ?>"><?php echo L::graph_ZOOM_15M_SHORT; ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 30*60;         echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_30M; ?>"><?php echo L::graph_ZOOM_30M_SHORT; ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 1*60*60;       echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_1H; ?>"><?php echo L::graph_ZOOM_1H_SHORT; ?></button>
 					<div class="btn-group btn-group-sm" role="group">
 						<button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 							<?php echo L::graph_ZOOM; ?>
 							<span class="caret"></span>
 						</button>
 						<ul class="dropdown-menu">
-							<li class="btn-zoom-x<?php $thisrange = 1;             echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1S; ?></a></li>
-							<li class="btn-zoom-x<?php $thisrange = 12*60*60;      echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_12H; ?></a></li>
-							<li class="btn-zoom-x<?php $thisrange = 1*24*60*60;    echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1D; ?></a></li>
-							<li class="btn-zoom-x<?php $thisrange = 1*7*24*60*60;  echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1W; ?></a></li>
-							<li class="btn-zoom-x<?php $thisrange = 1*30*24*60*60; echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1MM; ?></a></li>
-							<li class="btn-zoom-x<?php $thisrange = 6*30*24*60*60; echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_6MM; ?></a></li>
-							<li class="btn-zoom-x<?php $thisrange = 365*24*60*60;  echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1Y; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 1;             echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1S; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 5*60;          echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_5M; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 10*60;         echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_10M; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 12*60*60;      echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_12H; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 1*24*60*60;    echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1D; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 1*7*24*60*60;  echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1W; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 1*30*24*60*60; echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1MM; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 6*30*24*60*60; echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_6MM; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 365*24*60*60;  echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1Y; ?></a></li>
+							<li role="separator" class="divider"></li>
+							<li><a href="javascript:void(0);"><label class="checkbox"><input type="checkbox" id="chk_xrange_autozoom_y" value="1" <?php echo ($xrangeymode === 'auto' ? 'checked' : ''); ?>/>&nbsp;<?php echo L::graph_ZOOM_AUTO_Y; ?></label></a></li>
 						</ul>
 					</div>
 				</div>
@@ -330,12 +416,15 @@ console.log('added count: '+acnt);
 		<div style="position:relative;">
 			<div class="plot-control-panel-left" style="position:absolute;bottom:20px;">
 				<div class="btn-group-vertical btn-group-sm control-zoom-y" role="group" aria-label="...">
-					<button type="button" class="btn btn-sm btn-default" onclick="zoomIn(alert('todo'),'y');"><span class="fa fa-expand"></span></button>
-					<button type="button" class="btn btn-sm btn-default" onclick="zoomOut(alert('todo'),'y');"><span class="fa fa-compress"></span></button>
+					<button type="button" class="btn btn-sm btn-default btn-autozoom-y" onclick="return autozoomY();"><span class="glyphicon glyphicon-resize-vertical"></span></button>
+				</div><br/><br/>
+				<div class="btn-group-vertical btn-group-sm control-zoom-y" role="group" aria-label="...">
+					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'y'},  'in');"><span class="fa fa-expand"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'y'}, 'out');"><span class="fa fa-compress"></span></button>
 				</div><br/><br/>
 				<div class="btn-group-vertical btn-group-sm control-pan-y" role="group" aria-label="...">
-					<button type="button" class="btn btn-sm btn-default" onclick="panMinus(alert('todo'),'y');"><span class="fa fa-long-arrow-up"></span></button>
-					<button type="button" class="btn btn-sm btn-default" onclick="panMinus(alert('todo'),'y');"><span class="fa fa-long-arrow-down"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="g.pan({top:'-/2'});return true;"><span class="fa fa-long-arrow-up"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="g.pan({top:'+/2'});return true;"><span class="fa fa-long-arrow-down"></span></button>
 				</div>
 			</div>
 			<div id="graph_all" style="width: 870px; height: 400px; margin-left: 40px;">
@@ -344,12 +433,12 @@ console.log('added count: '+acnt);
 		<div class="plot-control-panel-bottom" style="padding-left:40px;">
 			<div class="btn-toolbar" role="toolbar" aria-label="...">
 				<div class="btn-group btn-group-sm control-pan-x" role="group" aria-label="...">
-					<button type="button" class="btn btn-sm btn-default" onclick="panMinus(alert('todo'),'x');"><span class="fa fa-long-arrow-left"></span></button>
-					<button type="button" class="btn btn-sm btn-default" onclick="panPlus(alert('todo'),'x');"><span class="fa fa-long-arrow-right"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="g.pan({left:'-/2'});return true;"><span class="fa fa-long-arrow-left"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="g.pan({left:'+/2'});return true;"><span class="fa fa-long-arrow-right"></span></button>
 				</div>
 				<div class="btn-group btn-group-sm control-zoom-x" role="group" aria-label="...">
-					<button type="button" class="btn btn-sm btn-default" onclick="zoomIn(alert('todo'),'x');"><span class="fa fa-expand"></span></button>
-					<button type="button" class="btn btn-sm btn-default" onclick="zoomOut(alert('todo'),'x');"><span class="fa fa-compress"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'x'},  'in');"><span class="fa fa-expand"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'x'}, 'out');"><span class="fa fa-compress"></span></button>
 				</div>
 			</div>
 		</div>

@@ -41,17 +41,24 @@ function TimeSeriesPlot(placeholder, data, options) {
     this.placeholder = placeholder || '#graph';  // Selector
     this.data        = data || [];               // array of series
 
-    this.shiftenabled = true;
-
+    // global min-max
     this.xmin        = null;
-    this.xmin_       = null;//fulltime as is
+    this.xmin_       = null;  //fulltime as is
     this.xmax        = null;
-    this.xmax_       = null;//fulltime as is
-
+    this.xmax_       = null;  //fulltime as is
     this.ymin        = null;
     this.ymax        = null;
 
-    this.xrange      = 3600;  // Time window/range in seconds (default 1h)
+    // local min-max (on xrange with scroll on)
+    this.rxmin       = null;
+    this.rxmax       = null;
+    this.rymin       = null;
+    this.rymax       = null;
+
+    // auto scroll on new data and time range
+    this.scrollenabled = true;
+    this.xrange      = 3600;   // Time window/range in seconds (default 1h)
+    this.xrangeymode = 'auto'; // Y scale mode in xrange (auto - autoscale window, null - autoscale global, manual - no auto scale)
 
     var self = this;
 
@@ -129,18 +136,20 @@ function TimeSeriesPlot(placeholder, data, options) {
                 //cursor: "move",      // CSS mouse cursor value used when dragging, e.g. "pointer"
                 //frameRate: 20,
             },
-            hooks : {
-                plotpan: [function(event, plot) {
-                    self.shiftenabled = false;  // disable update-shift on navigation
-                }],
-                plotzoom: [function(event, plot) {
-                    self.shiftenabled = false;  // disable update-shift on navigation
-                }]
-            },
+            //hooks : {
+            //    plotpan: [function(event, plot) {
+            //        self.scrollenabled = false;  // disable auto scroll when navigate
+            //    }],
+            //    plotzoom: [function(event, plot) {
+            //        self.scrollenabled = false;  // disable auto scroll when navigate
+            //    }]
+            //},
 
             // Custom settings
-            plottooltip: true,
-            xrange     : this.xrange,
+            plottooltip   : true,
+            xrange        : self.xrange,
+            xrangeymode   : self.xrangeymode,
+            scrollenabled : self.scrollenabled,
     };
 
     // Merge settings
@@ -151,10 +160,11 @@ function TimeSeriesPlot(placeholder, data, options) {
         $.extend(settings, this._defaults);
     }
 
+    // TODO: add calc getMinMaxPoints for init data and xrange
+
     // Init Plot
     //$(this.placeholder).empty();
     this.p = $.plot(this.placeholder, this.data, settings);
-console.log('init plot');console.log(this.data);console.log(settings);
 
     // attach plugins hooks (no autoadd through options.hooks)
     // add unknown hooks from options
@@ -170,7 +180,11 @@ console.log('init plot');console.log(this.data);console.log(settings);
 
     // Fill properties with settings
     // Time range: x axis
-    this.xrange = (settings.xrange === null ? null : (isNaN(settings.xrange) ? null : parseInt(settings.xrange)) );
+    this.xrange      = (settings.xrange === null ? null : (isNaN(settings.xrange) ? null : parseInt(settings.xrange)) );
+    // Time range: y mode
+    this.xrangeymode = (settings.xrangeymode === null || settings.xrangeymode === 'auto' || settings.xrangeymode === 'manual') ? settings.xrangeymode : null;
+    // Auto scroll on new data
+    this.scrollenabled = (settings.scrollenabled) ? true : false;
 
     // Tooltips init
     if (settings.plottooltip) {
@@ -213,138 +227,130 @@ console.log('init plot');console.log(this.data);console.log(settings);
     }
 
     this.setData = function(data){
-console.log('call setData');
+console.log('call TimeSeriesPlot.setData');
         if (typeof this.p === 'undefined') {
             return;
         }
         this.data = data;
-        this.ymin = this.getYMinValue();
-        this.ymax = this.getYMaxValue();
-        var pxmin = this.getXMinPoint(),
-            pxmax = this.getXMaxPoint();
-        this.xmin  = ((pxmin !== null) ? pxmin[0] : null);
-        this.xmin_ = ((pxmin !== null) ? pxmin[3] : null);
-        this.xmax  = ((pxmax !== null) ? pxmax[0] : null);
-        this.xmax_ = ((pxmax !== null) ? pxmax[3] : null);
 
-console.log(this.ymin);console.log(this.ymax);console.log(pxmin);console.log(pxmax);
+        // calculate global and last x range min-max
+        var po = this.getMinMaxPoints(this.data, this.xrange);
+
+        // update global min-max
+        this.ymin  = po.pymin !== null ? po.pymin[1] : null;
+        this.ymax  = po.pymax !== null ? po.pymax[1] : null;
+        this.xmin  = po.pxmin !== null ? po.pxmin[0] : null;
+        this.xmin_ = po.pxmin !== null ? po.pxmin[3] : null;
+        this.xmax  = po.pxmax !== null ? po.pxmax[0] : null;
+        this.xmax_ = po.pxmax !== null ? po.pxmax[3] : null;
+
+        // update last x range min-max
+        this.rymin = po.rpymin !== null ? po.rpymin[1] : null;
+        this.rymax = po.rpymax !== null ? po.rpymax[1] : null;
+        this.rxmin = po.rxmin;
+        this.rxmax = po.rxmax;
+console.log('updated minmax:');console.log(po.pymin,po.pymax,po.pxmin,po.pxmax,po.rxmin,po.rxmax,po.rpymin,po.rpymax);
 
         // TODO: filter out unknown series before set data?
-
         this.p.setData(this.data);
     };
 
     this.addData = function(data){
-console.log('call addData');
+console.log('call TimeSeriesPlot.addData');
         if (typeof this.p === 'undefined') {
             return 0;
         }
 
-        var scnt = data.length, // new series count
-            newcnt = 0, // added count
-            pxmin = null,pxmax = null,pymin = null,pymax = null;  // minmax points of new data
-        if (scnt>0) {
-            for (var i = 0; i < scnt; i++) {
-                var idx = this._getSeriesIndexBySensor(data[i].sensor_id, data[i].sensor_val_id);
-                if (idx >= 0) {
-console.log('found series: '+idx);
-                    // found data series
-                    if (data[i].data.length > 0) {
-                        // nonempty data
-                        // add only future values, skip past and incorrect
-                        var plast = (this.data[idx].data.length > 0 ? this.data[idx].data[this.data[idx].data.length-1] : null), pd;
-                        for (var j = 0; j < data[i].data.length; j++) {
-                            pd = data[i].data[j];
-                            if (plast === null || this.comparePointsX(pd,plast) > 0) {
-                                plast = pd;
-                                // update local minmax
-                                pxmax = ((pxmax === null || this.comparePointsX(pd,pxmax) > 0) ? pd : pxmax);
-                                pxmin = ((pxmin === null || this.comparePointsX(pd,pxmin) < 0) ? pd : pxmin);
-                                pymax = ((pymax === null || pd[1] > pymax[1]) ? pd : pymax);
-                                pymin = ((pymin === null || pd[1] < pymin[1]) ? pd : pymin);
-                                this.data[idx].data.push($.extend(true, [], pd));
-                                newcnt++;
-                            }
+        var newcnt = 0,     // added points count
+            sindexes = [];  // passed series indexes list
+
+        for (var i = 0; i < data.length; i++) {
+            var idx = this._getSeriesIndexBySensor(data[i].sensor_id, data[i].sensor_val_id);
+            if (idx >= 0) {
+                // data series exists
+                // check repeated series and skip
+                if (sindexes.indexOf(idx) >= 0) {
+                    continue;
+                }
+                sindexes.push(idx);
+
+                if (data[i].data.length > 0) {
+                    // nonempty data
+                    // add only future values, skip past and incorrect
+
+                    // get current series xmax point
+                    // get not null x point
+                    var plast = null,
+                        j = this.data[idx].data.length-1;
+                    while (j>=0) {
+                        if (this.data[idx].data[j] !== null && this.data[idx].data[j][0] !== null) {
+                            plast = this.data[idx].data[j];
                         }
-                    } else {
-                        // no data, just info
-                        // no action
+                        j--;
                     }
-                } else {
-                    // new data series?
-                    /*
-                    // add all data 
-                    var pd = null;
+
+                    // add new points
+                    var pd, pass;
                     for (var j = 0; j < data[i].data.length; j++) {
                         pd = data[i].data[j];
-                        // update local minmax
-                        pxmax = ((pxmax === null || this.comparePointsX(pd,pxmax) > 0) ? pd : pxmax);
-                        pxmin = ((pxmin === null || this.comparePointsX(pd,pxmin) < 0) ? pd : pxmin);
-                        pymax = ((pymax === null || pd[1] > pymax[1]) ? pd : pymax);
-                        pymin = ((pymin === null || pd[1] < pymin[1]) ? pd : pymin);
-                        newcnt++;
-                    }
-                    this.data.push(data[i]);
-                    */
-                }
-            }
-console.log('newminmax:');console.log(pymin);console.log(pymax);console.log(pxmin);console.log(pxmax);
-            // adaptive update minmax
-            if (newcnt > 0) {
-                //this.ymin = this.getYMinValue();
-                if (pymin !== null) {
-                    if (this.ymin !== null){
-                        if (pymin[1] < this.ymin) {
-                            this.ymin = pymin[1];
+                        pass = false;
+                        if (pd === null) {  // check null point 
+                            pass = true;
+                        } else {
+                            if (pd[0] === null) {  // check x null
+                                pass = true;
+                            } else {
+                                if (plast === null || this.comparePointsX(pd,plast) > 0) {
+                                    plast = pd;
+                                    pass = true;
+                                }
+                            }
                         }
-                    } else {
-                        this.ymin = pymin[1];
-                    }
-                }
-                //this.ymax = this.getYMaxValue();
-                if (pymax !== null) {
-                    if (this.ymax !== null) {
-                        if (pymax[1] > this.ymax) {
-                            this.ymax = pymax[1];
+                        if (pass) {
+                            this.data[idx].data.push($.extend(true, [], pd));
+                            newcnt++;
                         }
-                    } else {
-                        this.ymax = pymax[1];
                     }
+                } else {
+                    // no data, just info
+                    // no action
                 }
-                //var pxmin = this.getXMinPoint();
-                //this.xmin  = ((pxmin !== null) ? pxmin[0] : null);
-                //this.xmin_ = ((pxmin !== null) ? pxmin[3] : null);
-                if (pxmin !== null) {
-                    if (this.xmin !== null) {
-                        if (this.comparePointsX(pxmin,[this.xmin, null, null, this.xmin_]) < 0) {
-                            this.xmin  = pxmin[0];
-                            this.xmin_ = pxmin[3];
-                        }
-                    } else {
-                        this.xmin  = pxmin[0];
-                        this.xmin_ = pxmin[3];
-                    }
+            } else {
+                // TODO: add new data series?
+                /*
+                // add new data series points
+                var pd = null;
+                for (var j = 0; j < data[i].data.length; j++) {
+                    newcnt++;
                 }
-                //var pxmax = this.getXMaxPoint();
-                //this.xmax  = ((pxmax !== null) ? pxmax[0] : null);
-                //this.xmax_ = ((pxmax !== null) ? pxmax[3] : null);
-                if (pxmax !== null) {
-                    if (this.xmax !== null) {
-                        if (this.comparePointsX(pxmax,[this.xmax, null, null, this.xmax_]) > 0) {
-                            this.xmax  = pxmax[0];
-                            this.xmax_ = pxmax[3];
-                        }
-                    } else {
-                        this.xmax  = pxmax[0];
-                        this.xmax_ = pxmax[3];
-                    }
-                }
+                this.data.push($.extend(true, {}, data[i]));
+                */
             }
         }
 
-        //this.p.shutdown();
-        // TODO: filter out unknown series?
-        if (newcnt>0) {
+        if (newcnt > 0) {
+            // update global min-max
+
+            // TODO: use adaptive update minmax?
+            // xxx: last xrange adaptive calc problem
+
+            // use full update
+            var po = this.getMinMaxPoints(this.data, this.xrange);
+console.log('new minmax:');console.log(po.pxmin,po.pxmax,po.pymin,po.pymax,po.rxmin,po.rxmax,po.rpymin,po.rpymax);
+            this.ymin  = po.pymin !== null ? po.pymin[1] : null;
+            this.ymax  = po.pymax !== null ? po.pymax[1] : null;
+            this.xmin  = po.pxmin !== null ? po.pxmin[0] : null;
+            this.xmin_ = po.pxmin !== null ? po.pxmin[3] : null;
+            this.xmax  = po.pxmax !== null ? po.pxmax[0] : null;
+            this.xmax_ = po.pxmax !== null ? po.pxmax[3] : null;
+
+            // update last x range min-max
+            this.rymin = po.rpymin !== null ? po.rpymin[1] : null;
+            this.rymax = po.rpymax !== null ? po.rpymax[1] : null;
+            this.rxmin = po.rxmin;
+            this.rxmax = po.rxmax;
+
+            // TODO: filter out unknown series?
             this.p.setData(this.data);
         }
         return newcnt;
@@ -362,162 +368,530 @@ console.log('newminmax:');console.log(pymin);console.log(pymax);console.log(pxmi
         return -1;
     };
 
-    this.setRange = function(value){
+    this.setRange = function(value) {
         var old = this.xrange;
         this.xrange = ((value !== null && value > 0) ? value : null);
+
+        var po = this.getMinMaxPoints(this.data, this.xrange);
+
+        // update last x range min-max
+        this.rymin = po.rpymin !== null ? po.rpymin[1] : null;
+        this.rymax = po.rpymax !== null ? po.rpymax[1] : null;
+        this.rxmin = po.rxmin;
+        this.rxmax = po.rxmax;
+
         return old;
     }
     this.getRange = function(){
         return this.xrange;
     }
 
-    this.refresh = function(reset){
-console.log('call refresh');
+    this.refresh = function(userange){
+console.log('call TimeSeriesPlot.refresh');
         if (typeof this.p === 'undefined') {
             return;
         }
-        reset = reset || false;
+        userange = ((typeof userange === 'undefined') ? false : (userange ? true : false));
 
-        //this.p.shutdown();
-
-        if (reset) {
-            var self = this;
-            $.each(this.p.getAxes(), function(_, axis) {
-                var opts = axis.options;
-                if (axis.direction === 'y') {
-                    opts.min = ((self.ymin !== null) ? self.ymin : null);
-                    opts.max = ((self.ymax !== null) ? self.ymax : null);
-                    //opts.zoomRange = [data[0].data[0][1], data[0].data[data.length-1][1]];
-                    //opts.panRange = [-10, 10];
-                }
-                if (axis.direction === 'x') {
-console.log('curminmax:');console.log(self.xmin);console.log(self.xmax);console.log(self.xrange);
-                    if (self.xrange !== null) {
-                        if (self.xmax !== null) {
-                            opts.max = self.xmax;
+        var self = this;
+console.log('curxrange:');console.log(self.xrange);console.log(self.xrangeymode);console.log(self.scrollenabled);
+        $.each(this.p.getAxes(), function(_, axis) {
+            var opts = axis.options;
+            if (axis.direction === 'y') {
+console.log('yaxis:');console.log(self.ymin);console.log(self.ymax);console.log(self.rymin);console.log(self.rymax);
+                if (userange || self.scrollenabled){
+                    //if (self.xrange) {
+                        if (self.xrangeymode === "auto") {
+                            opts.min = self.rymin;  // may be null
+                            opts.max = self.rymax;  // may be null
+                        } else if (self.xrangeymode === "manual") {
+                            // do nothing
                         } else {
-                            opts.max = Number((new Date()).getTime());
+                            // set to global
+                            opts.min = self.ymin;  // may be null
+                            opts.max = self.ymax;  // may be null
                         }
-                        opts.min = opts.max - (self.xrange * 1000);
+                    //}
+                }
+                //opts.zoomRange = [data[0].data[0][1], data[0].data[data.length-1][1]];
+                //opts.panRange = [-10, 10];
+            }
+            if (axis.direction === 'x') {
+console.log('xaxis:');console.log(self.xmin);console.log(self.xmax);console.log(self.rxmin);console.log(self.rxmax);
+                if (userange || self.scrollenabled){
+                    opts.min = self.rxmin;
+                    opts.max = self.rxmax;
+                }
+
+                /*
+                if (self.xrange !== null) {
+                    if (self.xmax !== null) {
+                        
                     } else {
-                        if (self.xmax !== null) {
-                            opts.max = null;
-                            opts.min = null;
-                        } else {
-                            opts.max = Number((new Date()).getTime());
-                            opts.min = null;
-                        }
+                        opts.max = Number((new Date()).getTime());
                     }
-                    //opts.zoomRange = [data[0].data[0][0], data[0].data[data.length-1][0]];
-                    //opts.panRange = [-10, 10];
+                    opts.min = opts.max - (self.xrange * 1000);
+                } else {
+                    if (self.xmax !== null) {
+                        opts.max = null;
+                        opts.min = null;
+                    } else {
+                        opts.max = Number((new Date()).getTime());
+                        opts.min = null;
+                    }
                 }
+                */
+                //opts.zoomRange = [data[0].data[0][0], data[0].data[data.length-1][0]];
+                //opts.panRange = [-10, 10];
+            }
 console.log('newopts:');console.log(opts);
-            });
-        }
+        });
+
         this.p.setupGrid();
         this.p.draw();
     };
 
-    this.getYMinValue = function(){
-        var min = null, v;
-        $.each(this.data, function(si, sensor) {
-            $.each(sensor.data, function(pi, point) {
-                v = parseFloat(point[1]);
-                if (min === null || v < min) {
-                    min = v;
+    this.zoom = function(args) {
+        // By axis zoom, upgraded version of plot.zoom().
+        // Added axis option (x or y).
+        // @see jquery.flot.navigate.js plot.zoom()
+        // args : {amount, center, preventEvent, axis}
+
+        // TODO: need refactor, use disabling axis zoom (opts.zoomRange) and call parent plot.zoom()
+
+console.log('call TimeSeriesPlot.zoom');
+        if (typeof this.p === 'undefined') {
+            return;
+        }
+
+        if (!args)
+            args = {};
+
+        var c = args.center,
+            amount = args.amount || this.p.getOptions().zoom.amount,
+            w = this.p.width(), h = this.p.height(),
+            ax = args.axis;
+
+        if (!c)
+            c = { left: w / 2, top: h / 2 };
+
+        if (!ax)
+            ax = null;
+
+        var xf = c.left / w,
+            yf = c.top / h,
+            minmax = {
+                x: {
+                    min: c.left - xf * w / amount,
+                    max: c.left + (1 - xf) * w / amount
+                },
+                y: {
+                    min: c.top - yf * h / amount,
+                    max: c.top + (1 - yf) * h / amount
+                }
+            };
+
+        $.each(this.p.getAxes(), function(_, axis) {
+            if (ax === null || ax === axis.direction) {
+                var opts = axis.options,
+                min = minmax[axis.direction].min,
+                max = minmax[axis.direction].max,
+                zr = opts.zoomRange,
+                pr = opts.panRange;
+
+                if (zr === false) // no zooming on this axis
+                    return false;
+
+                min = axis.c2p(min);
+                max = axis.c2p(max);
+                if (min > max) {
+                    // make sure min < max
+                    var tmp = min;
+                    min = max;
+                    max = tmp;
+                }
+
+                //Check that we are in panRange
+                if (pr) {
+                    if (pr[0] != null && min < pr[0]) {
+                        min = pr[0];
+                    }
+                    if (pr[1] != null && max > pr[1]) {
+                        max = pr[1];
+                    }
+                }
+
+                var range = max - min;
+                if (zr &&
+                    ((zr[0] != null && range < zr[0] && amount >1) ||
+                     (zr[1] != null && range > zr[1] && amount <1)))
+                    return;
+
+                opts.min = min;
+                opts.max = max;
+            }
+        });
+
+        this.p.setupGrid();
+        this.p.draw();
+
+        if (!args.preventEvent)
+            this.p.getPlaceholder().trigger("plotzoom", [ this.p, args ]);
+    };
+    this.zoomOut = function(args) {
+        // By axis zoom out, upgraded version of plot.zoomOut().
+        // Added axis option (x or y).
+        // @see jquery.flot.navigate.js plot.zoomOut()
+        // args : {amount, center, preventEvent, axis}
+
+        if (typeof this.p === 'undefined') {
+            return;
+        }
+
+        if (!args)
+            args = {};
+
+        if (!args.amount)
+            args.amount = this.p.getOptions().zoom.amount;
+
+        args.amount = 1 / args.amount;
+        return this.zoom(args);
+    }
+
+    this.pan = function(args) {
+        if (typeof this.p === 'undefined') {
+            return;
+        }
+
+        if (!args)
+            args = {};
+
+        // Get plot width and height for default pan delta in pixels
+        var w = this.p.width(), defw = 10, h = this.p.height(), defh = 10;
+        if (w < defw)
+            w = defw;
+        if (h < defh)
+            h = defh;
+
+        switch (args.left) {
+        case "+":
+            dx = +w;
+            break;
+        case "-":
+            dx = -w;
+            break;
+        case "+/2":
+            dx = +w/2;
+            break;
+        case "-/2":
+            dx = -w/2;
+            break;
+        default:
+            dx = +args.left;
+            break;
+        }
+
+        switch (args.top) {
+        case "+":
+            dy = +h;
+            break;
+        case "-":
+            dy = -h;
+            break;
+        case "+/2":
+            dy = +h/2;
+            break;
+        case "-/2":
+            dy = -h/2;
+            break;
+        default:
+            dy = +args.top;
+            break;
+        }
+
+        var delta = {
+            left: +dx,
+            top:  +dy
+        };
+
+        if (isNaN(delta.left))
+            delta.left = 0;
+        if (isNaN(delta.top))
+            delta.top = 0;
+
+        var newargs = {};
+        $.extend(true, newargs, args, delta);
+
+        this.p.pan(newargs);
+    }
+
+    this.getYMinValue = function(data){
+        var min = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var v = parseFloat(point[1]);
+                    if (!isNaN(v) && (min === null || v < min)) {
+                        min = v;
+                    }
                 }
             });
         });
         return min;
     };
-    this.getYMinPoint = function(){
-        var min = null, result = null, v;
-        $.each(this.data, function(si, sensor) {
-            $.each(sensor.data, function(pi, point) {
-                v = parseFloat(point[1]);
-                if(min === null || v < min) {
-                    min = v;
-                    result = point;
+    this.getYMinPoint = function(data){
+        var min = null, result = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var v = parseFloat(point[1]);
+                    if(!isNaN(v) && (min === null || v < min)) {
+                        min = v;
+                        result = point;
+                    }
                 }
             });
         });
         return result;
     };
-    this.getYMaxValue = function(){
-        var max = null, v;
-        $.each(this.data, function(si, sensor) {
-            $.each(sensor.data, function(pi, point) {
-                v = parseFloat(point[1]);
-                if(max === null || v > max) {
-                    max = v;
+    this.getYMaxValue = function(data){
+        var max = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var v = parseFloat(point[1]);
+                    if (!isNaN(v) && (max === null || v > max)) {
+                        max = v;
+                    }
                 }
             });
         });
         return max;
     };
-    this.getYMaxPoint = function(){
-        var max = null, result = null, v;
-        $.each(this.data, function(si, sensor) {
-            $.each(sensor.data, function(pi, point) {
-                v = parseFloat(point[1]);
-                if(max === null || v > max) {
-                    max = v;
-                    result = point;
+    this.getYMaxPoint = function(data){
+        var max = null, result = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var v = parseFloat(point[1]);
+                    if (!isNaN(v) && (max === null || v > max)) {
+                        max = v;
+                        result = point;
+                    }
                 }
             });
         });
         return result;
     };
-    this.getXMinValue = function(){
-        var min = null, v;
-        $.each(this.data, function(si, sensor) {
-            if (sensor.data.length>0) {
-                v = sensor.data[0][0];
-                if (min === null || v < min) {
-                    min = v;
+    this.getXMinValue = function(data){
+        var min = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            // get not null x point
+            var i = 0, v;
+            while (i<series.data.length) {
+                if (series.data[i] !== null) {
+                    v = series.data[i][0];
+                    if (v !== null) {
+                        if (min === null || v < min) {
+                            min = v;
+                        }
+                        break;
+                    } 
                 }
+                i++;
             }
         });
         return min;
     };
-    this.getXMinPoint = function(){
-        var min = null, result = null, v;
-        $.each(this.data, function(si, sensor) {
-            if (sensor.data.length>0) {
-                v = sensor.data[0][0];
-                if (min === null || v < min) {
-                    min = v;
-                    result = sensor.data[0];
+    this.getXMinPoint = function(data){
+        var min = null, result = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            // get not null x point
+            var i = 0, v;
+            while (i<series.data.length) {
+                if (series.data[i] !== null) {
+                    v = series.data[i][0];
+                    if (v !== null) {
+                        if (min === null || v < min) {
+                            min = v;
+                            result = series.data[i];
+                        }
+                        break;
+                    }
                 }
+                i++;
             }
         });
         return result;
     };
-    this.getXMaxValue = function(){
-        var max = null, v;
-        $.each(this.data, function(si, sensor) {
-            if (sensor.data.length>0) {
-                v = sensor.data[sensor.data.length-1][0];
-                if (max === null || v > max) {
-                    max = v;
+    this.getXMaxValue = function(data){
+        var max = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            // get not null x value
+            var i = series.data.length-1, v;
+            while (i>=0) {
+                if (series.data[i] !== null) {
+                    v = series.data[i][0];
+                    if (v !== null) {
+                        if (max === null || v > max) {
+                            max = v;
+                        }
+                        break;
+                    }
                 }
+                i--;
             }
         });
         return max;
     };
-    this.getXMaxPoint = function(){
-        var max = null, result = null, v;
-        $.each(this.data, function(si, sensor) {
-            if (sensor.data.length>0) {
-                v = sensor.data[sensor.data.length-1][0];
-                if (max === null || v > max) {
-                    max = v;
-                    result = sensor.data[sensor.data.length-1];
+    this.getXMaxPoint = function(data){
+        var max = null, result = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            // get not null x point
+            var i = series.data.length-1, v;
+            while (i>=0) {
+                if (series.data[i] !== null) {
+                    v = series.data[i][0];
+                    if (v !== null) {
+                        if (max === null || v > max) {
+                            max = v;
+                            result = series.data[i];
+                        }
+                        break;
+                    }
                 }
+                i--;
             }
         });
         return result;
     };
+    this.getMinMaxPoints = function(data, xlastrange){
+console.log('call TimeSeriesPlot.getMinMaxPoints');
+        var d = (typeof data === "undefined" || data === null) ? this.data : data,
+            result = {
+                pxmin: null,
+                pxmax: null,
+                pymin: null,
+                pymax: null,
+                rxmin: null,
+                rxmax: null,
+                rpymin: null,
+                rpymax: null,
+            }; 
+
+        xlastrange = (typeof xlastrange === "undefined") ? null : xlastrange;
+        if (xlastrange !== null) {
+            xlastrange = parseInt(xlastrange);
+            if (isNaN(xlastrange)) {
+                xlastrange = null;
+            }
+        }
+
+        // get fast xmin-xmax
+        $.each(d, function(si, series) {
+            var v, i;
+            // xmin
+            // get not null x point
+            i = 0;
+            while (i<series.data.length) {
+                if (series.data[i] !== null) {
+                    v = series.data[i][0];
+                    if (v !== null) {
+                        if (result.pxmin === null || v < result.pxmin[0]) {
+                            result.pxmin = series.data[i];
+                        }
+                        break;
+                    }
+                }
+                i++;
+            }
+console.log('xmin: series:', si, ' pxmin: ', result.pxmin);
+            // xmax
+            // get not null x point
+            i = series.data.length-1;
+            while (i>=0) {
+                if (series.data[i] !== null) {
+                    v = series.data[i][0];
+                    if (v !== null) {
+                        if (result.pxmax === null || v > result.pxmax[0]) {
+                            result.pxmax = series.data[i];
+                        }
+                        break;
+                    }
+                }
+                i--;
+            }
+console.log('xmax: series:', si, ' pxmax: ', result.pxmax);
+        });
+
+        if (xlastrange && result.pxmax !== null) {
+            result.rxmax = result.pxmax[0];
+            result.rxmin = result.rxmax - xlastrange * 1000;
+        }
+console.log('rxmin: ', result.rxmin, ' rxmax: ', result.rxmax);
+        // get other
+        $.each(d, function(si, series) {
+            // ymin-ymax, rpymin-rpymax
+            var isrange = false;
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var vx = point[0],
+                        vy = parseFloat(point[1]);
+                    if (!isNaN(vy)) {
+                        // ymin
+                        if (result.pymin === null || vy < result.pymin[1]) {
+                            result.pymin = point;
+                        }
+                        // ymax
+                        if (result.pymax === null || vy > result.pymax[1]) {
+                            result.pymax = point;
+                        }
+                    }
+                    // x last range
+                    if (xlastrange && (result.pxmax !== null)) {
+                        // check if inside range interval or not
+                        if (vx !== null) {
+                            if (isrange) {
+                                if ((vx < result.rxmin) || (vx > result.rxmax)) {
+                                    isrange = false;
+                                }
+                            } else {
+                                if ((vx >= result.rxmin) && (vx <= result.rxmax)) {
+                                    isrange = true;
+                                }
+                            }
+                        }
+                        // rpymin
+                        if (!isNaN(vy) && isrange && (result.rpymin === null || vy <= result.rpymin[1])) {
+                            result.rpymin = point;
+                        }
+                        // rpymax
+                        if (!isNaN(vy) && isrange && (result.rpymax === null || vy >= result.rpymax[1])) {
+                            result.rpymax = point;
+                        }
+                    }
+                }
+            });
+        });
+        // default rpymin-rpymax
+        if (xlastrange === null) {
+            result.rpymin = result.pymin;
+        }
+        if (xlastrange === null) {
+            result.rpymax = result.pymax;
+        }
+console.log('result:',result);
+        return result;
+    };
+
     this.getTotalPointsCount = function(data){
         if (data.length <= 0) {
             return 0;
@@ -533,8 +907,8 @@ console.log('newopts:');console.log(opts);
         if (p1[0] > p2[0]) return  1;
         if (p1[0] < p2[0]) return -1;
         // Compare nanoseconds parts
-        var np1 = parseFloat('0.' + ((p1[3]).split(".")[1] || 0)),
-            np2 = parseFloat('0.' + ((p2[3]).split(".")[1] || 0));
+        var np1 = parseFloat('0.' + (String(p1[3]).split(".")[1] || 0)),
+            np2 = parseFloat('0.' + (String(p2[3]).split(".")[1] || 0));
         if (np1 > np2) return  1;
         if (np1 < np2) return -1;
         return 0;

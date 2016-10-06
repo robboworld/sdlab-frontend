@@ -181,6 +181,9 @@ console.log('call dataReceivedAll');
 console.log('new count: '+pcnt);
             if (!pcnt) {
                 setDefaultAxis();
+                // magic for next refresh without data
+                g.rxmin = g.p.getAxes().xaxis.options.min;
+                g.rxmax = g.p.getAxes().xaxis.options.max;
             }
             var oldstate = g.scrollenabled;
             g.scrollenabled = true; // TODO: setScroll(true/false) with change icon state

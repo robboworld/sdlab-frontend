@@ -119,7 +119,6 @@ blink, .blink {
 }
 
 
-
 /* universal class */
 .ln-hgt-16px { height: 16px; line-height: 14px; }
 .bg-default { background-color: #EEE; }
@@ -127,6 +126,8 @@ blink, .blink {
 .mrg-bot-5px { margin-bottom: 5px; }
 .text-area { resize: vertical; min-height: 250px; }
 .width-auto { width: auto; }
+
+
 /* exp-page */ 
 .exp-table {}
 .exp-table .padng-3px { padding: 3px; }
@@ -256,9 +257,11 @@ td.exp-header { position: relative; }
 	.setup-label-long + div { text-align: center; }
 }
 
+
 /* Menu */
 #nav-buttons { padding: 0; }
 #nav-buttons input { min-width: 130px; }
+
 
 /* Journal page */
 .table-detections .detection-num {
@@ -274,6 +277,18 @@ td.exp-header { position: relative; }
 #collapseSensors {
 	background-color: rgba(255,255,255,0.8);
 	padding: 5px;
+}
+
+/* Plot pages */
+.table-detections .detection-num {
+	cursor: pointer;
+}
+.control-zoom-range-x .dropdown-menu {
+	min-width: 100px;
+}
+.control-zoom-range-x .dropdown-menu label.checkbox {
+	font-weight: normal;
+	margin: 0;
 }
 
 /* Webcam streaming */

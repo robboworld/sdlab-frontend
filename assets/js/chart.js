@@ -255,8 +255,8 @@ console.log('updated minmax:');console.log(po.pymin,po.pymax,po.pxmin,po.pxmax,p
         this.p.setData(this.data);
     };
 
-    this.addData = function(data){
-console.log('call TimeSeriesPlot.addData');
+    this.appendData = function(data){
+console.log('call TimeSeriesPlot.appendData');
         if (typeof this.p === 'undefined') {
             return 0;
         }

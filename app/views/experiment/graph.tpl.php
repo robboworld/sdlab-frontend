@@ -205,7 +205,7 @@ console.log('call dataReceived');
         }
 
         if (typeof data.error === 'undefined') {
-            var acnt = g.addData(data.result);
+            var acnt = g.appendData(data.result);
 console.log('added count: '+acnt);
             g.refresh();
 
@@ -283,9 +283,8 @@ console.log('added count: '+acnt);
         var el = $("#btn_scroll_x"), icon;
         if (el.length) {
             el.toggleClass('active', newstate ? true : false)
-                .toggleClass('btn-', newstate ? true : false)
-                .toggleClass('btn-info', newstate ? true : false);
-            el.data('state', newstate ? 1 : 0);
+                .toggleClass('btn-info', newstate ? true : false)
+                .data('state', newstate ? 1 : 0);
             icon = el.children('span')
             if (icon.length) {
                 icon.removeClass(""+icon.data('icon-0')+" "+icon.data('icon-1')).addClass(newstate ? icon.data('icon-1') : icon.data('icon-0'));
@@ -369,7 +368,7 @@ console.log('added count: '+acnt);
 		<div class="plot-control-panel-top">
 			<div class="btn-toolbar" role="toolbar" aria-label="...">
 				<div class="btn-group btn-group-sm" role="group" aria-label="...">
-					<button type="button" id="btn_scroll_x" class="btn btn-sm btn-default <?php if ($scrollenabled) echo 'active'; ?>" onclick="return changeScrollState(!$(this).data('state'));" data-state="<?php $scrollenabled ? '1' : '0'; ?>"><span class="fa fa-lg <?php $scrollenabled ? 'fa-eye' : 'fa-eye-slash'; ?>" data-icon-0="fa-eye-slash" data-icon-1="fa-eye"></span></button>
+					<button type="button" id="btn_scroll_x" class="btn btn-sm <?php if ($scrollenabled) echo 'btn-info active'; ?>" onclick="return changeScrollState(!$(this).data('state'));" data-state="<?php $scrollenabled ? '1' : '0'; ?>"><span class="fa fa-lg <?php $scrollenabled ? 'fa-eye' : 'fa-eye-slash'; ?>" data-icon-0="fa-eye-slash" data-icon-1="fa-eye"></span></button>
 				</div>
 				<div class="btn-group btn-group-sm control-zoom-range-x" role="group" aria-label="...">
 					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 0;             echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_ALL; ?>"><?php echo L::graph_ZOOM_ALL; ?></button>
@@ -394,7 +393,7 @@ console.log('added count: '+acnt);
 							<li class="btn-zoom-x<?php $thisrange = 6*30*24*60*60; echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_6MM; ?></a></li>
 							<li class="btn-zoom-x<?php $thisrange = 365*24*60*60;  echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1Y; ?></a></li>
 							<li role="separator" class="divider"></li>
-							<li><a href="javascript:void(0);"><label class="checkbox"><input type="checkbox" id="chk_xrange_autozoom_y" value="1" <?php echo ($xrangeymode === 'auto' ? 'checked' : ''); ?>/>&nbsp;<?php echo L::graph_ZOOM_AUTO_Y; ?></label></a></li>
+							<li><a href="javascript:void(0);" style="padding-left:4px;"><label class="checkbox"><input type="checkbox" id="chk_xrange_autozoom_y" value="1" <?php echo ($xrangeymode === 'auto' ? 'checked' : ''); ?>/>&nbsp;<?php echo L::graph_ZOOM_AUTO_Y; ?></label></a></li>
 						</ul>
 					</div>
 				</div>

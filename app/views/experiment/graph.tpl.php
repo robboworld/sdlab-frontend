@@ -276,10 +276,6 @@ console.log('added count: '+acnt);
         onPlotRangeXAutozoomYChange(oldstate, g.xrangeymode);
         return true;
     }
-    function autozoomY() {
-        //Todo: add autozoomY
-        return true;
-    }
 
     function onPlotScrollChange(oldstate, newstate) {
         var el = $("#btn_scroll_x"), icon;
@@ -421,7 +417,7 @@ console.log('added count: '+acnt);
 		<div style="position:relative;">
 			<div class="plot-control-panel-left" style="position:absolute;bottom:20px;">
 				<div class="btn-group-vertical btn-group-sm control-zoom-y" role="group" aria-label="...">
-					<button type="button" class="btn btn-sm btn-default btn-autozoom-y" onclick="return autozoomY();"><span class="glyphicon glyphicon-resize-vertical"></span></button>
+					<button type="button" class="btn btn-sm btn-default btn-autozoom-y" onclick="return g.autozoomY();"><span class="glyphicon glyphicon-resize-vertical"></span></button>
 				</div><br/><br/>
 				<div class="btn-group-vertical btn-group-sm control-zoom-y" role="group" aria-label="...">
 					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'y'},  'in');"><span class="fa fa-expand"></span></button>

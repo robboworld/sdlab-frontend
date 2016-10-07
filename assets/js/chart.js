@@ -93,9 +93,9 @@ function TimeSeriesPlot(placeholder, data, options) {
             yaxis: {
                 show: true
                 //min: 0,
-                //min: g.getYMinValue()-1,
+                //min: this.p.getYMinValue()-1,
                 //max: 100,
-                //max: g.getYMaxValue()+3
+                //max: this.p.getYMaxValue()+3
                 //tickSize: 1,
 
                 // Plugin: navigate
@@ -381,10 +381,10 @@ console.log('new minmax:');console.log(po.pxmin,po.pxmax,po.pymin,po.pymax,po.rx
         this.rxmax = po.rxmax;
 
         return old;
-    }
+    };
     this.getRange = function(){
         return this.xrange;
-    }
+    };
 
     this.refresh = function(userange){
 console.log('call TimeSeriesPlot.refresh');
@@ -556,7 +556,143 @@ console.log('call TimeSeriesPlot.zoom');
 
         args.amount = 1 / args.amount;
         return this.zoom(args);
-    }
+    };
+    this.autozoomY = function(args) {
+        // Auto zoom on y axis in current range, upgraded version of plot.zoom().
+        // @see jquery.flot.navigate.js plot.zoom()
+        // args : {amount, center, preventEvent, axis}
+
+        if (typeof this.p === 'undefined') {
+            return false;
+        }
+
+        if (!args)
+            args = {};
+        // Override args
+        args.amount = 1;
+        args.center = null;
+        args.axis   = "y";
+
+        var minmax = {
+                x: {
+                    min: null,
+                    max: null
+                },
+                y: {
+                    min: null,
+                    max: null
+                }
+            },
+            pcnt = 0;
+
+        // TODO: need truely getting minmax on multiple x or y axes, now get last
+        $.each(this.p.getAxes(), function(_, axis) {
+            if (axis.direction === 'x') {
+                minmax[axis.direction].min = axis.min;
+                minmax[axis.direction].max = axis.max;
+            }
+        });
+        // No autozoomY if there is no x minmax valid interval
+        if (minmax["x"].min === null ||  minmax["x"].max === null) {
+            return false;
+        }
+
+        // Check all series points count
+        $.each(this.p.getData(), function(si, series) {
+            pcnt += series.data.length;
+        });
+        // No autozoomY if there is no points at all
+        if (pcnt == 0) {
+            return false;
+        }
+
+        // Found ymin-ymax on x minmax range
+        $.each(this.p.getData(), function(si, series) {
+            var isrange = false;
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var vx = point[0],
+                        vy = parseFloat(point[1]);
+
+                    // Check if inside x range interval or not
+                    if (vx !== null) {
+                        if (isrange) {
+                            if ((vx < minmax["x"].min) || (vx > minmax["x"].max)) {
+                                isrange = false;
+                            }
+                        } else {
+                            if ((vx >= minmax["x"].min) && (vx <= minmax["x"].max)) {
+                                isrange = true;
+                            }
+                        }
+                    }
+
+                    // ymin
+                    if (!isNaN(vy) && isrange && (minmax["y"].min === null || vy <= minmax["y"].min)) {
+                        minmax["y"].min = vy;
+                    }
+                    // ymax
+                    if (!isNaN(vy) && isrange && (minmax["y"].max === null || vy >= minmax["y"].max)) {
+                        minmax["y"].max = vy;
+                    }
+                }
+            });
+        });
+        // No autozoomY if no valid points on x minmax interval
+        if (minmax["y"].min === null || minmax["y"].max === null) {
+            return false;
+        }
+
+        if (minmax["y"].min > minmax["y"].max) {
+            // make sure ymin < ymax
+            var tmp = minmax["y"].min;
+            minmax["y"].min = minmax["y"].max;
+            minmax["y"].max = tmp;
+        }
+
+        $.each(this.p.getAxes(), function(_, axis) {
+            if (axis.direction === 'y') {
+                var opts = axis.options,
+                    min = minmax[axis.direction].min,
+                    max = minmax[axis.direction].max,
+                    zr = opts.zoomRange,
+                    pr = opts.panRange;
+
+                if (zr === false) // no zooming on this axis
+                    return false;
+
+                //Check that we are in panRange
+                if (pr) {
+                    if (pr[0] != null && min < pr[0]) {
+                        min = pr[0];
+                    }
+                    if (pr[1] != null && max > pr[1]) {
+                        max = pr[1];
+                    }
+                }
+
+                // TODO: fix zoom range restrictions
+                /*
+                var range = max - min;
+                if (zr &&
+                    ((zr[0] != null && range < zr[0] && amount >1) ||
+                     (zr[1] != null && range > zr[1] && amount <1)))
+                    return false;
+                */
+
+                opts.min = min;
+                opts.max = max;
+            }
+        });
+
+        this.p.setupGrid();
+        this.p.draw();
+
+        if (!args.preventEvent)
+            this.p.getPlaceholder().trigger("plotzoom", [ this.p, args ]);
+
+        return true;
+    };
 
     this.pan = function(args) {
         if (typeof this.p === 'undefined') {
@@ -623,7 +759,7 @@ console.log('call TimeSeriesPlot.zoom');
         $.extend(true, newargs, args, delta);
 
         this.p.pan(newargs);
-    }
+    };
 
     this.getYMinValue = function(data){
         var min = null,
@@ -901,7 +1037,7 @@ console.log('result:',result);
             c = c + data[i].data.length;
         }
         return c;
-    }
+    };
     this.comparePointsX = function(p1, p2){
         // Compare milliseconds
         if (p1[0] > p2[0]) return  1;

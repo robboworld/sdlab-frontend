@@ -10,7 +10,7 @@ $xrangeymode = 'auto';
         updaterPlotTime=5,
         timerange=<?php echo (int)$timerange; ?>,
         scrollenabled=<?php echo $scrollenabled ? 'true' : 'false'; ?>,
-        xrangeymode='<?php echo addcslashes($xrangeymode , "'"); ?>',
+        xrangeymode='<?php echo addcslashes($xrangeymode , "\'"); ?>',
         experiment=<?php echo (int)$this->view->content->experiment->id; ?>,
         seqNum=0;
 
@@ -19,7 +19,9 @@ $xrangeymode = 'auto';
         g = new TimeSeriesPlot('#graph_all', [], {
             xaxis: {
                 min: ((timerange > 0) ? (Number(now.getTime()) - (timerange * 1000)) : null),
-                max: Number(now.getTime())
+                max: Number(now.getTime()),
+                timeformat: "%Y-%m-%d<br/>%H:%M:%S",
+                font: {"size":11,"lineHeight":13,style:"normal",weight:"normal",variant:"normal",color:"#545454"}
             },
             yaxis: {
                 min: null,

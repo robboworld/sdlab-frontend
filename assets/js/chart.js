@@ -80,7 +80,7 @@ function TimeSeriesPlot(placeholder, data, options) {
                 //timezone: null,  // "browser" for local to the client or timezone for timezone-js
                 timezone: 'browser',
                 //timeformat: null,  // format string to use
-                timeformat: "%Y/%m/%d %H:%M:%S"
+                timeformat: "%Y-%m-%d %H:%M:%S"
                 //twelveHourClock: false,  // 12 or 24 time in time mode
                 //monthNames: null,  // list of names of months
 

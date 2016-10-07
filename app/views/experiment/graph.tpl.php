@@ -77,7 +77,7 @@ $xrangeymode = 'auto';
                         params['show-sensor'].push($(this).val());
                     });
                 }
-                var rq = coreAPICall('Detections.getGraphDataAll', params, dataReceivedAll);
+                var rq = coreAPICall('Detections.getGraphData', params, dataReceivedAll);
                 rq.seqnum = ++seqNum;
                 rq.always(function(d,textStatus,err) {
                     if (typeof params['show-sensor'] === 'undefined' || params['show-sensor'].length == 0 || selall == true) {
@@ -86,7 +86,7 @@ $xrangeymode = 'auto';
                 });
             } else {
                 // no sensors in list - get all?
-                //var rq = coreAPICall('Detections.getGraphDataAll', params, dataReceivedAll);
+                //var rq = coreAPICall('Detections.getGraphData', params, dataReceivedAll);
                 //rq.seqnum = ++seqNum;
 
                 // do nothing
@@ -119,7 +119,7 @@ $xrangeymode = 'auto';
             $.each(list, function() {
                 params['show-sensor'].push($(this).val());
             });
-            var rq = coreAPICall('Detections.getGraphDataAll', params, dataReceivedAll);
+            var rq = coreAPICall('Detections.getGraphData', params, dataReceivedAll);
             rq.seqnum = ++seqNum;
             // Must be checked all sensors
             rq.always(function(d,textStatus,err) {
@@ -420,8 +420,8 @@ console.log('added count: '+acnt);
 					<button type="button" class="btn btn-sm btn-default btn-autozoom-y" onclick="return g.autozoomY();"><span class="glyphicon glyphicon-resize-vertical"></span></button>
 				</div><br/><br/>
 				<div class="btn-group-vertical btn-group-sm control-zoom-y" role="group" aria-label="...">
-					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'y'},  'in');"><span class="fa fa-expand"></span></button>
-					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'y'}, 'out');"><span class="fa fa-compress"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'y'},  'in');"><span class="fa fa-plus"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'y'}, 'out');"><span class="fa fa-minus"></span></button>
 				</div><br/><br/>
 				<div class="btn-group-vertical btn-group-sm control-pan-y" role="group" aria-label="...">
 					<button type="button" class="btn btn-sm btn-default" onclick="g.pan({top:'-/2'});return true;"><span class="fa fa-long-arrow-up"></span></button>
@@ -438,8 +438,8 @@ console.log('added count: '+acnt);
 					<button type="button" class="btn btn-sm btn-default" onclick="g.pan({left:'+/2'});return true;"><span class="fa fa-long-arrow-right"></span></button>
 				</div>
 				<div class="btn-group btn-group-sm control-zoom-x" role="group" aria-label="...">
-					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'x'},  'in');"><span class="fa fa-expand"></span></button>
-					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'x'}, 'out');"><span class="fa fa-compress"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'x'},  'in');"><span class="fa fa-plus"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'x'}, 'out');"><span class="fa fa-minus"></span></button>
 				</div>
 			</div>
 		</div>

@@ -284,6 +284,7 @@ console.log('added count: '+acnt);
         if (el.length) {
             el.toggleClass('active', newstate ? true : false)
                 .toggleClass('btn-info', newstate ? true : false)
+                .toggleClass('btn-default', newstate ? false : true)
                 .data('state', newstate ? 1 : 0);
             icon = el.children('span')
             if (icon.length) {
@@ -368,7 +369,7 @@ console.log('added count: '+acnt);
 		<div class="plot-control-panel-top">
 			<div class="btn-toolbar" role="toolbar" aria-label="...">
 				<div class="btn-group btn-group-sm" role="group" aria-label="...">
-					<button type="button" id="btn_scroll_x" class="btn btn-sm <?php if ($scrollenabled) echo 'btn-info active'; ?>" onclick="return changeScrollState(!$(this).data('state'));" data-state="<?php $scrollenabled ? '1' : '0'; ?>"><span class="fa fa-lg <?php $scrollenabled ? 'fa-eye' : 'fa-eye-slash'; ?>" data-icon-0="fa-eye-slash" data-icon-1="fa-eye"></span></button>
+					<button type="button" id="btn_scroll_x" class="btn btn-sm <?php echo ($scrollenabled ? 'btn-info active' : 'btn-default'); ?>" onclick="return changeScrollState(!$(this).data('state'));" data-state="<?php echo ($scrollenabled ? '1' : '0'); ?>"><span class="fa fa-lg <?php echo $scrollenabled ? 'fa-eye' : 'fa-eye-slash'; ?>" data-icon-0="fa-eye-slash" data-icon-1="fa-eye"></span></button>
 				</div>
 				<div class="btn-group btn-group-sm control-zoom-range-x" role="group" aria-label="...">
 					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 0;             echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_ALL; ?>"><?php echo L::graph_ZOOM_ALL; ?></button>

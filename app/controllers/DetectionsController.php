@@ -174,7 +174,7 @@ class DetectionsController extends Controller
 		}
 		// Filter datetimes
 		$from = null;
-		if(isset($params['from']) && strlen($params['from']) !== '')
+		if(isset($params['from']) && strlen($params['from']) != 0)
 		{
 			// UTC time with seconds parts
 			try
@@ -190,7 +190,7 @@ class DetectionsController extends Controller
 			}
 		}
 		$to = null;
-		if(isset($params['to']) && strlen($params['to']) !== '')
+		if(isset($params['to']) && strlen($params['to']) != 0)
 		{
 			// UTC time with seconds parts
 			try

@@ -803,9 +803,8 @@ class DetectionsController extends Controller
 			$where[':timeto']   = 'dx.time ' . ($exclude ? '<' : '<=') . ' :timeto';
 		}
 
-		// Special raw data for plot [x, y, bottom,...{custom}], bottom is not used (0 by default), other fields are custom
-		$sql = //'select time, strftime(\'%Y.%m.%d %H:%M:%f\', time) as mstime, detection '
-				'select dx.detection as x, dy.detection as y, count(*) as cnt, dx.time '
+		// Special raw data for plot [x, y, bottom,...{custom}], bottom is used for count intersection
+		$sql = 'select dx.detection as x, dy.detection as y, count(*) as cnt '
 				. 'from detections as dx '
 				. 'left join detections as dy on dx.exp_id = dy.exp_id and dx.time = dy.time '
 				. 'where dx.exp_id = :exp_id '

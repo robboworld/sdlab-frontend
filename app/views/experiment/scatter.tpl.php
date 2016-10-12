@@ -74,6 +74,17 @@ if (empty($lang_tag))
             return getData(0);
         });
 
+        $('#btn_swap_xy').click(function() {
+            var listsx = $("select.available-sensors-x"),
+                listsy = $("select.available-sensors-y");
+            if (listsx.length==0 || listsy.length==0) return false;
+            // Swap sensors
+            var tmp = listsx.val();
+            listsx.val(listsy.val());
+            listsy.val(tmp);
+            $('#graph_refesh').trigger('click');
+        });
+
         $(".btn-graph-export").on("click", function(e) {
             e.preventDefault();
             var ft = $(this).data('filetype') || "png";
@@ -273,6 +284,7 @@ if (empty($lang_tag))
 			<div class="btn-toolbar" role="toolbar" aria-label="...">
 				<div class="btn-group btn-group-sm" role="group" aria-label="...">
 					<button type="button" id="btn_reset_zoom" class="btn btn-sm btn-default" onclick="resetZoom();return true;"><span class="fa fa-lg fa-home"></span></button>
+					<button type="button" id="btn_swap_xy" class="btn btn-sm btn-default"><span class="fa fa-lg fa-exchange fa-rotate-90"></span></button>
 				</div>
 				<div class="btn-group btn-group-sm" role="group" aria-label="...">
 					<button type="button" id="graph_refesh" class="btn btn-primary"><span class="fa fa-refresh"></span><span class="">&nbsp;<?php echo L::REFRESH; ?></span></button>

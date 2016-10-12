@@ -50,7 +50,7 @@ if (empty($this->view->form->setup->amount))
 
 					-->
 				</div>
-				<div class="alert alert-warning" id="setup-type-alert">
+				<div id="setup-type-alert" class="alert alert-warning" role="alert">
 					<?php echo L::setup_MSG_SELECT_DETECTION_MODE; ?>
 				</div>
 				<div id="setup-type-length" class="setup-type well" style="<?php if($setup_type != 'length') echo 'display:none;';?>">
@@ -193,7 +193,7 @@ if (empty($this->view->form->setup->amount))
 					<tfoot style="display: none;">
 						<tr>
 							<td colspan="4">
-								<div class="alert alert-info">
+								<div class="alert alert-info" role="alert">
 									<span class="glyphicon glyphicon-info-sign"></span>
 									<span><?php echo L::setup_MSG_NO_SENSORS_IN_SETUP; ?></span>
 								</div>
@@ -224,7 +224,7 @@ if (empty($this->view->form->setup->amount))
 					<tfoot style="display: none;">
 						<tr>
 							<td colspan="8">
-								<div class="alert alert-info">
+								<div class="alert alert-info" role="alert">
 									<span class="glyphicon glyphicon-info-sign"></span>
 									<span><?php echo L::setup_MSG_NO_AVAILABLE_SENSORS; ?></span>
 								</div>

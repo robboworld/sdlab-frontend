@@ -116,7 +116,7 @@ $streamed = (!empty($this->view->content->item->stream) && ($this->view->content
 
 		<div class="row">
 			<?php if (!$streamed) : ?>
-			<div class="alert alert-warning">
+			<div class="alert alert-warning" role="alert">
 				<span><?php echo L::webcam_CAMERA_SWITCHED_OFF; ?></span>
 			</div>
 			<?php endif; ?>
@@ -131,7 +131,7 @@ $streamed = (!empty($this->view->content->item->stream) && ($this->view->content
 	</form>
 	<?php else : ?>
 
-	<div class="alert alert-danger">
+	<div class="alert alert-danger" role="alert">
 		<span><?php echo L::webcam_CAMERA_NOT_FOUND; ?></span>
 	</div>
 	<?php endif; ?>

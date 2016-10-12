@@ -66,7 +66,7 @@ if ($this->view->form->id != 'create-experiment-form')
 		<?php if ($this->view->form->id != 'create-experiment-form' && !$canChangeSetup) : ?>
 
 		<div class="form-group col-md-offset-1 col-md-10">
-			<div class="alert alert-warning"><?php echo L::experiment_ERROR_SETUP_CANNOT_BE_CHANGED_ACTIVE; ?></div>
+			<div class="alert alert-warning" role="alert"><?php echo L::experiment_ERROR_SETUP_CANNOT_BE_CHANGED_ACTIVE; ?></div>
 		</div>
 		<?php endif; ?>
 

@@ -220,7 +220,7 @@ console.log('new count: '+pcnt);
             runPlotUpdate();
         } else {
             //$('#graph_all').empty();
-            setInterfaceError($('#graph_msgs'), 'API error: ' + data.error, 3000);
+            setInterfaceError($('#graph_msgs'), /*'API error: ' + */data.error, 'danger', false, true, 3000);
         }
     }
 
@@ -238,7 +238,7 @@ console.log('added count: '+acnt);
             // Plot data polling
             runPlotUpdate();
         } else {
-            setInterfaceError($('#graph_msgs'), 'API error: ' + data.error, 3000);
+            setInterfaceError($('#graph_msgs'), /*'API error: ' + */data.error, 'danger', false, true, 3000);
 
             // Plot data polling
             runPlotUpdate();  //xxx: start new update on error too?
@@ -365,7 +365,7 @@ console.log('added count: '+acnt);
 			<tfoot>
 				<tr>
 					<td colspan="2">
-						<div class="alert alert-info">
+						<div class="alert alert-info" role="alert">
 						<?php echo L::graph_MSG_NO_SAVED_GRAPHS; ?>
 						</div>
 					</td>

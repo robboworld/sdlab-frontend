@@ -33,7 +33,7 @@ function updateSensorsList(sensors){
     }
     else
     {
-        setInterfaceError($('#available-sensors').before(), 'API error: ' + sensors.error, 3000);
+        setInterfaceError($('#available-sensors').before(), /*'API error: ' +*/ sensors.error, "danger", false, true, 3000);
         $('#available-sensors').append(list);
     }
 }

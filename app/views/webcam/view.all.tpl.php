@@ -148,7 +148,7 @@ if(isset($this->view->content->list))
 			<tfoot>
 			<tr>
 				<td colspan="5">
-					<div class="alert alert-danger">
+					<div class="alert alert-danger" role="alert">
 						<span><?php echo L::webcam_CAMERAS_NOT_FOUND; ?></span>
 					</div>
 				</td>
@@ -158,7 +158,7 @@ if(isset($this->view->content->list))
 
 		</table>
 		<?php else : ?>
-		<div class="alert alert-danger">
+		<div class="alert alert-danger" role="alert">
 			<span><?php echo L::webcam_FATAL_ERROR_LIST; ?></span>
 		</div>
 		<?php endif; ?>

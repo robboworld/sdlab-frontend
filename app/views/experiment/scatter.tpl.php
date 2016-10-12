@@ -114,7 +114,7 @@ if (empty($lang_tag))
             if (errmode === 0) {
                 alert(SDLab.Language._('graph_PLEASE_SELECT_SENSORS'));
             } else if (errmode === 1) {
-                setInterfaceError($('#graph_msgs'), SDLab.Language._('graph_PLEASE_SELECT_SENSORS'), 3000);
+                setInterfaceError($('#graph_msgs'), SDLab.Language._('graph_PLEASE_SELECT_SENSORS'), "warning", false, true, 3000);
             }
             return false;
         } else if (selsx===selsy) {
@@ -122,7 +122,7 @@ if (empty($lang_tag))
             if (errmode === 0) {
                 alert(SDLab.Language._('graph_PLEASE_SELECT_DIFFERENT_SENSORS'));
             } else if (errmode === 1) {
-                setInterfaceError($('#graph_msgs'), SDLab.Language._('graph_PLEASE_SELECT_DIFFERENT_SENSORS'), 3000);
+                setInterfaceError($('#graph_msgs'), SDLab.Language._('graph_PLEASE_SELECT_DIFFERENT_SENSORS'), "warning", false, true, 3000);
             }
             return false;
         }
@@ -183,7 +183,7 @@ if (empty($lang_tag))
             g.refresh();
         } else {
             resetPlot();
-            setInterfaceError($('#graph_msgs'), 'API error: ' + data.error, 3000);
+            setInterfaceError($('#graph_msgs'), /*'API error: ' +*/ data.error, "danger", false, true, 3000);
         }
     }
 
@@ -270,12 +270,14 @@ if (empty($lang_tag))
 	<div class="col-md-12">
 		<div id="graph_msgs">
 			<?php if (empty($this->view->content->available_sensors)) : ?>
-			<div class="alert alert-info">
+			<div class="alert alert-info alert-dismissible" role="alert">
+				<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 				<?php echo L::graph_NO_SENSORS; ?>
 			</div>
 			<?php endif; ?>
 			<?php foreach ($this->view->content->error as $errmsg) : ?>
-			<div class="alert alert-danger">
+			<div class="alert alert-danger alert-dismissible" role="alert">
+				<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 				<?php echo $errmsg; ?>
 			</div>
 			<?php endforeach; ?>

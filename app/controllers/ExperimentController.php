@@ -2032,7 +2032,7 @@ class ExperimentController extends Controller
 						// Send response headers to the browser
 						header('Content-Type: text/csv');
 						header("Content-Length: " . strlen($output));
-						header("Content-Disposition: attachment; filename=\"" . $filename . "\";");
+						header("Content-Disposition: attachment; filename=\"" . $filename . "\"");
 						//header("Content-Transfer-Encoding: Binary");  // only for MIME in email protocols
 						//header('Connection: Keep-Alive');
 						//header('Expires: 0');

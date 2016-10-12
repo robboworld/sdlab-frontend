@@ -35,19 +35,34 @@ function coreAPICall(method, params, onSuccess, onError){
 
 /**
  * Add error widget to custom place
- * @param  string     holder selector
- * @param  message    html message text
- * @param  autoclose  close timeout
+ * @param  string       holder selector
+ * @param  message      html message text
+ * @param  type         alert class: success, info, warning, danger or empty (default)
+ * @param  append       append or replace all
+ * @param  dismissible  show close button
+ * @param  autoclose    close timeout
  */
-function setInterfaceError(holder, message, autoclose){
-    $(holder).html('<div class="alert alert-danger">' + message + '</div>');
+function setInterfaceError(holder, message, type, append, dismissible, autoclose){
+    type = (typeof type === "undefined") ? null : (String(type).length ? String(type) : null);
+    append = ((typeof append !== "undefined") && append) ? true : false;
+    dismissible = ((typeof append !== "undefined") && dismissible) ? true : false;
+    // append: 0 - clear-add, 1 - append; 
+    // type: null, success, info, warning, danger
+    var html = '<div class="alert' + (type !== null ? (' alert-' + type) : '') + (dismissible ? ' alert-dismissible' : '') + '" role="alert"' + '>'
+        + (dismissible ? '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' : '')
+        + message
+        + '</div>',
+        jhtml = $(html);
+    if (!append)
+        $(holder).empty();
+    $(holder).append(jhtml);
+
     // Auto close message
     if(typeof autoclose === 'number'){
         setTimeout(function(){
-            var error = $(holder).find('div.alert');
-            if (error.length){
-                error.fadeOut(400, function(){
-                    error.remove();
+            if ($.contains(document.documentElement, jhtml.get(0))){
+                jhtml.fadeOut(400, function(){
+                    jhtml.remove();
                 });
             }
         }, autoclose);

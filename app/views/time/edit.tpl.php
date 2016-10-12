@@ -8,7 +8,7 @@
 	//-->
 	</script>
 	<div class="col-md-offset-1 col-md-10">
-		<div class="alert alert-warning"><span class="glyphicon glyphicon-refresh spin"></span>&nbsp;<?php echo L::time_WAIT_FOR_REBOOT; ?></div>
+		<div class="alert alert-warning" role="alert"><span class="glyphicon glyphicon-refresh spin"></span>&nbsp;<?php echo L::time_WAIT_FOR_REBOOT; ?></div>
 	</div>
 <?php else : ?>
 	<div class="col-md-offset-1 col-md-10">
@@ -29,7 +29,7 @@
 				<?php echo $this->view->form->timezones_html; ?>
 			</div>
 			<div class="form-group col-md-4">
-				<div class="alert alert-info"><?php echo L::time_REBOOT_NEEDED; ?></div>
+				<div class="alert alert-info" role="alert"><?php echo L::time_REBOOT_NEEDED; ?></div>
 			</div>
 			<div class="clearfix"></div>
 			<div class="col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4 text-center">

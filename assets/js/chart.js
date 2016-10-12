@@ -216,7 +216,7 @@ function TimeSeriesPlot(placeholder, data, options) {
 
                     var xdt = (new Date(x)).toISOString();
 
-                    $("#"+tooltipid).html(item.series.label + " : " + xdt + " : " + y)
+                    $("#"+tooltipid).html(item.series.label + ": " + xdt + ", " + y)
                         .css({top: item.pageY+5, left: item.pageX+5})
                         .fadeIn(200);
                 } else {
@@ -1203,9 +1203,9 @@ function ScatterPlot(placeholder, data, options) {
                 if (item) {
                     var x = item.datapoint[0],
                         y = item.datapoint[1].toFixed(2),
-                        text = item.series.label + " : " + x + " : " + y;
+                        text = item.series.label + ": " + x + ", " + y;
                     if (item.series.data[item.dataIndex][2] && item.series.data[item.dataIndex][2]>0) {
-                        text += "(" + item.series.data[item.dataIndex][2] + ")";
+                        text += " (" + item.series.data[item.dataIndex][2] + ")";
                     }
                     $("#"+tooltipid).html(text)
                         .css({top: item.pageY+5, left: item.pageX+5})
@@ -1767,7 +1767,7 @@ function exportPlot(plot,ftype) {
         onrendered: function(canvas) {
             plot.getPlaceholder().get(0).style.backgroundColor = oldbg;  // restore bg
 
-            var filename = 'plot'+(new Date()).getTime();
+            var filename = 'plot'+formatDate(new Date(), 'yyyyMMddHHmmss');
             switch (ftype) {
             case "pdf":
                 var mimeType = "image/png",

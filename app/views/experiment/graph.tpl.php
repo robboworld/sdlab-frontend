@@ -238,7 +238,6 @@ console.log('added count: '+acnt);
             // Plot data polling
             runPlotUpdate();
         } else {
-            //$('#graph_all').empty();
             setInterfaceError($('#graph_msgs'), 'API error: ' + data.error, 3000);
 
             // Plot data polling
@@ -486,9 +485,9 @@ console.log('added count: '+acnt);
 				</li>
 			<?php endforeach; ?>
 		</ul>
-		<button type="button" id="graph_refesh" class="btn btn-primary"><?php echo L::REFRESH; ?></button>
+		<button type="button" id="graph_refesh" class="btn btn-primary"><?php echo L::REFRESH; ?></button><br/><br/>
 		<a href="javascript:void(0);" id="btn_scatter" class="btn btn-primary">
-			<span class="fa fa-"></span>&nbsp;<?php echo L::graph_SCATTER; ?>
+			<span class="fa fa-line-chart"></span>&nbsp;<?php echo L::graph_SCATTER; ?>
 		</a>
 	</div>
 </div>

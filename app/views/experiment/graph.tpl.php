@@ -1,7 +1,6 @@
 <?php
 $timerange = 60;        // default time range in seconds, int or null|0 for all range
 $scrollenabled = true;  // plot auto scroll on new data
-$scrollenabled = true;  // plot auto scroll on new data
 $xrangeymode = 'auto';
 ?>
 <script type="text/javascript">
@@ -91,6 +90,31 @@ $xrangeymode = 'auto';
 
                 // do nothing
 
+                return false;
+            }
+            return true;
+        });
+
+        // Refresh data with sensor filter
+        $('#btn_scatter').click(function() {
+            var list = $('input', choiceContainer),
+                clist = list.filter(':checked'),
+                sx = null, sy = null,
+                params = {};
+            if (list.length>0) {
+                if (clist.length!=2) {
+                    alert(SDLab.Language._('graph_PLEASE_SELECT_2_SENSORS_SCATTER'));
+                    return false;
+                } else {
+                    // todo: create switch to inverse
+                    params["sx"] = clist.get(0).value;
+                    params["sy"] = clist.get(1).value;
+                }
+                window.location.assign("/?q=experiment/scatter/"+String(experiment)+"&"+$.param(params));
+                return true;
+            } else {
+                // no sensors in list
+                alert(SDLab.Language._('graph_PLEASE_SELECT_2_SENSORS_SCATTER'));
                 return false;
             }
             return true;
@@ -214,7 +238,6 @@ console.log('added count: '+acnt);
             // Plot data polling
             runPlotUpdate();
         } else {
-            //$('#graph_all').empty();
             setInterfaceError($('#graph_msgs'), 'API error: ' + data.error, 3000);
 
             // Plot data polling
@@ -462,6 +485,9 @@ console.log('added count: '+acnt);
 				</li>
 			<?php endforeach; ?>
 		</ul>
-		<button type="button" id="graph_refesh" class="btn btn-primary"><?php echo L::REFRESH; ?></button>
+		<button type="button" id="graph_refesh" class="btn btn-primary"><?php echo L::REFRESH; ?></button><br/><br/>
+		<a href="javascript:void(0);" id="btn_scatter" class="btn btn-primary">
+			<span class="fa fa-line-chart"></span>&nbsp;<?php echo L::graph_SCATTER; ?>
+		</a>
 	</div>
 </div>

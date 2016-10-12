@@ -38,7 +38,7 @@ function Graph(data) {
 function TimeSeriesPlot(placeholder, data, options) {
 
     this.p           = null;                     // Plot object
-    this.placeholder = placeholder || '#graph';  // Selector
+    this.placeholder = placeholder || '#plot';   // Selector
     this.data        = data || [];               // array of series
 
     // global min-max
@@ -216,7 +216,7 @@ function TimeSeriesPlot(placeholder, data, options) {
 
                     var xdt = (new Date(x)).toISOString();
 
-                    $("#"+tooltipid).html(item.series.label + " : " + xdt + " : " + y)
+                    $("#"+tooltipid).html(item.series.label + ": " + xdt + ", " + y)
                         .css({top: item.pageY+5, left: item.pageX+5})
                         .fadeIn(200);
                 } else {
@@ -1051,6 +1051,712 @@ console.log('result:',result);
     };
 }
 
+/**
+ * Scatter data plot class.
+ * One plot for multiple scatter series.
+ * @param   placeholder
+ * @param   data
+ * @param   options
+ */
+function ScatterPlot(placeholder, data, options) {
+
+    this.p           = null;                     // Plot object
+    this.placeholder = placeholder || '#plot';   // Selector
+    this.data        = data || [];               // array of series
+
+    // global min-max
+    this.xmin        = null;
+    this.xmax        = null;
+    this.ymin        = null;
+    this.ymax        = null;
+
+    var self = this;
+
+    this._defaults = {
+            // Plot and plugins settings
+            series: {
+                shadowSize: 0    // Drawing is faster without shadows
+            },
+            xaxis: {
+                show: true,
+                //tickSize: 100,
+
+                //min: 0,
+                //max: 0,
+
+                // Plugin: navigate
+                //zoomRange: [1, 10],
+                //zoomRange: null  // or [ number, number ] (min range, max range) or false
+                //panRange: [-10, 10],
+                //panRange: null   // or [ number, number ] (min, max) or false
+            },
+            yaxis: {
+                show: true
+                //min: 0,
+                //min: this.p.getYMinValue()-1,
+                //max: 100,
+                //max: this.p.getYMaxValue()+3
+                //tickSize: 1,
+
+                // Plugin: navigate
+                //zoomRange: [1, 10],
+                //zoomRange: [data[0].data[0][0], data[0].data[data.length-1][0]],
+                //zoomRange: null  // or [ number, number ] (min range, max range) or false
+                //panRange: [-10, 10],
+                //panRange: null   // or [ number, number ] (min, max) or false
+            },
+            points: {
+                show: true,
+                fill: true,
+                //symbol: "circle" // jquery.flot.symbol.js: circle,square,diamond,triangle,cross
+            },
+            lines: {
+                show: false,
+                fill: false
+            },
+//            bars: {
+//                show: true,
+//                barWidth: 1,
+//                align: "left"
+//            },
+            grid: {
+                hoverable: true,
+                clickable: true
+            },
+
+            // Plugin: navigate
+            zoom: {
+                interactive: true
+                //interactive: false,
+                //trigger: "dblclick", // or "click" for single click
+                //amount: 1.5,         // 2 = 200% (zoom in), 0.5 = 50% (zoom out)
+            },
+            pan: {
+                interactive: true
+                //interactive: false,
+                //cursor: "move",      // CSS mouse cursor value used when dragging, e.g. "pointer"
+                //frameRate: 20,
+            },
+            //hooks : {
+            //    plotpan: [function(event, plot) {
+            //    }],
+            //    plotzoom: [function(event, plot) {
+            //    }]
+            //},
+
+            // Custom settings
+            plottooltip   : true,
+    };
+
+    // Merge settings
+    var settings = {};  //global settings
+    if (typeof options !== 'undefined') {
+        $.extend(true, settings, this._defaults, options);
+    } else {
+        $.extend(settings, this._defaults);
+    }
+
+    // TODO: add calc getMinMaxPoints for init data
+
+    // Init Plot
+    //$(this.placeholder).empty();
+    this.p = $.plot(this.placeholder, this.data, settings);
+
+    // attach plugins hooks (no autoadd through options.hooks)
+    // add unknown hooks from options
+    if (typeof this.p.getOptions().hooks !== 'undefined' && !jQuery.isEmptyObject(this.p.getOptions().hooks)) {
+        for (var n in this.p.getOptions().hooks) {
+            if (!this.p.hooks[n] && this.p.getOptions().hooks[n].length>0) {
+                for (var i = 0; i < this.p.getOptions().hooks[n].length; i++) {
+                    this.p.getPlaceholder().bind(n, self.p.getOptions().hooks[n][i]);
+                }
+            }
+        }
+    }
+
+    // Fill properties with settings
+
+    // Tooltips init
+    if (settings.plottooltip) {
+        var tooltipid = 'tooltip';
+
+        if ($("#"+tooltipid).length == 0) {
+            $("<div id='"+tooltipid+"'></div>").css({
+                position: "absolute",
+                display: "none",
+                border: "1px solid #fdd",
+                padding: "2px",
+                "background-color": "#fee",
+                opacity: 0.80
+            }).appendTo("body");
+        }
+
+        $(this.placeholder).bind("plothover", function (event, pos, item) {
+            /*
+            if ($("#enablePosition:checked").length > 0) {
+                var str = "(" + pos.x.toFixed(2) + ", " + pos.y.toFixed(2) + ")";
+                $("#hoverdata").text(str);
+            }
+            */
+            //if ($("#enableTooltip:checked").length > 0)
+            {
+                if (item) {
+                    var x = item.datapoint[0],
+                        y = item.datapoint[1].toFixed(2),
+                        text = item.series.label + ": " + x + ", " + y;
+                    if (item.series.data[item.dataIndex][2] && item.series.data[item.dataIndex][2]>0) {
+                        text += " (" + item.series.data[item.dataIndex][2] + ")";
+                    }
+                    $("#"+tooltipid).html(text)
+                        .css({top: item.pageY+5, left: item.pageX+5})
+                        .fadeIn(200);
+                } else {
+                    $("#"+tooltipid).hide();
+                }
+            }
+        });
+    }
+
+    this.setData = function(data){
+console.log('call ScatterPlot.setData');
+        if (typeof this.p === 'undefined') {
+            return;
+        }
+        this.data = data;
+
+        // calculate global min-max
+        var po = this.getMinMaxPoints(this.data);
+
+        // update global min-max
+        this.ymin  = po.pymin !== null ? po.pymin[1] : null;
+        this.ymax  = po.pymax !== null ? po.pymax[1] : null;
+        this.xmin  = po.pxmin !== null ? po.pxmin[0] : null;
+        this.xmax  = po.pxmax !== null ? po.pxmax[0] : null;
+
+console.log('updated minmax:');console.log(po.pymin,po.pymax,po.pxmin,po.pxmax);
+
+        // TODO: filter out unknown series before set data?
+        this.p.setData(this.data);
+    };
+
+    this.appendData = function(data){
+        // todo: implement append
+    };
+
+    this._getSeriesIndexBySensor = function(sensor_id_x,sensor_val_id_x, sensor_id_y,sensor_val_id_y){
+        if (this.data.length<=0) {
+            return -1;
+        }
+        for (var i = 0; i < this.data.length; i++) {
+            if (this.data[i].sensor_id_x == sensor_id_x && this.data[i].sensor_val_id_x == sensor_val_id_x 
+                && this.data[i].sensor_id_y == sensor_id_y && this.data[i].sensor_val_id_y == sensor_val_id_y) {
+                return i;
+            }
+        }
+        return -1;
+    };
+
+    this.refresh = function(){
+console.log('call ScatterPlot.refresh');
+        if (typeof this.p === 'undefined') {
+            return;
+        }
+
+        this.p.setupGrid();
+        this.p.draw();
+    };
+
+    this.zoom = function(args) {
+        // By axis zoom, upgraded version of plot.zoom().
+        // Added axis option (x or y).
+        // @see jquery.flot.navigate.js plot.zoom()
+        // args : {amount, center, preventEvent, axis}
+
+        // TODO: need refactor, use disabling axis zoom (opts.zoomRange) and call parent plot.zoom()
+
+console.log('call ScatterPlot.zoom');
+        if (typeof this.p === 'undefined') {
+            return;
+        }
+
+        if (!args)
+            args = {};
+
+        var c = args.center,
+            amount = args.amount || this.p.getOptions().zoom.amount,
+            w = this.p.width(), h = this.p.height(),
+            ax = args.axis;
+
+        if (!c)
+            c = { left: w / 2, top: h / 2 };
+
+        if (!ax)
+            ax = null;
+
+        var xf = c.left / w,
+            yf = c.top / h,
+            minmax = {
+                x: {
+                    min: c.left - xf * w / amount,
+                    max: c.left + (1 - xf) * w / amount
+                },
+                y: {
+                    min: c.top - yf * h / amount,
+                    max: c.top + (1 - yf) * h / amount
+                }
+            };
+
+        $.each(this.p.getAxes(), function(_, axis) {
+            if (ax === null || ax === axis.direction) {
+                var opts = axis.options,
+                min = minmax[axis.direction].min,
+                max = minmax[axis.direction].max,
+                zr = opts.zoomRange,
+                pr = opts.panRange;
+
+                if (zr === false) // no zooming on this axis
+                    return false;
+
+                min = axis.c2p(min);
+                max = axis.c2p(max);
+                if (min > max) {
+                    // make sure min < max
+                    var tmp = min;
+                    min = max;
+                    max = tmp;
+                }
+
+                //Check that we are in panRange
+                if (pr) {
+                    if (pr[0] != null && min < pr[0]) {
+                        min = pr[0];
+                    }
+                    if (pr[1] != null && max > pr[1]) {
+                        max = pr[1];
+                    }
+                }
+
+                var range = max - min;
+                if (zr &&
+                    ((zr[0] != null && range < zr[0] && amount >1) ||
+                     (zr[1] != null && range > zr[1] && amount <1)))
+                    return;
+
+                opts.min = min;
+                opts.max = max;
+            }
+        });
+
+        this.p.setupGrid();
+        this.p.draw();
+
+        if (!args.preventEvent)
+            this.p.getPlaceholder().trigger("plotzoom", [ this.p, args ]);
+    };
+    this.zoomOut = function(args) {
+        // By axis zoom out, upgraded version of plot.zoomOut().
+        // Added axis option (x or y).
+        // @see jquery.flot.navigate.js plot.zoomOut()
+        // args : {amount, center, preventEvent, axis}
+
+        if (typeof this.p === 'undefined') {
+            return;
+        }
+
+        if (!args)
+            args = {};
+
+        if (!args.amount)
+            args.amount = this.p.getOptions().zoom.amount;
+
+        args.amount = 1 / args.amount;
+        return this.zoom(args);
+    };
+    this.autozoomY = function(args) {
+        // Auto zoom on y axis in current range, upgraded version of plot.zoom().
+        // @see jquery.flot.navigate.js plot.zoom()
+        // args : {amount, center, preventEvent, axis}
+
+        if (typeof this.p === 'undefined') {
+            return false;
+        }
+
+        if (!args)
+            args = {};
+        // Override args
+        args.amount = 1;
+        args.center = null;
+        args.axis   = "y";
+
+        var minmax = {
+                x: {
+                    min: null,
+                    max: null
+                },
+                y: {
+                    min: null,
+                    max: null
+                }
+            },
+            pcnt = 0;
+
+        // TODO: need truely getting minmax on multiple x or y axes, now get last
+        $.each(this.p.getAxes(), function(_, axis) {
+            if (axis.direction === 'x') {
+                minmax[axis.direction].min = axis.min;
+                minmax[axis.direction].max = axis.max;
+            }
+        });
+        // No autozoomY if there is no x minmax valid interval
+        if (minmax["x"].min === null ||  minmax["x"].max === null) {
+            return false;
+        }
+
+        // Check all series points count
+        $.each(this.p.getData(), function(si, series) {
+            pcnt += series.data.length;
+        });
+        // No autozoomY if there is no points at all
+        if (pcnt == 0) {
+            return false;
+        }
+
+        // Found ymin-ymax on x minmax range
+        $.each(this.p.getData(), function(si, series) {
+            var isrange = false;
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var vx = parseFloat(point[0]),
+                        vy = parseFloat(point[1]);
+
+                    // Check if inside x range interval or not
+                    if (!isNaN(vx) !== null) {
+                        if (isrange) {
+                            if ((vx < minmax["x"].min) || (vx > minmax["x"].max)) {
+                                isrange = false;
+                            }
+                        } else {
+                            if ((vx >= minmax["x"].min) && (vx <= minmax["x"].max)) {
+                                isrange = true;
+                            }
+                        }
+                    }
+
+                    // ymin
+                    if (!isNaN(vy) && isrange && (minmax["y"].min === null || vy <= minmax["y"].min)) {
+                        minmax["y"].min = vy;
+                    }
+                    // ymax
+                    if (!isNaN(vy) && isrange && (minmax["y"].max === null || vy >= minmax["y"].max)) {
+                        minmax["y"].max = vy;
+                    }
+                }
+            });
+        });
+        // No autozoomY if no valid points on x minmax interval
+        if (minmax["y"].min === null || minmax["y"].max === null) {
+            return false;
+        }
+
+        if (minmax["y"].min > minmax["y"].max) {
+            // make sure ymin < ymax
+            var tmp = minmax["y"].min;
+            minmax["y"].min = minmax["y"].max;
+            minmax["y"].max = tmp;
+        }
+
+        $.each(this.p.getAxes(), function(_, axis) {
+            if (axis.direction === 'y') {
+                var opts = axis.options,
+                    min = minmax[axis.direction].min,
+                    max = minmax[axis.direction].max,
+                    zr = opts.zoomRange,
+                    pr = opts.panRange;
+
+                if (zr === false) // no zooming on this axis
+                    return false;
+
+                //Check that we are in panRange
+                if (pr) {
+                    if (pr[0] != null && min < pr[0]) {
+                        min = pr[0];
+                    }
+                    if (pr[1] != null && max > pr[1]) {
+                        max = pr[1];
+                    }
+                }
+
+                // TODO: fix zoom range restrictions
+                /*
+                var range = max - min;
+                if (zr &&
+                    ((zr[0] != null && range < zr[0] && amount >1) ||
+                     (zr[1] != null && range > zr[1] && amount <1)))
+                    return false;
+                */
+
+                opts.min = min;
+                opts.max = max;
+            }
+        });
+
+        this.p.setupGrid();
+        this.p.draw();
+
+        if (!args.preventEvent)
+            this.p.getPlaceholder().trigger("plotzoom", [ this.p, args ]);
+
+        return true;
+    };
+
+    this.pan = function(args) {
+        if (typeof this.p === 'undefined') {
+            return;
+        }
+
+        if (!args)
+            args = {};
+
+        // Get plot width and height for default pan delta in pixels
+        var w = this.p.width(), defw = 10, h = this.p.height(), defh = 10;
+        if (w < defw)
+            w = defw;
+        if (h < defh)
+            h = defh;
+
+        switch (args.left) {
+        case "+":
+            dx = +w;
+            break;
+        case "-":
+            dx = -w;
+            break;
+        case "+/2":
+            dx = +w/2;
+            break;
+        case "-/2":
+            dx = -w/2;
+            break;
+        default:
+            dx = +args.left;
+            break;
+        }
+
+        switch (args.top) {
+        case "+":
+            dy = +h;
+            break;
+        case "-":
+            dy = -h;
+            break;
+        case "+/2":
+            dy = +h/2;
+            break;
+        case "-/2":
+            dy = -h/2;
+            break;
+        default:
+            dy = +args.top;
+            break;
+        }
+
+        var delta = {
+            left: +dx,
+            top:  +dy
+        };
+
+        if (isNaN(delta.left))
+            delta.left = 0;
+        if (isNaN(delta.top))
+            delta.top = 0;
+
+        var newargs = {};
+        $.extend(true, newargs, args, delta);
+
+        this.p.pan(newargs);
+    };
+
+    this.getYMinValue = function(data){
+        var min = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var v = parseFloat(point[1]);
+                    if (!isNaN(v) && (min === null || v < min)) {
+                        min = v;
+                    }
+                }
+            });
+        });
+        return min;
+    };
+    this.getYMinPoint = function(data){
+        var min = null, result = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var v = parseFloat(point[1]);
+                    if(!isNaN(v) && (min === null || v < min)) {
+                        min = v;
+                        result = point;
+                    }
+                }
+            });
+        });
+        return result;
+    };
+    this.getYMaxValue = function(data){
+        var max = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var v = parseFloat(point[1]);
+                    if (!isNaN(v) && (max === null || v > max)) {
+                        max = v;
+                    }
+                }
+            });
+        });
+        return max;
+    };
+    this.getYMaxPoint = function(data){
+        var max = null, result = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var v = parseFloat(point[1]);
+                    if (!isNaN(v) && (max === null || v > max)) {
+                        max = v;
+                        result = point;
+                    }
+                }
+            });
+        });
+        return result;
+    };
+    this.getXMinValue = function(data){
+        var min = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var v = parseFloat(point[0]);
+                    if (!isNaN(v) && (min === null || v < min)) {
+                        min = v;
+                    }
+                }
+            });
+        });
+        return min;
+    };
+    this.getXMinPoint = function(data){
+        var min = null, result = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var v = parseFloat(point[0]);
+                    if (!isNaN(v) && (min === null || v < min)) {
+                        min = v;
+                        result = series.data[pi];
+                    }
+                }
+            });
+        });
+        return result;
+    };
+    this.getXMaxValue = function(data){
+        var max = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var v = parseFloat(point[0]);
+                    if (!isNaN(v) && (max === null || v > max)) {
+                        max = v;
+                    }
+                }
+            });
+        });
+        return max;
+    };
+    this.getXMaxPoint = function(data){
+        var max = null, result = null,
+            d = (typeof data === "undefined" || data === null) ? this.data : data;
+        $.each(d, function(si, series) {
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var v = parseFloat(point[0]);
+                    if (!isNaN(v) && (max === null || v > max)) {
+                        max = v;
+                        result = series.data[pi];
+                    }
+                }
+            });
+        });
+        return result;
+    };
+    this.getMinMaxPoints = function(data){
+console.log('call ScatterPlot.getMinMaxPoints');
+        var d = (typeof data === "undefined" || data === null) ? this.data : data,
+            result = {
+                pxmin: null,
+                pxmax: null,
+                pymin: null,
+                pymax: null,
+            };
+
+        // get min-max
+        $.each(d, function(si, series) {
+            // xmin-xmax, ymin-ymax
+            $.each(series.data, function(pi, point) {
+                if (point !== null) {
+                    var vx = parseFloat(point[0]),
+                        vy = parseFloat(point[1]);
+                    if (!isNaN(vx)) {
+                        // xmin
+                        if (result.pxmin === null || vx < result.pxmin[0]) {
+                            result.pxmin = point;
+                        }
+                        // xmax
+                        if (result.pxmax === null || vx > result.pxmax[0]) {
+                            result.pxmax = point;
+                        }
+                    }
+                    if (!isNaN(vy)) {
+                        // ymin
+                        if (result.pymin === null || vy < result.pymin[1]) {
+                            result.pymin = point;
+                        }
+                        // ymax
+                        if (result.pymax === null || vy > result.pymax[1]) {
+                            result.pymax = point;
+                        }
+                    }
+                }
+            });
+        });
+
+console.log('result:',result);
+        return result;
+    };
+
+    this.getTotalPointsCount = function(data){
+        if (data.length <= 0) {
+            return 0;
+        }
+        var c = 0;
+        for (var i = 0; i < data.length; i++) {
+            c = c + data[i].data.length;
+        }
+        return c;
+    };
+}
+
 function exportPlot(plot,ftype) {
     if (ftype !== 'pdf' && ftype !== 'jpg' && ftype !== 'png') return false;
 
@@ -1061,7 +1767,7 @@ function exportPlot(plot,ftype) {
         onrendered: function(canvas) {
             plot.getPlaceholder().get(0).style.backgroundColor = oldbg;  // restore bg
 
-            var filename = 'plot'+(new Date()).getTime();
+            var filename = 'plot'+formatDate(new Date(), 'yyyyMMddHHmmss');
             switch (ftype) {
             case "pdf":
                 var mimeType = "image/png",

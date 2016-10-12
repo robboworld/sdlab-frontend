@@ -1098,7 +1098,8 @@ class ExperimentController extends Controller
 			self::addJs('chart');
 			// Add language translates for scripts
 			Language::script(array(
-					'ERROR'
+					'ERROR',
+					'graph_PLEASE_SELECT_2_SENSORS_SCATTER'
 			));
 
 			$db = new DB();
@@ -1582,7 +1583,8 @@ class ExperimentController extends Controller
 		self::addJs('chart');
 		// Add language translates for scripts
 		Language::script(array(
-				'ERROR'
+				'ERROR',
+				'graph_PLEASE_SELECT_SENSORS', 'graph_PLEASE_SELECT_DIFFERENT_SENSORS'
 		));
 
 		// Plot with all sensors data loads on ajax request

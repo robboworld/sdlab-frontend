@@ -70,7 +70,7 @@ if (empty($lang_tag))
 
         // Refresh data with sensor filter
         $('#graph_refesh').click(function() {
-            emptyInterfaceError();
+            emptyInterfaceError('#graph_msgs');
             return getData(0);
         });
 
@@ -112,17 +112,17 @@ if (empty($lang_tag))
         if (selsx==="" || selsy==="") {
             // no sensor selected from list
             if (errmode === 0) {
-                alert("<?php echo addslashes(L::graph_PLEASE_SELECT_SENSORS); ?>");
+                alert(SDLab.Language._('graph_PLEASE_SELECT_SENSORS'));
             } else if (errmode === 1) {
-                setInterfaceError($('#graph_msgs'), "<?php echo addslashes(L::graph_PLEASE_SELECT_SENSORS); ?>", 3000);
+                setInterfaceError($('#graph_msgs'), SDLab.Language._('graph_PLEASE_SELECT_SENSORS'), 3000);
             }
             return false;
         } else if (selsx===selsy) {
             // equal sensors selected
             if (errmode === 0) {
-                alert("<?php echo addslashes(L::graph_PLEASE_SELECT_DIFFERENT_SENSORS); ?>");
+                alert(SDLab.Language._('graph_PLEASE_SELECT_DIFFERENT_SENSORS'));
             } else if (errmode === 1) {
-                setInterfaceError($('#graph_msgs'), "<?php echo addslashes(L::graph_PLEASE_SELECT_DIFFERENT_SENSORS); ?>", 3000);
+                setInterfaceError($('#graph_msgs'), SDLab.Language._('graph_PLEASE_SELECT_DIFFERENT_SENSORS'), 3000);
             }
             return false;
         }

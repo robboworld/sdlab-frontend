@@ -103,7 +103,7 @@ $xrangeymode = 'auto';
                 params = {};
             if (list.length>0) {
                 if (clist.length!=2) {
-                    alert('Select two sensors for scatter plot data.');
+                    alert(SDLab.Language._('graph_PLEASE_SELECT_2_SENSORS_SCATTER'));
                     return false;
                 } else {
                     // todo: create switch to inverse
@@ -114,7 +114,7 @@ $xrangeymode = 'auto';
                 return true;
             } else {
                 // no sensors in list
-                alert('Select two sensors for scatter plot data.');
+                alert(SDLab.Language._('graph_PLEASE_SELECT_2_SENSORS_SCATTER'));
                 return false;
             }
             return true;

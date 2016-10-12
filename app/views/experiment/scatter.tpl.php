@@ -148,25 +148,21 @@ if (empty($lang_tag))
                 opts.max = null;
             }
             if (axis.direction === 'x') {
-                opts.max = null;
                 opts.min = null;
+                opts.max = null;
             }
         });
     }
 
     function dataReceivedAll(data, status, jqxhr){
-console.log('call dataReceivedAll');
         if (typeof data.error === 'undefined') {
             resetPlot();
             g.setData(data.result);
-            var pcnt = g.getTotalPointsCount(data.result);
-console.log('new count: '+pcnt);
-            if (!pcnt) {
+            if (!g.getTotalPointsCount(data.result)) {
                 setDefaultAxis();
             }
             g.refresh();
         } else {
-            //$('#graph_scatter').empty();
             resetPlot();
             setInterfaceError($('#graph_msgs'), 'API error: ' + data.error, 3000);
         }
@@ -177,30 +173,29 @@ console.log('new count: '+pcnt);
         setDefaultAxis();
         g.refresh();
     }
-
     function resetZoom() {
-        // todo: reset to init min-max range
-        return true;
+        setDefaultAxis();
+        g.refresh();
     }
     function zoomPlot(args, dir) {
         return ((typeof dir !== "undefined" && dir === "out") ? g.zoomOut(args) : g.zoom(args));
     }
 
     function graphFormSubmit(f) {
-        var dtFrom = $("#datetime_from"), inpFrom = $('input[name="from"]'),
-            dtTo = $("#datetime_to"), inpTo = $('input[name="to"]'),
+        var dtFrom = $("#datetime_from"),
+            dtTo = $("#datetime_to"),
             dt;
 
         if (dtFrom.val() !== "") {
-            //inpFrom.val(Math.floor(dt.getTime()/1000));
-            //inpFrom.val(Math.floor(dtFrom.datetimepicker('getValue').getTime()/1000));
-            inpFrom.val(dtFrom.datetimepicker('getValue').toISOString());
+            //dtFrom.val(Math.floor(dt.getTime()/1000));
+            //dtFrom.val(Math.floor(dtFrom.datetimepicker('getValue').getTime()/1000));
+            //dtFrom.val(dtFrom.datetimepicker('getValue').toISOString());
         }
 
         if (dtTo.val() !== "") {
-            //inpTo.val(Math.floor(dt.getTime()/1000));
-            //inpTo.val(Math.floor(dtTo.datetimepicker('getValue').getTime()/1000));
-            inpTo.val(dtTo.datetimepicker('getValue').toISOString());
+            //dtTo.val(Math.floor(dt.getTime()/1000));
+            //dtTo.val(Math.floor(dtTo.datetimepicker('getValue').getTime()/1000));
+            //dtTo.val(dtTo.datetimepicker('getValue').toISOString());
         }
 
         return true;
@@ -256,7 +251,7 @@ console.log('new count: '+pcnt);
 			</div>
 		</div>
 		<div class="form-group">
-			<div class="col-md-1 col-sm-12">
+			<div class="col-md-1 col-sm-12 control-label">
 				<label><?php echo L::graph_PERIOD . ':'; ?></label>
 			</div>
 			<div class="col-md-4 col-xs-12" style="padding-bottom: 5px;">
@@ -288,6 +283,12 @@ console.log('new count: '+pcnt);
 		</div>
 		<div class="plot-control-panel-top">
 			<div class="btn-toolbar" role="toolbar" aria-label="...">
+				<div class="btn-group btn-group-sm" role="group" aria-label="...">
+					<button type="button" id="btn_reset_zoom" class="btn btn-sm btn-default" onclick="resetZoom();return true;"><span class="fa fa-lg fa-home"></span></button>
+				</div>
+				<div class="btn-group btn-group-sm" role="group" aria-label="...">
+					<button type="button" id="graph_refesh" class="btn btn-primary"><span class="fa fa-refresh"></span><span class="">&nbsp;<?php echo L::REFRESH; ?></span></button>
+				</div>
 				<div class="btn-group btn-group-sm graph-export">
 					<button type="button" class="btn btn-sm btn-info btn-graph-export" data-filetype="png"><span class="fa fa-download"></span><span class="hidden-xs">&nbsp;<?php echo L::graph_EXPORT; ?></span></button>
 					<button type="button" class="btn btn-sm btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -330,12 +331,6 @@ console.log('new count: '+pcnt);
 					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'x'}, 'out');"><span class="fa fa-minus"></span></button>
 				</div>
 			</div>
-		</div>
-	</div>
-	<div class="col-md-12">
-		<div class="text-center" style="margin-top:15px;">
-			<!-- <button type="submit" id="graph_refesh" class="btn btn-primary"><?php echo L::REFRESH; ?></button> -->
-			<button type="button" id="graph_refesh" class="btn btn-primary btn-lg"><?php echo L::REFRESH; ?></button>
 		</div>
 	</div>
 	</form>

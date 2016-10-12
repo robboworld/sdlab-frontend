@@ -36,17 +36,17 @@ if (empty($lang_tag))
 
         if (ufrom !== null) {
             dt = new Date(ufrom*1000);
-            //dtFrom.val(formatDate(dt, 'yyyy-MM-dd HH:mm:ss'));
+            //dtFrom.val(formatDate(dt, 'yyyy-MM-dd HH:mm:ssK'));
             //dtFrom.val(dt.toISOString());
-            dtFrom.val(formatDate(dt, 'yyyy-MM-dd HH:mm:ssK'));
+            dtFrom.val(formatDate(dt, 'yyyy-MM-dd HH:mm:ss'));
         }
         if (uto !== null) {
             dt = new Date(uto*1000);
-            //dtTo.val(formatDate(dt, 'yyyy-MM-dd HH:mm:ss'))
+            //dtTo.val(formatDate(dt, 'yyyy-MM-dd HH:mm:ssK'))
             //dtTo.val(dt.toISOString());
-            dtTo.val(formatDate(dt, 'yyyy-MM-dd HH:mm:ssK'))
+            dtTo.val(formatDate(dt, 'yyyy-MM-dd HH:mm:ss'))
         }
-/*
+
         dtFrom.datetimepicker({
             format:'Y-m-d H:i:s',
             onShow:function(ct,input){
@@ -54,7 +54,7 @@ if (empty($lang_tag))
                     maxDate:dtTo.val() ? dtTo.val() : false
                 })
             },
-            mask:'9999-19-39 29:59:59',
+            //mask:'9999-19-39 29:59:59',
             lang:'<?php echo $lang_tag; ?>'
         });
         dtTo.datetimepicker({
@@ -64,10 +64,10 @@ if (empty($lang_tag))
                     minDate:dtFrom.val() ? dtFrom.val() : false
                 })
             },
-            mask:'9999-19-39 29:59:59',
+            //mask:'9999-19-39 29:59:59',
             lang:'<?php echo $lang_tag; ?>'
         });
-*/
+
         // Refresh data with sensor filter
         $('#graph_refesh').click(function() {
             emptyInterfaceError();
@@ -95,7 +95,7 @@ if (empty($lang_tag))
             selsy = listsy.val(),
             vfrom = dtFrom.val(),
             vto = dtTo.val(),
-            params = {'experiment': experiment};
+            dt, params = {'experiment': experiment};
         if (listsx.length==0 || listsy.length==0 || dtFrom.length==0 || dtTo.length==0) return false;
         // Validate sensors
         if (selsx==="" || selsy==="") {
@@ -115,15 +115,23 @@ if (empty($lang_tag))
             }
             return false;
         }
-        
+
         params['sx'] = selsx;
         params['sy'] = selsy;
         // Validate dates
         if (String(vfrom).length > 0) {
-            params['from'] = vfrom;
+            //params['from'] = vfrom;
+            dt = dtFrom.datetimepicker("getValue");
+            if (dt) {
+                params['from'] = formatDate(dt, "yyyy-MM-dd\\THH:mm:ss\\Z", true);
+            }
         }
         if (String(vto).length > 0) {
-            params['to'] = vto;
+            //params['to'] = vto;
+            dt = dtTo.datetimepicker("getValue");
+            if (dt) {
+                params['to'] = formatDate(dt, "yyyy-MM-dd\\THH:mm:ss\\Z", true);
+            }
         }
 
         if ((typeof push === "undefined" || push) && history.pushState) {
@@ -180,26 +188,6 @@ if (empty($lang_tag))
     function zoomPlot(args, dir) {
         return ((typeof dir !== "undefined" && dir === "out") ? g.zoomOut(args) : g.zoom(args));
     }
-
-    function graphFormSubmit(f) {
-        var dtFrom = $("#datetime_from"),
-            dtTo = $("#datetime_to"),
-            dt;
-
-        if (dtFrom.val() !== "") {
-            //dtFrom.val(Math.floor(dt.getTime()/1000));
-            //dtFrom.val(Math.floor(dtFrom.datetimepicker('getValue').getTime()/1000));
-            //dtFrom.val(dtFrom.datetimepicker('getValue').toISOString());
-        }
-
-        if (dtTo.val() !== "") {
-            //dtTo.val(Math.floor(dt.getTime()/1000));
-            //dtTo.val(Math.floor(dtTo.datetimepicker('getValue').getTime()/1000));
-            //dtTo.val(dtTo.datetimepicker('getValue').toISOString());
-        }
-
-        return true;
-    }
 </script>
 <div class="row">
 	<div class="col-md-12">
@@ -213,7 +201,7 @@ if (empty($lang_tag))
 	<div class="col-md-12">
 		<h3><?php echo L::graph_TITLE_SCATTER_FOR_2(htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8')); ?></h3>
 	</div>
-	<form method="get" id="graphForm" class="form-horizontal" action="?q=experiment/scatter/<?php echo (int)$this->view->content->experiment->id; ?>" onsubmit="return graphFormSubmit(this);">
+	<form method="get" id="graphForm" class="form-horizontal" action="?q=experiment/scatter/<?php echo (int)$this->view->content->experiment->id; ?>" onsubmit="return false;">
 	<div class="col-md-12">
 		<h4 style="display:none;"><?php echo L::SENSORS . ':'; ?></h4>
 		<div class="form-group">

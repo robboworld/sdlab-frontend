@@ -1352,7 +1352,7 @@ class ExperimentController extends Controller
 			// UTC time with seconds parts
 			try
 			{
-				$from = new DateTime(static::cutdatemsec($_GET['from']));
+				$from = new DateTime(System::cutdatemsec($_GET['from']));
 				//$from->setTimezone(new DateTimeZone('UTC'));
 				$from->setTimezone((new DateTime())->getTimezone());
 			}
@@ -1370,7 +1370,7 @@ class ExperimentController extends Controller
 			// UTC time with seconds parts
 			try
 			{
-				$to = new DateTime(static::cutdatemsec($_GET['to']));
+				$to = new DateTime(System::cutdatemsec($_GET['to']));
 				//$to->setTimezone(new DateTimeZone('UTC'));
 				$to->setTimezone((new DateTime())->getTimezone());
 			}
@@ -1575,8 +1575,9 @@ class ExperimentController extends Controller
 		//self::addJs('lib/jquery.flot.heatmap');
 		self::addJs('lib/jspdf.min');
 		self::addJs('lib/html2canvas');
-		//self::addJs('lib/jquery.datetimepicker.full.js');
-		//self::addJs('lib/jquery.datetimepicker.full.min.js');
+		//self::addJs('lib/jquery.datetimepicker.full');
+		self::addJs('lib/jquery.datetimepicker.full.min');
+		self::addCss('jquery.datetimepicker.min');
 		self::addJs('functions');
 		self::addJs('chart');
 		// Add language translates for scripts

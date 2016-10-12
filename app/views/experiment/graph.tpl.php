@@ -1,7 +1,6 @@
 <?php
 $timerange = 60;        // default time range in seconds, int or null|0 for all range
 $scrollenabled = true;  // plot auto scroll on new data
-$scrollenabled = true;  // plot auto scroll on new data
 $xrangeymode = 'auto';
 ?>
 <script type="text/javascript">
@@ -91,6 +90,31 @@ $xrangeymode = 'auto';
 
                 // do nothing
 
+                return false;
+            }
+            return true;
+        });
+
+        // Refresh data with sensor filter
+        $('#btn_scatter').click(function() {
+            var list = $('input', choiceContainer),
+                clist = list.filter(':checked'),
+                sx = null, sy = null,
+                params = {};
+            if (list.length>0) {
+                if (clist.length!=2) {
+                    alert('Select two sensors for scatter plot data.');
+                    return false;
+                } else {
+                    // todo: create switch to inverse
+                    params["sx"] = clist.get(0).value;
+                    params["sy"] = clist.get(1).value;
+                }
+                window.location.assign("/?q=experiment/scatter/"+String(experiment)+"&"+$.param(params));
+                return true;
+            } else {
+                // no sensors in list
+                alert('Select two sensors for scatter plot data.');
                 return false;
             }
             return true;
@@ -463,5 +487,8 @@ console.log('added count: '+acnt);
 			<?php endforeach; ?>
 		</ul>
 		<button type="button" id="graph_refesh" class="btn btn-primary"><?php echo L::REFRESH; ?></button>
+		<a href="javascript:void(0);" id="btn_scatter" class="btn btn-primary">
+			<span class="fa fa-"></span>&nbsp;<?php echo L::graph_SCATTER; ?>
+		</a>
 	</div>
 </div>

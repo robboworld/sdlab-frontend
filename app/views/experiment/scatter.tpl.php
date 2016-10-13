@@ -27,6 +27,30 @@ if (empty($lang_tag))
                 min: null,
                 max: null
             },
+            series: {
+                bubbles: {
+                    active: false,
+                    show: false,
+                    fill: true,
+                    lineWidth: 2,
+                    //drawbubble: function(ctx, serie, x, y, v, r, c,overlay){},
+                    //bubblelabel:{
+                    //    show: true
+                    //}
+                    debug:{active:false},  // xxx: fix buggy options in standalone plugin
+                },
+                heatmap:{
+                    active: false,
+                    show: false,
+                    //backImage: null,
+                    //radiusIn: 10,
+                    //radiusOut: 20,
+                    max: 90,
+                    //opacity: 180,
+                    //gradient: { 0.45: "rgb(0,0,255)", 0.55: "rgb(0,255,255)", 0.65: "rgb(0,255,0)", 0.95: "yellow", 1.0: "rgb(255,0,0)"},
+                    debug:{active:false},  // xxx: fix buggy options in standalone plugin
+                }
+            },
             plottooltip: true
         });
 
@@ -83,6 +107,11 @@ if (empty($lang_tag))
             listsx.val(listsy.val());
             listsy.val(tmp);
             $('#graph_refesh').trigger('click');
+        });
+
+        $('.btn-series-style input').change(function() {
+            var cbtn = $('.btn-series-style input').filter(':checked');
+            setSeriesStyle(cbtn.length ? cbtn.val() : 0);
         });
 
         $(".btn-graph-export").on("click", function(e) {
@@ -171,6 +200,14 @@ if (empty($lang_tag))
                 opts.max = null;
             }
         });
+    }
+
+    function setSeriesStyle(v){
+        $.each(g.p.getData(), function(_, d) {
+            d.bubbles.show = (v == 1);
+            d.heatmap.show = (v == 2);
+        });
+        g.refresh();
     }
 
     function dataReceivedAll(data, status, jqxhr){
@@ -287,6 +324,17 @@ if (empty($lang_tag))
 				<div class="btn-group btn-group-sm" role="group" aria-label="...">
 					<button type="button" id="btn_reset_zoom" class="btn btn-sm btn-default" onclick="resetZoom();return true;"><span class="fa fa-lg fa-home"></span></button>
 					<button type="button" id="btn_swap_xy" class="btn btn-sm btn-default"><span class="fa fa-lg fa-exchange fa-rotate-90"></span></button>
+				</div>
+				<div class="btn-group btn-group-sm" data-toggle="buttons" role="group" aria-label="...">
+					<label class="btn btn-default btn-series-style active">
+						<input type="radio" checked autocomplete="off" id="series_style0" name="series_style" value="0">Simple
+					</label>
+					<label class="btn btn-default btn-series-style">
+						<input type="radio" autocomplete="off" id="series_style1" name="series_style" value="1">Bubbles
+					</label>
+					<label class="btn btn-default btn-series-style">
+						<input type="radio" autocomplete="off" id="series_style2" name="series_style" value="2">Heatmap
+					</label>
 				</div>
 				<div class="btn-group btn-group-sm" role="group" aria-label="...">
 					<button type="button" id="graph_refesh" class="btn btn-primary"><span class="fa fa-refresh"></span><span class="">&nbsp;<?php echo L::REFRESH; ?></span></button>

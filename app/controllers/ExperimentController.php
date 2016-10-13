@@ -1089,13 +1089,17 @@ class ExperimentController extends Controller
 
 			self::setTitle(L::graph_TITLE_GRAPHS_FOR($experiment->title));
 			//self::setContentTitle(L::graph_TITLE_GRAPHS_FOR_2($experiment->title));
+			// Flot lib
 			self::addJs('lib/jquery.flot');
 			self::addJs('lib/jquery.flot.time.min');
 			self::addJs('lib/jquery.flot.navigate');
+			// PDF export libs
 			self::addJs('lib/jspdf.min');
 			self::addJs('lib/html2canvas');
+			//
 			self::addJs('functions');
 			self::addJs('chart');
+
 			// Add language translates for scripts
 			Language::script(array(
 					'ERROR',
@@ -1571,16 +1575,27 @@ class ExperimentController extends Controller
 
 		self::setTitle(L::graph_TITLE_SCATTER_FOR($experiment->title));
 		//self::setContentTitle(L::graph_TITLE_SCATTER_FOR_2($experiment->title));
+		// Flot lib
 		self::addJs('lib/jquery.flot');
 		self::addJs('lib/jquery.flot.navigate');
-		//self::addJs('lib/jquery.flot.heatmap');
+		// Flot plugins JUMFlot
+		self::addJs('lib/jquery.flot.JUMlib');
+		self::addJs('lib/jquery.flot.heatmap');
+		self::addJs('lib/jquery.flot.bubbles');
+		// or all JUMFlot
+		//self::addJs('lib/JUMFlot');
+		//self::addJs('lib/JUMFlot.min');
+		// PDF export libs
 		self::addJs('lib/jspdf.min');
 		self::addJs('lib/html2canvas');
+		// Datetime picker
 		//self::addJs('lib/jquery.datetimepicker.full');
 		self::addJs('lib/jquery.datetimepicker.full.min');
 		self::addCss('jquery.datetimepicker.min');
+		//
 		self::addJs('functions');
 		self::addJs('chart');
+
 		// Add language translates for scripts
 		Language::script(array(
 				'ERROR',

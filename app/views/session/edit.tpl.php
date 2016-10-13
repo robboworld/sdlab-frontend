@@ -69,8 +69,8 @@
 			<tr>
 				<td>#<?php echo (int)$item->id?></td>
 				<td><?php
-					if(!empty($item->DateStart_exp)) { echo System::dateformat('@'.$item->DateStart_exp, System::DATETIME_FORMAT2, 'now'); } ?> / <?php
-					if(!empty($item->DateEnd_exp))   { echo System::dateformat('@'.$item->DateEnd_exp, System::DATETIME_FORMAT2, 'now'); } ?></td>
+					if(!empty($item->DateStart_exp)) { echo System::dateformat('@'.$item->DateStart_exp, System::DATETIME_FORMAT1, 'now'); } ?> / <?php
+					if(!empty($item->DateEnd_exp))   { echo System::dateformat('@'.$item->DateEnd_exp, System::DATETIME_FORMAT1, 'now'); } ?></td>
 				<td><a href="?q=experiment/view/<?php echo (int)$item->id; ?>"><?php echo htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8'); ?></a></td>
 				<td><?php if ($item->_setup) { echo htmlspecialchars($item->_setup->title, ENT_QUOTES, 'UTF-8'); } ?></td>
 			</tr>

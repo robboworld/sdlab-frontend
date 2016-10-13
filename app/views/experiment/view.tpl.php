@@ -93,11 +93,11 @@ if($setup_exists)
 						<div class="date-block">
 							<div id="exp_datestart" class="text-left ln-hgt-16px">
 								<?php if (!empty($this->view->content->experiment->DateStart_exp))
-									echo System::dateformat('@'.$this->view->content->experiment->DateStart_exp, System::DATETIME_FORMAT2, 'now'); ?>
+									echo System::dateformat('@'.$this->view->content->experiment->DateStart_exp, System::DATETIME_FORMAT1, 'now'); ?>
 							</div>
 							<div id="exp_end" class="text-left ln-hgt-16px">
 								<?php if (!empty($this->view->content->experiment->DateEnd_exp))
-									echo System::dateformat('@'.$this->view->content->experiment->DateEnd_exp, System::DATETIME_FORMAT2, 'now'); ?>
+									echo System::dateformat('@'.$this->view->content->experiment->DateEnd_exp, System::DATETIME_FORMAT1, 'now'); ?>
 							</div>
 						</div>
 						<div class="label-block">

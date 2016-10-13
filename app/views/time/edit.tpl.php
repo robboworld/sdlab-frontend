@@ -21,7 +21,7 @@
 				<label for="time_datetime_id"><?php echo L::DATETIME; ?></label><br/>
 				<input type="text" class="form-control" id="time_datetime_id" name="time_datetime" placeholder="<?php 
 					echo L::time_INPUT_DATETIME;?>" value="<?php 
-					echo htmlspecialchars($this->view->form->datetime->format('Y-m-d H:i'), ENT_QUOTES, 'UTF-8');?>" title="<?php 
+					echo htmlspecialchars($this->view->form->datetime->format('Y.m.d H:i'), ENT_QUOTES, 'UTF-8');?>" title="<?php 
 					echo L::time_FORMAT;?>"/>
 			</div>
 			<div class="form-group col-md-4">

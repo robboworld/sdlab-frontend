@@ -64,10 +64,10 @@ $show_action = true;
 						</a>
 					</td>
 					<td>
-						<?php if(!empty($item->DateStart_exp)) echo System::dateformat('@'.$item->DateStart_exp, System::DATETIME_FORMAT2, 'now'); ?>
+						<?php if(!empty($item->DateStart_exp)) echo System::dateformat('@'.$item->DateStart_exp, System::DATETIME_FORMAT1, 'now'); ?>
 					</td>
 					<td>
-						<?php if(!empty($item->DateEnd_exp)) echo System::dateformat('@'.$item->DateEnd_exp, System::DATETIME_FORMAT2, 'now'); ?>
+						<?php if(!empty($item->DateEnd_exp)) echo System::dateformat('@'.$item->DateEnd_exp, System::DATETIME_FORMAT1, 'now'); ?>
 					</td>
 
 					<td class="text-right">

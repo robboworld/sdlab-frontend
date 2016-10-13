@@ -52,6 +52,8 @@ if (empty($lang_tag))
                     //opacity: 180,
                     //gradient: { 0.45: "rgb(0,0,255)", 0.55: "rgb(0,255,255)", 0.65: "rgb(0,255,0)", 0.95: "yellow", 1.0: "rgb(255,0,0)"},
                     debug:{active:false},  // xxx: fix buggy options in standalone plugin
+                    //gradient: {"0.45": "rgb(0,0,255)", "0.55": "rgb(0,255,255)", "0.65": "rgb(0,255,0)", "0.95": "yellow", "1.0": "rgb(255,0,0)"},
+                    //gradient: {"0.01": "rgb(0,0,64)", "0.45": "rgb(0,0,255)", "0.55": "rgb(0,255,255)", "0.65": "rgb(0,255,0)", "0.95": "yellow", "1.0": "rgb(255,0,0)"},
                 }
             },
             plottooltip: true
@@ -75,7 +77,7 @@ if (empty($lang_tag))
         }
 
         dtFrom.datetimepicker({
-            format:'Y-m-d H:i:s',
+            format:'<?php echo System::DATETIME_FORMAT1;?>',
             onShow:function(ct,input){
                 this.setOptions({
                     maxDate:dtTo.val() ? dtTo.val() : false
@@ -85,7 +87,7 @@ if (empty($lang_tag))
             lang:'<?php echo $lang_tag; ?>'
         });
         dtTo.datetimepicker({
-            format:'Y-m-d H:i:s',
+            format:'<?php echo System::DATETIME_FORMAT1;?>',
             onShow:function(ct){
                 this.setOptions({
                     minDate:dtFrom.val() ? dtFrom.val() : false
@@ -113,8 +115,13 @@ if (empty($lang_tag))
         });
 
         $('.btn-series-style input').change(function() {
-            var cbtn = $('.btn-series-style input').filter(':checked');
-            setSeriesStyle(cbtn.length ? cbtn.val() : 0);
+            var styles = [false, false, false];
+            $('.btn-series-style input').each(function(){
+                var v = $(this).val();
+                if (v == 0 || v == 1 || v == 2)
+                    styles[v] = $(this).prop('checked');
+            });
+            setSeriesStyle(styles);
         });
 
         $(".btn-graph-export").on("click", function(e) {
@@ -205,10 +212,11 @@ if (empty($lang_tag))
         });
     }
 
-    function setSeriesStyle(v){
+    function setSeriesStyle(styles){
         $.each(g.p.getData(), function(_, d) {
-            d.bubbles.show = (v == 1);
-            d.heatmap.show = (v == 2);
+            d.points.show  = (styles[0] === true) ? true : ((styles[0] === false) ? false : d.points.show);
+            d.bubbles.show = (styles[1] === true) ? true : ((styles[1] === false) ? false : d.bubbles.show);
+            d.heatmap.show = (styles[2] === true) ? true : ((styles[2] === false) ? false : d.heatmap.show);
         });
         g.refresh();
     }
@@ -330,7 +338,12 @@ if (empty($lang_tag))
 				</div>
 				<div class="btn-group btn-group-sm" data-toggle="buttons" role="group" aria-label="...">
 					<label class="btn btn-default btn-series-style active">
-						<input type="radio" checked autocomplete="off" id="series_style0" name="series_style" value="0">Simple
+						<input type="checkbox" autocomplete="off" id="series_style0" name="series_style_points" value="0" checked>Points
+					</label>
+				</div>
+				<div class="btn-group btn-group-sm" data-toggle="buttons" role="group" aria-label="...">
+					<label class="btn btn-default btn-series-style active">
+						<input type="radio" autocomplete="off" id="series_style_none" name="series_style" value="-1" checked>None
 					</label>
 					<label class="btn btn-default btn-series-style">
 						<input type="radio" autocomplete="off" id="series_style1" name="series_style" value="1">Bubbles

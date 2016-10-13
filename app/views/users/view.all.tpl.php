@@ -79,10 +79,10 @@
 						<?php echo htmlspecialchars($item->session_key, ENT_QUOTES, 'UTF-8'); ?>
 					</td>
 					<td class="text-left">
-						<?php if(!empty($item->DateStart)) echo System::dateformat('@'.$item->DateStart, System::DATETIME_FORMAT2, 'now'); ?>
+						<?php if(!empty($item->DateStart)) echo System::dateformat('@'.$item->DateStart, System::DATETIME_FORMAT1, 'now'); ?>
 					</td>
 					<td class="text-left">
-						<?php if(!empty($item->DateEnd)) echo System::dateformat('@'.$item->DateEnd, System::DATETIME_FORMAT2, 'now'); ?>
+						<?php if(!empty($item->DateEnd)) echo System::dateformat('@'.$item->DateEnd, System::DATETIME_FORMAT1, 'now'); ?>
 					</td>
 					<td>
 						<?php echo htmlspecialchars($item->comments, ENT_QUOTES, 'UTF-8'); ?>

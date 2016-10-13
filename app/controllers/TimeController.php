@@ -119,7 +119,7 @@ class TimeController extends Controller
 				}
 
 				// Check datetime
-				$dt = DateTime::createFromFormat('Y-m-d?H:i+', $datetime, $dtz);
+				$dt = DateTime::createFromFormat('Y.m.d?H:i+', $datetime, $dtz);
 				$err = DateTime::getLastErrors();
 				if ($dt === false || $err['error_count'] > 0)
 				{

@@ -42,7 +42,7 @@ class System
 	 * 
 	 * @throws Exception
 	 */
-	public static function dateformat($string, $format = 'd.m.Y H:i:s', $timezone = null)
+	public static function dateformat($string, $format = 'Y.m.d H:i:s', $timezone = null)
 	{
 		$dt = new DateTime($string);
 
@@ -279,7 +279,7 @@ class System
 	 * 
 	 * @throws Exception
 	 */
-	public static function datemsecformat($string, $format = 'd.m.Y H:i:s.u', $timezone = null)
+	public static function datemsecformat($string, $format = 'Y.m.d H:i:s.u', $timezone = null)
 	{
 		$nsec = static::getdatemsec($string);
 		$dt = new DateTime(static::cutdatemsec($string));

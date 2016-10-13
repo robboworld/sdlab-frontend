@@ -106,8 +106,9 @@ function TimeSeriesPlot(placeholder, data, options) {
                 //panRange: null   // or [ number, number ] (min, max) or false
             },
             points: {
-                show: true
-//                fill: true
+                show: true,
+                //fill: true,
+                //fillColor: false,
             },
             lines: {
                 show: true,
@@ -1108,6 +1109,7 @@ function ScatterPlot(placeholder, data, options) {
             points: {
                 show: true,
                 fill: true,
+                fillColor: false,
                 //symbol: "circle" // jquery.flot.symbol.js: circle,square,diamond,triangle,cross
             },
             lines: {

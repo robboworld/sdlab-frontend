@@ -29,7 +29,7 @@ if (empty($lang_tag))
             },
             series: {
                 bubbles: {
-                    active: false,
+                    active: true,
                     show: false,
                     fill: true,
                     lineWidth: 2,
@@ -38,14 +38,17 @@ if (empty($lang_tag))
                     //    show: true
                     //}
                     debug:{active:false},  // xxx: fix buggy options in standalone plugin
+                    //minBubbleSize: 1,
+                    //maxBubbleSize: 100,
+                    //multiColors: false,
                 },
                 heatmap:{
-                    active: false,
+                    active: true,
                     show: false,
                     //backImage: null,
                     //radiusIn: 10,
                     //radiusOut: 20,
-                    max: 90,
+                    max: 100,
                     //opacity: 180,
                     //gradient: { 0.45: "rgb(0,0,255)", 0.55: "rgb(0,255,255)", 0.65: "rgb(0,255,0)", 0.95: "yellow", 1.0: "rgb(255,0,0)"},
                     debug:{active:false},  // xxx: fix buggy options in standalone plugin

@@ -290,6 +290,33 @@ td.exp-header { position: relative; }
 	font-weight: normal;
 	margin: 0;
 }
+.plot-control-panel-top > .btn-toolbar > .btn-group {
+	margin-bottom: 5px;
+}
+.fa-plot-points-points {
+	background: url('../images/points-points16x16.png') no-repeat scroll 0 -1px transparent;
+	height: 15px;
+	width: 16px;
+	vertical-align: middle;
+}
+.fa-plot-points-none {
+	background: url('../images/points-none16x16.png') no-repeat scroll 0 -1px transparent;
+	height: 15px;
+	width: 16px;
+	vertical-align: middle;
+}
+.fa-plot-points-heatmap {
+	background: url('../images/points-heatmap16x16.png') no-repeat scroll 0 -1px transparent;
+	height: 15px;
+	width: 16px;
+	vertical-align: middle;
+}
+.fa-plot-points-bubbles {
+	background: url('../images/points-bubbles16x16.png') no-repeat scroll 0 -1px transparent;
+	height: 15px;
+	width: 16px;
+	vertical-align: middle;
+}
 
 /* Webcam streaming */
 .stream-wrapper {

@@ -28,7 +28,7 @@
 		}];
 
 	function dataReceived(data){
-		var g = new Graph(data);
+		var g = new BasePlot(data);
 		var options = {
 			xaxis: {
 				//zoomRange: [data[0].data[0][0], data[0].data[data.length-1][0]],

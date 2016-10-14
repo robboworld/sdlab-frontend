@@ -3,7 +3,7 @@
  * @param   data
  */
 /*
-function Graph(data) {
+function BasePlot(data) {
     this.data = data;
     this.getMinValue = function(){
         var min = null;
@@ -109,6 +109,9 @@ function TimeSeriesPlot(placeholder, data, options) {
                 show: true,
                 //fill: true,
                 //fillColor: false,
+
+                // Plugin: symbol
+                //symbol: "circle", // jquery.flot.symbol.js: circle,square,diamond,triangle,cross
             },
             lines: {
                 show: true,
@@ -1108,7 +1111,9 @@ function ScatterPlot(placeholder, data, options) {
                 show: true,
                 fill: true,
                 fillColor: false,
-                //symbol: "circle" // jquery.flot.symbol.js: circle,square,diamond,triangle,cross
+
+                // Plugin: symbol
+                //symbol: "circle", // jquery.flot.symbol.js: circle,square,diamond,triangle,cross
             },
             lines: {
                 show: false,

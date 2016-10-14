@@ -97,6 +97,7 @@ if (empty($lang_tag))
             //mask:'9999-19-39 29:59:59',
             lang:'<?php echo $lang_tag; ?>'
         });
+        $.datetimepicker.setLocale('<?php echo $lang_tag; ?>');  // because option lang not works
 
         // Refresh data with sensor filter
         $('#graph_refesh').click(function() {

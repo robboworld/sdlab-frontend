@@ -14,7 +14,8 @@ if (empty($lang_tag))
         experiment=<?php echo (int)$this->view->content->experiment->id; ?>,
         errcnt=<?php echo (int)count($this->view->content->error); ?>,
         ufrom=<?php echo (($this->view->content->from !== null) ? $this->view->content->from->format('U') : 'null'); ?>,
-        uto=<?php echo (($this->view->content->to !== null) ? $this->view->content->to->format('U') : 'null'); ?>;
+        uto=<?php echo (($this->view->content->to !== null) ? $this->view->content->to->format('U') : 'null'); ?>,
+        hlFormatDate = "Y.m.d";
 
     $(document).ready(function() {
         var now = new Date();
@@ -45,22 +46,22 @@ if (empty($lang_tag))
 
         dtFrom.datetimepicker({
             format:'<?php echo System::DATETIME_FORMAT1;?>',
+            formatDate: hlFormatDate,
             onShow:function(ct,input){
                 this.setOptions({
                     maxDate:dtTo.val() ? dtTo.val() : false
                 })
             },
-            //mask:'9999-19-39 29:59:59',
             lang:'<?php echo $lang_tag; ?>'  // obsolete
         });
         dtTo.datetimepicker({
             format:'<?php echo System::DATETIME_FORMAT1;?>',
+            formatDate: hlFormatDate,
             onShow:function(ct){
                 this.setOptions({
                     minDate:dtFrom.val() ? dtFrom.val() : false
                 })
             },
-            //mask:'9999-19-39 29:59:59',
             lang:'<?php echo $lang_tag; ?>'  // obsolete
         });
         $.datetimepicker.setLocale('<?php echo $lang_tag; ?>');  // because options 'lang' obsolete (not works)
@@ -202,8 +203,10 @@ if (empty($lang_tag))
                 setDefaultAxis();
             }
             g.refresh();
+            datetimepickerRefresh();
         } else {
             resetPlot();
+            datetimepickerRefresh();
             setInterfaceError($('#graph_msgs'), /*'API error: ' +*/ data.error, "danger", false, true, 3000);
         }
     }
@@ -219,6 +222,31 @@ if (empty($lang_tag))
     }
     function zoomPlot(args, dir) {
         return ((typeof dir !== "undefined" && dir === "out") ? g.zoomOut(args) : g.zoom(args));
+    }
+
+    function datetimepickerRefresh() {
+        var sformatDate = 'Y-m-d',  // part of server format date Y-m-dTH:i:s.uZ
+            highlightedPeriods = [];
+        $.each(g.p.getData(), function(_, d) {
+            // Highlight full available time range
+            if (typeof d.maxdatetime !== "undefined" && typeof d.mindatetime !== "undefined") {
+                // must by set formatDate and equal
+                var dfmt = new DateFormatter(),
+                    dfrom = dfmt.parseDate(d.mindatetime,sformatDate),
+                    dto = dfmt.parseDate(d.maxdatetime,sformatDate);
+                if (dfrom !== false && dto !== false) {
+                    var dfromout = dfmt.formatDate(dfrom, hlFormatDate),  // formatDate from datetimepicker options
+                        dtoout = dfmt.formatDate(dto, hlFormatDate);
+                    if (dfromout !== false && dtoout !== false) {
+                        highlightedPeriods.push("" + dfromout + ","+ dtoout + "," + SDLab.Language._('graph_AVAILABLE_RANGE') + ",xdsoft_highlighted_mint");
+                    }
+                }
+            }
+        });
+        //if (highlightedPeriods.length) {
+            $('#datetime_from').datetimepicker('setOptions',{"highlightedPeriods":highlightedPeriods});
+            $("#datetime_to").datetimepicker('setOptions',{"highlightedPeriods":highlightedPeriods});
+        //}
     }
 </script>
 <div class="row">

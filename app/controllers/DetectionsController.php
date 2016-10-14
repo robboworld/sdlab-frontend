@@ -898,6 +898,32 @@ class DetectionsController extends Controller
 			$data->data = array();
 		}
 
+		// Get minmax dates for found detections data
+		$sql = 'select min(dx.time), max(dx.time) '
+				. 'from detections as dx '
+				. 'left join detections as dy on dx.exp_id = dy.exp_id and dx.time = dy.time '
+				. 'where dx.exp_id = :exp_id '
+						. 'and dx.sensor_id = :sensor_id_x and dx.sensor_val_id = :sensor_val_id_x '
+						. 'and dy.sensor_id = :sensor_id_y and dy.sensor_val_id = :sensor_val_id_y '
+						. 'and (dx.error isnull or dx.error = \'\') '
+						. 'and (dy.error isnull or dy.error = \'\') ';
+		$query = $db->prepare($sql);
+
+		$inp_params = array(
+				':exp_id'          => $experiment->id,
+				':sensor_id_x'     => $sensor_x->sensor_id,
+				':sensor_val_id_x' => $sensor_x->sensor_val_id,
+				':sensor_id_y'     => $sensor_y->sensor_id,
+				':sensor_val_id_y' => $sensor_y->sensor_val_id
+		);
+		$res = $query->execute($inp_params);
+		$statrows = $query->fetchAll(PDO::FETCH_NUM);
+		if(!empty($statrows))
+		{
+			$data->mindatetime = $statrows[0][0];
+			$data->maxdatetime = $statrows[0][1];
+		}
+
 		$result[] = $data;
 
 		return array('result' => $result);

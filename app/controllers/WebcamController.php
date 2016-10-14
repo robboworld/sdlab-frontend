@@ -204,7 +204,7 @@ class WebcamController extends Controller
 				$result = false;
 			}
 			unset($socket);
-//error_log('Lab.ListVideos:'.var_export($result,true)); //DEBUG
+
 			// Get results
 			if($result !== false)
 			{
@@ -253,7 +253,6 @@ class WebcamController extends Controller
 							$data = false;
 						}
 
-//error_log('Lab.GetVideoStream:'.var_export($data,true)); //DEBUG
 						// Get results
 						if ($data)
 						{

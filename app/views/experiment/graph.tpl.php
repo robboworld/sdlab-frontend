@@ -171,7 +171,6 @@ $xrangeymode = 'auto';
     }
 
     function stopPlotUpdate(){
-console.log('call stopPlotUpdate');
         if (updaterPlot !== null) {
             clearInterval(updaterPlot);
             updaterPlot = null;
@@ -179,7 +178,6 @@ console.log('call stopPlotUpdate');
     }
 
     function runPlotUpdate(){
-console.log('call runPlotUpdate');
         stopPlotUpdate();
 
         updaterPlot = setTimeout(function() {
@@ -196,16 +194,13 @@ console.log('call runPlotUpdate');
     }
 
     function dataReceivedAll(data, status, jqxhr){
-console.log('call dataReceivedAll');
         if (jqxhr.seqnum != seqNum) {
             return;
         }
 
         if (typeof data.error === 'undefined') {
             g.setData(data.result);
-            var pcnt = g.getTotalPointsCount(data.result);
-console.log('new count: '+pcnt);
-            if (!pcnt) {
+            if (!g.getTotalPointsCount(data.result)) {
                 setDefaultAxis();
                 // magic for next refresh without data
                 g.rxmin = g.p.getAxes().xaxis.options.min;
@@ -225,14 +220,12 @@ console.log('new count: '+pcnt);
     }
 
     function dataReceived(data, status, jqxhr){
-console.log('call dataReceived');
         if (jqxhr.seqnum != seqNum) {
             return;
         }
 
         if (typeof data.error === 'undefined') {
             var acnt = g.appendData(data.result);
-console.log('added count: '+acnt);
             g.refresh();
 
             // Plot data polling

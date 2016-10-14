@@ -312,7 +312,7 @@ class Language extends i18n
 			{
 				// Normalize the key and translate the string.
 				$translated = constant($prefix . '::' . $str);
-	
+
 				if ($jsSafe)
 				{
 					// Javascript filter

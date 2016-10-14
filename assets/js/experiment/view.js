@@ -6,7 +6,6 @@ $(document).ready(function(){
             Name: '{sensor ' + i + '}'
         });
         //sensorList[i].testCreateWidget($('#widget-workspace'));
-        //console.log(sensorList);
     }
     */
 
@@ -244,7 +243,6 @@ function getMonitorStrob(sel, experiment_id, monitor_uuid){
         "experiment": experiment_id,
         "uuid": monitor_uuid
     }, function(data){
-        //console.log('Sensors.experimentStrob'+experiment_id+'-'+monitor_uuid);console.log(data);
         var m = $('#'+sel),
             btn = m.find('.monitor-strob');
         m.find('.monitor-control-waiting').hide();

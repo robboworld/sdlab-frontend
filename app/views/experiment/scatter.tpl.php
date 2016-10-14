@@ -25,39 +25,9 @@ if (empty($lang_tag))
             },
             yaxis: {
                 min: null,
-                max: null
+                max: null,
             },
-            series: {
-                bubbles: {
-                    active: true,
-                    show: false,
-                    fill: true,
-                    lineWidth: 2,
-                    //drawbubble: function(ctx, serie, x, y, v, r, c,overlay){},
-                    //bubblelabel:{
-                    //    show: true
-                    //}
-                    debug:{active:false},  // xxx: fix buggy options in standalone plugin
-                    //minBubbleSize: 1,
-                    //maxBubbleSize: 100,
-                    //multiColors: false,
-                },
-                heatmap:{
-                    active: true,
-                    show: false,
-                    //backImage: null,
-                    //radiusIn: 10,
-                    //radiusOut: 20,
-                    max: 100,
-                    //opacity: 180,
-                    //gradient: { 0.45: "rgb(0,0,255)", 0.55: "rgb(0,255,255)", 0.65: "rgb(0,255,0)", 0.95: "yellow", 1.0: "rgb(255,0,0)"},
-                    debug:{active:false},  // xxx: fix buggy options in standalone plugin
-                    //gradient: {"0.45": "rgb(0,0,255)", "0.55": "rgb(0,255,255)", "0.65": "rgb(0,255,0)", "0.95": "yellow", "1.0": "rgb(255,0,0)"},
-                    //gradient: {"0.01": "rgb(0,0,64)", "0.45": "rgb(0,0,255)", "0.55": "rgb(0,255,255)", "0.65": "rgb(0,255,0)", "0.95": "yellow", "1.0": "rgb(255,0,0)"},
-                    //gradient: { 0.25: "rgb(0,0,255)", 0.55: "rgb(0,255,0)", 0.85: "yellow", 1.0: "rgb(255,0,0)"}, // heatmap.js default
-                }
-            },
-            plottooltip: true
+            plottooltip: true,
         });
 
         var dtFrom = $("#datetime_from"),
@@ -66,14 +36,10 @@ if (empty($lang_tag))
 
         if (ufrom !== null) {
             dt = new Date(ufrom*1000);
-            //dtFrom.val(formatDate(dt, 'yyyy-MM-dd HH:mm:ssK'));
-            //dtFrom.val(dt.toISOString());
             dtFrom.val(formatDate(dt, 'yyyy-MM-dd HH:mm:ss'));
         }
         if (uto !== null) {
             dt = new Date(uto*1000);
-            //dtTo.val(formatDate(dt, 'yyyy-MM-dd HH:mm:ssK'))
-            //dtTo.val(dt.toISOString());
             dtTo.val(formatDate(dt, 'yyyy-MM-dd HH:mm:ss'))
         }
 
@@ -85,7 +51,7 @@ if (empty($lang_tag))
                 })
             },
             //mask:'9999-19-39 29:59:59',
-            lang:'<?php echo $lang_tag; ?>'
+            lang:'<?php echo $lang_tag; ?>'  // obsolete
         });
         dtTo.datetimepicker({
             format:'<?php echo System::DATETIME_FORMAT1;?>',
@@ -95,9 +61,9 @@ if (empty($lang_tag))
                 })
             },
             //mask:'9999-19-39 29:59:59',
-            lang:'<?php echo $lang_tag; ?>'
+            lang:'<?php echo $lang_tag; ?>'  // obsolete
         });
-        $.datetimepicker.setLocale('<?php echo $lang_tag; ?>');  // because option lang not works
+        $.datetimepicker.setLocale('<?php echo $lang_tag; ?>');  // because options 'lang' obsolete (not works)
 
         // Refresh data with sensor filter
         $('#graph_refesh').click(function() {

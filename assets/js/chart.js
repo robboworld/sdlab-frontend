@@ -65,7 +65,7 @@ function TimeSeriesPlot(placeholder, data, options) {
     this._defaults = {
             // Plot and plugins settings
             series: {
-                shadowSize: 0    // Drawing is faster without shadows
+                shadowSize: 0,    // Drawing is faster without shadows
             },
             xaxis: {
                 show: true,
@@ -80,30 +80,30 @@ function TimeSeriesPlot(placeholder, data, options) {
                 //timezone: null,  // "browser" for local to the client or timezone for timezone-js
                 timezone: 'browser',
                 //timeformat: null,  // format string to use
-                timeformat: "%Y-%m-%d %H:%M:%S"
+                timeformat: "%Y-%m-%d %H:%M:%S",
                 //twelveHourClock: false,  // 12 or 24 time in time mode
                 //monthNames: null,  // list of names of months
 
                 // Plugin: navigate
                 //zoomRange: [1, 10],
-                //zoomRange: null  // or [ number, number ] (min range, max range) or false
+                //zoomRange: null,  // or [ number, number ] (min range, max range) or false
                 //panRange: [-10, 10],
-                //panRange: null   // or [ number, number ] (min, max) or false
+                //panRange: null,   // or [ number, number ] (min, max) or false
             },
             yaxis: {
                 show: true
                 //min: 0,
                 //min: this.p.getYMinValue()-1,
                 //max: 100,
-                //max: this.p.getYMaxValue()+3
+                //max: this.p.getYMaxValue()+3,
                 //tickSize: 1,
 
                 // Plugin: navigate
                 //zoomRange: [1, 10],
                 //zoomRange: [data[0].data[0][0], data[0].data[data.length-1][0]],
-                //zoomRange: null  // or [ number, number ] (min range, max range) or false
+                //zoomRange: null,  // or [ number, number ] (min range, max range) or false
                 //panRange: [-10, 10],
-                //panRange: null   // or [ number, number ] (min, max) or false
+                //panRange: null,   // or [ number, number ] (min, max) or false
             },
             points: {
                 show: true,
@@ -112,27 +112,27 @@ function TimeSeriesPlot(placeholder, data, options) {
             },
             lines: {
                 show: true,
-                fill: true
+                fill: true,
             },
-//            bars: {
-//                show: true,
-//                barWidth: 1,
-//                align: "left"
-//            },
+            //bars: {
+            //    show: true,
+            //    barWidth: 1,
+            //    align: "left",
+            //},
             grid: {
                 hoverable: true,
-                clickable: true
+                clickable: true,
             },
 
             // Plugin: navigate
             zoom: {
-                interactive: true
+                interactive: true,
                 //interactive: false,
                 //trigger: "dblclick", // or "click" for single click
                 //amount: 1.5,         // 2 = 200% (zoom in), 0.5 = 50% (zoom out)
             },
             pan: {
-                interactive: true
+                interactive: true,
                 //interactive: false,
                 //cursor: "move",      // CSS mouse cursor value used when dragging, e.g. "pointer"
                 //frameRate: 20,
@@ -143,7 +143,7 @@ function TimeSeriesPlot(placeholder, data, options) {
             //    }],
             //    plotzoom: [function(event, plot) {
             //        self.scrollenabled = false;  // disable auto scroll when navigate
-            //    }]
+            //    }],
             //},
 
             // Custom settings
@@ -204,18 +204,17 @@ function TimeSeriesPlot(placeholder, data, options) {
 
         $(this.placeholder).bind("plothover", function (event, pos, item) {
             /*
-            if ($("#enablePosition:checked").length > 0) {
+            if (self.plottooltip_pos) {
                 var str = "(" + pos.x.toFixed(2) + ", " + pos.y.toFixed(2) + ")";
-                $("#hoverdata").text(str);
+                $(self.plottooltip_pos_selector).text(str);
             }
             */
-            //if ($("#enableTooltip:checked").length > 0)
+            //if (self.plottooltip_show)
             {
                 if (item) {
                     var x = item.datapoint[0],
-                        y = item.datapoint[1].toFixed(2);
-
-                    var xdt = (new Date(x)).toISOString();
+                        y = item.datapoint[1].toFixed(2),
+                        xdt = (new Date(x)).toISOString();
 
                     $("#"+tooltipid).html(item.series.label + ": " + xdt + ", " + y)
                         .css({top: item.pageY+5, left: item.pageX+5})
@@ -228,7 +227,6 @@ function TimeSeriesPlot(placeholder, data, options) {
     }
 
     this.setData = function(data){
-console.log('call TimeSeriesPlot.setData');
         if (typeof this.p === 'undefined') {
             return;
         }
@@ -250,14 +248,12 @@ console.log('call TimeSeriesPlot.setData');
         this.rymax = po.rpymax !== null ? po.rpymax[1] : null;
         this.rxmin = po.rxmin;
         this.rxmax = po.rxmax;
-console.log('updated minmax:');console.log(po.pymin,po.pymax,po.pxmin,po.pxmax,po.rxmin,po.rxmax,po.rpymin,po.rpymax);
 
         // TODO: filter out unknown series before set data?
         this.p.setData(this.data);
     };
 
     this.appendData = function(data){
-console.log('call TimeSeriesPlot.appendData');
         if (typeof this.p === 'undefined') {
             return 0;
         }
@@ -295,7 +291,7 @@ console.log('call TimeSeriesPlot.appendData');
                     for (var j = 0; j < data[i].data.length; j++) {
                         pd = data[i].data[j];
                         pass = false;
-                        if (pd === null) {  // check null point 
+                        if (pd === null) {  // check null point
                             pass = true;
                         } else {
                             if (pd[0] === null) {  // check x null
@@ -337,7 +333,7 @@ console.log('call TimeSeriesPlot.appendData');
 
             // use full update
             var po = this.getMinMaxPoints(this.data, this.xrange);
-console.log('new minmax:');console.log(po.pxmin,po.pxmax,po.pymin,po.pymax,po.rxmin,po.rxmax,po.rpymin,po.rpymax);
+
             this.ymin  = po.pymin !== null ? po.pymin[1] : null;
             this.ymax  = po.pymax !== null ? po.pymax[1] : null;
             this.xmin  = po.pxmin !== null ? po.pxmin[0] : null;
@@ -388,18 +384,15 @@ console.log('new minmax:');console.log(po.pxmin,po.pxmax,po.pymin,po.pymax,po.rx
     };
 
     this.refresh = function(userange){
-console.log('call TimeSeriesPlot.refresh');
         if (typeof this.p === 'undefined') {
             return;
         }
         userange = ((typeof userange === 'undefined') ? false : (userange ? true : false));
 
         var self = this;
-console.log('curxrange:');console.log(self.xrange);console.log(self.xrangeymode);console.log(self.scrollenabled);
         $.each(this.p.getAxes(), function(_, axis) {
             var opts = axis.options;
             if (axis.direction === 'y') {
-console.log('yaxis:');console.log(self.ymin);console.log(self.ymax);console.log(self.rymin);console.log(self.rymax);
                 if (userange || self.scrollenabled){
                     //if (self.xrange) {
                         if (self.xrangeymode === "auto") {
@@ -418,34 +411,13 @@ console.log('yaxis:');console.log(self.ymin);console.log(self.ymax);console.log(
                 //opts.panRange = [-10, 10];
             }
             if (axis.direction === 'x') {
-console.log('xaxis:');console.log(self.xmin);console.log(self.xmax);console.log(self.rxmin);console.log(self.rxmax);
                 if (userange || self.scrollenabled){
                     opts.min = self.rxmin;
                     opts.max = self.rxmax;
                 }
-
-                /*
-                if (self.xrange !== null) {
-                    if (self.xmax !== null) {
-                        
-                    } else {
-                        opts.max = Number((new Date()).getTime());
-                    }
-                    opts.min = opts.max - (self.xrange * 1000);
-                } else {
-                    if (self.xmax !== null) {
-                        opts.max = null;
-                        opts.min = null;
-                    } else {
-                        opts.max = Number((new Date()).getTime());
-                        opts.min = null;
-                    }
-                }
-                */
                 //opts.zoomRange = [data[0].data[0][0], data[0].data[data.length-1][0]];
                 //opts.panRange = [-10, 10];
             }
-console.log('newopts:');console.log(opts);
         });
 
         this.p.setupGrid();
@@ -460,7 +432,6 @@ console.log('newopts:');console.log(opts);
 
         // TODO: need refactor, use disabling axis zoom (opts.zoomRange) and call parent plot.zoom()
 
-console.log('call TimeSeriesPlot.zoom');
         if (typeof this.p === 'undefined') {
             return;
         }
@@ -710,6 +681,7 @@ console.log('call TimeSeriesPlot.zoom');
         if (h < defh)
             h = defh;
 
+        // TODO: refactor to use inc/dec by width +Xw (+w, -2w, +0.5w) and by pixels +X (+2, -5)
         switch (args.left) {
         case "+":
             dx = +w;
@@ -838,7 +810,7 @@ console.log('call TimeSeriesPlot.zoom');
                             min = v;
                         }
                         break;
-                    } 
+                    }
                 }
                 i++;
             }
@@ -911,7 +883,6 @@ console.log('call TimeSeriesPlot.zoom');
         return result;
     };
     this.getMinMaxPoints = function(data, xlastrange){
-console.log('call TimeSeriesPlot.getMinMaxPoints');
         var d = (typeof data === "undefined" || data === null) ? this.data : data,
             result = {
                 pxmin: null,
@@ -922,7 +893,7 @@ console.log('call TimeSeriesPlot.getMinMaxPoints');
                 rxmax: null,
                 rpymin: null,
                 rpymax: null,
-            }; 
+            };
 
         xlastrange = (typeof xlastrange === "undefined") ? null : xlastrange;
         if (xlastrange !== null) {
@@ -950,7 +921,6 @@ console.log('call TimeSeriesPlot.getMinMaxPoints');
                 }
                 i++;
             }
-console.log('xmin: series:', si, ' pxmin: ', result.pxmin);
             // xmax
             // get not null x point
             i = series.data.length-1;
@@ -966,14 +936,12 @@ console.log('xmin: series:', si, ' pxmin: ', result.pxmin);
                 }
                 i--;
             }
-console.log('xmax: series:', si, ' pxmax: ', result.pxmax);
         });
 
         if (xlastrange && result.pxmax !== null) {
             result.rxmax = result.pxmax[0];
             result.rxmin = result.rxmax - xlastrange * 1000;
         }
-console.log('rxmin: ', result.rxmin, ' rxmax: ', result.rxmax);
         // get other
         $.each(d, function(si, series) {
             // ymin-ymax, rpymin-rpymax
@@ -1025,7 +993,6 @@ console.log('rxmin: ', result.rxmin, ' rxmax: ', result.rxmax);
         if (xlastrange === null) {
             result.rpymax = result.pymax;
         }
-console.log('result:',result);
         return result;
     };
 
@@ -1076,7 +1043,38 @@ function ScatterPlot(placeholder, data, options) {
     this._defaults = {
             // Plot and plugins settings
             series: {
-                shadowSize: 0    // Drawing is faster without shadows
+                shadowSize: 0,    // Drawing is faster without shadows
+
+                // Plugin: bubbles
+                bubbles: {
+                    active: true,
+                    show: false,
+                    fill: true,
+                    lineWidth: 2,
+                    //drawbubble: function(ctx, serie, x, y, v, r, c,overlay){},
+                    //bubblelabel:{
+                    //    show: true
+                    //}
+                    debug:{active:false},  // xxx: fix buggy options in standalone plugin
+                    //minBubbleSize: 1,
+                    //maxBubbleSize: 100,
+                    //multiColors: false,
+                },
+                // Plugin: heatmap
+                heatmap:{
+                    active: true,
+                    show: false,
+                    //backImage: null,
+                    //radiusIn: 10,
+                    //radiusOut: 20,
+                    max: 100,
+                    //opacity: 180,
+                    //gradient: { 0.45: "rgb(0,0,255)", 0.55: "rgb(0,255,255)", 0.65: "rgb(0,255,0)", 0.95: "yellow", 1.0: "rgb(255,0,0)"},
+                    debug:{active:false},  // xxx: fix buggy options in standalone plugin
+                    //gradient: {"0.45": "rgb(0,0,255)", "0.55": "rgb(0,255,255)", "0.65": "rgb(0,255,0)", "0.95": "yellow", "1.0": "rgb(255,0,0)"},
+                    //gradient: {"0.01": "rgb(0,0,64)", "0.45": "rgb(0,0,255)", "0.55": "rgb(0,255,255)", "0.65": "rgb(0,255,0)", "0.95": "yellow", "1.0": "rgb(255,0,0)"},
+                    //gradient: { 0.25: "rgb(0,0,255)", 0.55: "rgb(0,255,0)", 0.85: "yellow", 1.0: "rgb(255,0,0)"}, // heatmap.js default
+                },
             },
             xaxis: {
                 show: true,
@@ -1087,24 +1085,24 @@ function ScatterPlot(placeholder, data, options) {
 
                 // Plugin: navigate
                 //zoomRange: [1, 10],
-                //zoomRange: null  // or [ number, number ] (min range, max range) or false
+                //zoomRange: null,  // or [ number, number ] (min range, max range) or false
                 //panRange: [-10, 10],
-                //panRange: null   // or [ number, number ] (min, max) or false
+                //panRange: null,   // or [ number, number ] (min, max) or false
             },
             yaxis: {
-                show: true
+                show: true,
                 //min: 0,
                 //min: this.p.getYMinValue()-1,
                 //max: 100,
-                //max: this.p.getYMaxValue()+3
+                //max: this.p.getYMaxValue()+3,
                 //tickSize: 1,
 
                 // Plugin: navigate
                 //zoomRange: [1, 10],
                 //zoomRange: [data[0].data[0][0], data[0].data[data.length-1][0]],
-                //zoomRange: null  // or [ number, number ] (min range, max range) or false
+                //zoomRange: null,  // or [ number, number ] (min range, max range) or false
                 //panRange: [-10, 10],
-                //panRange: null   // or [ number, number ] (min, max) or false
+                //panRange: null,   // or [ number, number ] (min, max) or false
             },
             points: {
                 show: true,
@@ -1114,27 +1112,27 @@ function ScatterPlot(placeholder, data, options) {
             },
             lines: {
                 show: false,
-                fill: false
+                fill: false,
             },
-//            bars: {
-//                show: true,
-//                barWidth: 1,
-//                align: "left"
-//            },
+            //bars: {
+            //    show: true,
+            //    barWidth: 1,
+            //    align: "left",
+            //},
             grid: {
                 hoverable: true,
-                clickable: true
+                clickable: true,
             },
 
             // Plugin: navigate
             zoom: {
-                interactive: true
+                interactive: true,
                 //interactive: false,
                 //trigger: "dblclick", // or "click" for single click
                 //amount: 1.5,         // 2 = 200% (zoom in), 0.5 = 50% (zoom out)
             },
             pan: {
-                interactive: true
+                interactive: true,
                 //interactive: false,
                 //cursor: "move",      // CSS mouse cursor value used when dragging, e.g. "pointer"
                 //frameRate: 20,
@@ -1147,7 +1145,7 @@ function ScatterPlot(placeholder, data, options) {
             //},
 
             // Custom settings
-            plottooltip   : true,
+            plottooltip: true,
     };
 
     // Merge settings
@@ -1195,12 +1193,12 @@ function ScatterPlot(placeholder, data, options) {
 
         $(this.placeholder).bind("plothover", function (event, pos, item) {
             /*
-            if ($("#enablePosition:checked").length > 0) {
+            if (self.plottooltip_pos) {
                 var str = "(" + pos.x.toFixed(2) + ", " + pos.y.toFixed(2) + ")";
-                $("#hoverdata").text(str);
+                $(self.plottooltip_pos_selector).text(str);
             }
             */
-            //if ($("#enableTooltip:checked").length > 0)
+            //if (self.plottooltip_show)
             {
                 if (item) {
                     var x = item.datapoint[0],
@@ -1220,7 +1218,6 @@ function ScatterPlot(placeholder, data, options) {
     }
 
     this.setData = function(data){
-console.log('call ScatterPlot.setData');
         if (typeof this.p === 'undefined') {
             return;
         }
@@ -1235,8 +1232,6 @@ console.log('call ScatterPlot.setData');
         this.xmin  = po.pxmin !== null ? po.pxmin[0] : null;
         this.xmax  = po.pxmax !== null ? po.pxmax[0] : null;
 
-console.log('updated minmax:');console.log(po.pymin,po.pymax,po.pxmin,po.pxmax);
-
         // TODO: filter out unknown series before set data?
         this.p.setData(this.data);
     };
@@ -1250,7 +1245,7 @@ console.log('updated minmax:');console.log(po.pymin,po.pymax,po.pxmin,po.pxmax);
             return -1;
         }
         for (var i = 0; i < this.data.length; i++) {
-            if (this.data[i].sensor_id_x == sensor_id_x && this.data[i].sensor_val_id_x == sensor_val_id_x 
+            if (this.data[i].sensor_id_x == sensor_id_x && this.data[i].sensor_val_id_x == sensor_val_id_x
                 && this.data[i].sensor_id_y == sensor_id_y && this.data[i].sensor_val_id_y == sensor_val_id_y) {
                 return i;
             }
@@ -1259,7 +1254,6 @@ console.log('updated minmax:');console.log(po.pymin,po.pymax,po.pxmin,po.pxmax);
     };
 
     this.refresh = function(){
-console.log('call ScatterPlot.refresh');
         if (typeof this.p === 'undefined') {
             return;
         }
@@ -1276,7 +1270,6 @@ console.log('call ScatterPlot.refresh');
 
         // TODO: need refactor, use disabling axis zoom (opts.zoomRange) and call parent plot.zoom()
 
-console.log('call ScatterPlot.zoom');
         if (typeof this.p === 'undefined') {
             return;
         }
@@ -1526,6 +1519,7 @@ console.log('call ScatterPlot.zoom');
         if (h < defh)
             h = defh;
 
+        // TODO: refactor to use inc/dec by width +Xw (+w, -2w, +0.5w) and by pixels +X (+2, -5)
         switch (args.left) {
         case "+":
             dx = +w;
@@ -1703,7 +1697,6 @@ console.log('call ScatterPlot.zoom');
         return result;
     };
     this.getMinMaxPoints = function(data){
-console.log('call ScatterPlot.getMinMaxPoints');
         var d = (typeof data === "undefined" || data === null) ? this.data : data,
             result = {
                 pxmin: null,
@@ -1743,7 +1736,6 @@ console.log('call ScatterPlot.getMinMaxPoints');
             });
         });
 
-console.log('result:',result);
         return result;
     };
 

@@ -28,8 +28,6 @@
 		}];
 
 	function dataReceived(data){
-		console.log(data);
-
 		var g = new Graph(data);
 		var options = {
 			xaxis: {

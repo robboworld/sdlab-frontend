@@ -244,7 +244,12 @@ if (empty($lang_tag))
             }
         });
         //if (highlightedPeriods.length) {
+            // reset highlight and set new
+            $('#datetime_from').datetimepicker('data').options.highlightedDates = [];
+            $('#datetime_from').datetimepicker('data').options.highlightedPeriods = [];
             $('#datetime_from').datetimepicker('setOptions',{"highlightedPeriods":highlightedPeriods});
+            $('#datetime_to').datetimepicker('data').options.highlightedDates = [];
+            $('#datetime_to').datetimepicker('data').options.highlightedPeriods = [];
             $("#datetime_to").datetimepicker('setOptions',{"highlightedPeriods":highlightedPeriods});
         //}
     }
@@ -300,7 +305,7 @@ if (empty($lang_tag))
 		</div>
 		<div class="form-group">
 			<div class="col-md-1 col-sm-12 control-label">
-				<label><?php echo L::graph_PERIOD . ':'; ?></label>
+				<label><?php echo L::graph_RANGE . ':'; ?></label>
 			</div>
 			<div class="col-md-4 col-xs-12" style="padding-bottom: 5px;">
 				<div class="input-group">

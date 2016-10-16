@@ -1646,15 +1646,7 @@ class ExperimentController extends Controller
 				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
 			}
 
-			$destination = System::getVarBackurl();
-			if($destination !== null && $destination != $_GET['q'])
-			{
-				System::go(System::cleanVar($destination, 'path'));
-			}
-			else
-			{
-				System::go('experiment/journal/'.$this->id);
-			}
+			System::goback('experiment/journal/'.$this->id, 'auto', 'destination', true);
 		}
 		else
 		{

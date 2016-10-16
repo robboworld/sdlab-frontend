@@ -65,57 +65,125 @@ class System
 	/**
 	 * Redirect and exit
 	 * 
-	 * @param string $query_string  url
+	 * @param string $query_path    path value for q query param
+	 * @param string $query_string  other query params as query string in format "a=1&b=2", used with query_path
+	 * @param string $fragment      fragment part of url, used with query_path
 	 */
-	public static function go($query_string = null)
+	public static function go($query_path = null, $query_string = null, $fragment = null)
 	{
-		if($query_string == null)
+		if($query_path == null)
 		{
 			header('Location: /');
 		}
 		else
 		{
-			header('Location: ?q='.$query_string);
+			header('Location: ?q=' . $query_path
+					. (($query_string !== null && $query_string !== '') ? ('&' . $query_string) : '')
+					. (($fragment     !== null && $fragment     !== '') ? ('#' . $fragment)     : '')
+			);
 		}
 
 		exit();
 	}
 
 	/**
-	 * Go to the destination url by request var.
-	 * Goes to default query if no destication valiable found.
+	 * Go to the destination url by request query var.
+	 * Goes to default query if no destination valiable found.
 	 * 
-	 * @param string $default_query  Default redirect query
-	 * @param string $method         Method (POST|GET)
+	 * @param mixed  $default_query  Default redirect query path string or array with: q (path), query_string, fragment
+	 * @param string $method         Method (POST|GET|auto)
 	 * @param string $query_var      Request var name
 	 */
-	public static function goback($default_query = null, $method = "get", $query_var = "destination")
+	public static function goback($default_query = null, $method = 'get', $query_var = 'destination', $noBackToCurrentPath = false)
 	{
 		$method = strtolower($method);
+		$value = null;
+		$default_array = array(
+				'q'            => null,
+				'query_string' => null,
+				'fragment'     => null
+		);
+
+		if (!is_array($default_query))
+		{
+			$q = (($default_query !== null) ? (string)$q : null);
+			$default_query = $default_array;
+			$default_query['q'] = $q;
+		}
+
 		switch ($method)
 		{
-			case 'post':
-				if(isset($_POST['destination']))
-				{
-					System::go(System::cleanVar($_POST['destination'], 'path'));
-				}
-				else
-				{
-					System::go($default_query);
-				}
+			case 'auto':  // from REQUEST than from GET
+				$value = self::getVarBackurl($query_var);
 				break;
-
+			case 'post':
+				$value = self::getVar($query_var, null, 'post');
+				break;
 			case 'get':
 			default:
-				if(isset($_GET['destination']))
+				$value = self::getVar($query_var, null, 'get');
+				break;
+		}
+
+		if ($value !== null && strlen($value) != 0)
+		{
+			// Parse components of destination url with params parse
+			$url_components = parse_url($value);
+			$url_components['queryparams'] = array();
+			if (isset($url_components['query']))
+			{
+				parse_str($url_components['query'], $url_components['queryparams']);
+			}
+
+			// Get special query params and fragment
+			$q        = null;
+			$fragment = null;
+			if (isset($url_components['fragment']))
+			{
+				$fragment = self::cleanVar($url_components['fragment'], 'cmd');
+			}
+			if (isset($url_components['queryparams']["q"]))
+			{
+				$q = self::cleanVar($url_components['queryparams']['q'], 'path');
+			}
+
+			if ($q !== null)
+			{
+				if ($noBackToCurrentPath && (isset($_GET['q']) && ($q == $_GET['q'])))
 				{
-					System::go(System::cleanVar($_GET['destination'], 'path'));
+					self::go(
+							$default_query['q'],
+							$default_query['query_string'],
+							$default_query['fragment']
+					);
 				}
 				else
 				{
-					System::go($default_query);
+					unset($url_components['queryparams']['q']);  // remove path from query params
+
+					self::go(
+							$q,
+							http_build_query($url_components['queryparams']),
+							$fragment
+					);
 				}
-				break;
+			}
+			else
+			{
+				self::go(
+						$default_query['q'],
+						$default_query['query_string'],
+						$default_query['fragment']
+				);
+			}
+		}
+		else
+		{
+			self::go(
+					$default_query['q'],
+					$default_query['query_string'],
+					$default_query['fragment']
+			);
 		}
 	}
 
@@ -687,7 +755,7 @@ class System
 	 *
 	 * @param   string   $name     Variable name
 	 * 
-	 * @return  mixed  Requested variable value.
+	 * @return  mixed  Requested variable value, null if empty
 	 */
 	public static function getVarBackurl($name = 'destination')
 	{

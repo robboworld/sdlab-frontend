@@ -17,15 +17,7 @@ class SessionController extends Controller
 				$this->session($session);
 				$this->session()->setSession();
 
-				$destination = System::getVarBackurl();
-				if($destination !== null && $destination != $_GET['q'])
-				{
-					System::go(System::cleanVar($destination, 'path'));
-				}
-				else
-				{
-					System::go();
-				}
+				System::goback(null, 'auto', 'destination', true);
 			}
 		}
 
@@ -41,15 +33,7 @@ class SessionController extends Controller
 					$this->session()->save();
 					$this->session()->setSession();
 
-					$destination = System::getVarBackurl();
-					if($destination !== null && $destination != $_GET['q'])
-					{
-						System::go(System::cleanVar($destination, 'path'));
-					}
-					else
-					{
-						System::go();
-					}
+					System::goback(null, 'auto', 'destination', true);
 				}
 			}
 		}

@@ -59,8 +59,11 @@
 
 			<?php else : ?>
 
-				<div class="col-md-5 col-sm-6 col-xs-6 pull-right">
-					<form id="nav-buttons" class="navbar-form" action="?q=session/create<?php if(isset($_GET['q'])) : ?>&destination=<?php echo urlencode($_GET['q']); endif; ?>" method="post">
+				<div class="col-md-5 col-sm-6 col-xs-6 pull-right"><?php 
+					//TODO: pass current anchor-fragment to destination url with javascript (window.location.hash)
+				?>
+
+					<form id="nav-buttons" class="navbar-form" action="?q=session/create<?php if(isset($_GET['q'])) : ?>&destination=<?php echo urlencode('?' . $_SERVER['QUERY_STRING']); endif; ?>" method="post">
 						<div class="input-group input-group-sm">
 							<input type="password" name="session_key" placeholder="<?php echo L::session_KEY_EXAMPLE; ?>" title="<?php echo L::session_KEY_EXAMPLE2; ?>" class="form-control">
 							<span class="input-group-btn">

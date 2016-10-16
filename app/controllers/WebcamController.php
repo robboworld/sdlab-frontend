@@ -414,14 +414,7 @@ class WebcamController extends Controller
 			//else
 			//{
 			//	// Redirect back
-			//	if(isset($_GET['destination']) && $_GET['destination'] != $_GET['q'])
-			//	{
-			//		System::go(System::cleanVar($_GET['destination'], 'path'));
-			//	}
-			//	else
-			//	{
-			//		System::go('webcam/view');
-			//	}
+			//	System::goback('webcam/view', "auto", "destination", true);
 			//}
 		}
 		else

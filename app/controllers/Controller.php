@@ -50,7 +50,7 @@ class Controller
 			$script_list = '';
 			foreach($this->js as $script)
 			{
-				$script_list .= '<script type="text/javascript" src="assets/js/'.$script.'.js"></script>';
+				$script_list .= "\n\t" . '<script type="text/javascript" src="assets/js/'.$script.'.js"></script>';
 			}
 			return $script_list;
 		}
@@ -63,7 +63,7 @@ class Controller
 			$css_list = '';
 			foreach($this->css as $css_file)
 			{
-				$css_list .= '<link rel="stylesheet" href="assets/css/'.$css_file.'.css">';
+				$css_list .= "\n\t" . '<link rel="stylesheet" href="assets/css/'.$css_file.'.css">';
 			}
 			return $css_list;
 		}

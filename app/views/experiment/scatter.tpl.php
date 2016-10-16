@@ -158,7 +158,7 @@ if (empty($lang_tag))
             delete urlp.experiment;
             var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?q=experiment/scatter/' + experiment + '&' + $.param(urlp);
             window.history.pushState({path:newurl},window.document.title,newurl);
-            //window.history.replaceState(“object or string”, window.document.title, newurl);
+            //window.history.replaceState("object or string", window.document.title, newurl);
             //window.history.replaceState({path:newurl}, window.document.title, newurl);
         }
 

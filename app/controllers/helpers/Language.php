@@ -251,7 +251,7 @@ class Language extends i18n
 				$link = '?q=page/view';
 				$html .= '<li ' . (($active === $lang) ? 'class="active"' : '') . '><a href="' . $link . '&lang=' . strtolower($lang) . '" class="btn btn-link btn-xs">'
 							. '<img width="18" class="" src="' . $imgpath . '/' . $lang . '.gif">'
-							. '<span class="hidden-xs">' . strtoupper($lang) . '</span>'
+							. '<span class="hidden-sm hidden-xs">' . strtoupper($lang) . '</span>'
 						. '</a></li>';
 			}
 			$html .= '</ul>';

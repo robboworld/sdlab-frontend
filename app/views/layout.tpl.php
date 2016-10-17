@@ -51,8 +51,8 @@
 						<a href="?q=session/edit" id="session-name" class="btn btn-sm btn-info navbar-btn" title="<?php echo L::session_EDIT; ?>">
 							<?php echo htmlspecialchars($session->name, ENT_QUOTES, 'UTF-8'); ?>
 						</a>
-						<a href="?q=session/destroy" class="btn btn-sm btn-default navbar-btn"><span class="glyphicon glyphicon-log-out">&nbsp;</span><span class="hidden-xs"><?php echo L::LOGOFF; ?></span></a>
-						<a href="?q=session/create" class="btn btn-sm btn-default navbar-btn"><span class="glyphicon glyphicon-plus">&nbsp;</span><span class="hidden-xs"><?php echo L::session_NEW_SESSION; ?></span></a>
+						<a href="?q=session/destroy" class="btn btn-sm btn-default navbar-btn" title="<?php echo L::LOGOFF; ?>"><span class="glyphicon glyphicon-log-out"></span>&nbsp;<span class="hidden-sm hidden-xs"><?php echo L::LOGOFF; ?></span></a>
+						<a href="?q=session/create" class="btn btn-sm btn-default navbar-btn" title="<?php echo L::session_NEW_SESSION; ?>"><span class="glyphicon glyphicon-plus"></span>&nbsp;<span class="hidden-sm hidden-xs"><?php echo L::session_NEW_SESSION; ?></span></a>
 					</div>
 
 				</div>

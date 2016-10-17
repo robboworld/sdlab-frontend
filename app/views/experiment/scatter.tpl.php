@@ -204,9 +204,11 @@ if (empty($lang_tag))
             }
             g.refresh();
             datetimepickerRefresh();
+            countersRefresh();
         } else {
             resetPlot();
             datetimepickerRefresh();
+            countersRefresh();
             setInterfaceError($('#graph_msgs'), /*'API error: ' +*/ data.error, "danger", false, true, 3000);
         }
     }
@@ -215,6 +217,7 @@ if (empty($lang_tag))
         g.setData([]);
         setDefaultAxis();
         g.refresh();
+        countersRefresh();
     }
     function resetZoom() {
         setDefaultAxis();
@@ -225,7 +228,8 @@ if (empty($lang_tag))
     }
 
     function datetimepickerRefresh() {
-        var sformatDate = 'Y-m-d',  // part of server format date Y-m-dTH:i:s.uZ
+        var sformatDate = "Y-m-d",  // part of server format date Y-m-dTH:i:s.uZ
+            sformatDateFull = "Y-m-d H:i:s",
             highlightedPeriods = [];
         $.each(g.p.getData(), function(_, d) {
             // Highlight full available time range
@@ -235,10 +239,24 @@ if (empty($lang_tag))
                     dfrom = dfmt.parseDate(d.mindatetime,sformatDate),
                     dto = dfmt.parseDate(d.maxdatetime,sformatDate);
                 if (dfrom !== false && dto !== false) {
-                    var dfromout = dfmt.formatDate(dfrom, hlFormatDate),  // formatDate from datetimepicker options
-                        dtoout = dfmt.formatDate(dto, hlFormatDate);
+                    var dfromout, dtoout;
+                    dfrom = new Date(dfrom.getTime()-dfrom.getTimezoneOffset()*60*1000);//to local time
+                    dto = new Date(dto.getTime()-dto.getTimezoneOffset()*60*1000);//to local time
+                    dfromout = dfmt.formatDate(dfrom, hlFormatDate),  // formatDate from datetimepicker options
+                    dtoout = dfmt.formatDate(dto, hlFormatDate);
                     if (dfromout !== false && dtoout !== false) {
-                        highlightedPeriods.push("" + dfromout + ","+ dtoout + "," + SDLab.Language._('graph_AVAILABLE_RANGE') + ",xdsoft_highlighted_mint");
+                        var tipd1 = dfmt.parseDate(d.mindatetime,sformatDateFull),
+                            tipd2 = dfmt.parseDate(d.maxdatetime,sformatDateFull);
+                        tipd1 = new Date(tipd1.getTime()-tipd1.getTimezoneOffset()*60*1000);//to local time
+                        tipd2 = new Date(tipd2.getTime()-tipd2.getTimezoneOffset()*60*1000);//to local time
+                        highlightedPeriods.push(""
+                                + dfromout+ ","
+                                + dtoout + ","
+                                + SDLab.Language._('graph_AVAILABLE_RANGE')
+                                    + "\n" + SDLab.Language._('FROM_') + " " + dfmt.formatDate(tipd1, "<?php echo System::DATETIME_FORMAT1;?>")
+                                    + "\n" + SDLab.Language._('TO_') + " " + dfmt.formatDate(tipd2, "<?php echo System::DATETIME_FORMAT1;?>")
+                                + ",xdsoft_highlighted_mint"
+                        );
                     }
                 }
             }
@@ -252,6 +270,9 @@ if (empty($lang_tag))
             $('#datetime_to').datetimepicker('data').options.highlightedPeriods = [];
             $("#datetime_to").datetimepicker('setOptions',{"highlightedPeriods":highlightedPeriods});
         //}
+    }
+    function countersRefresh() {
+        $('.badge-points-count').text(g.getTotalPointsCount());
     }
 </script>
 <div class="row">
@@ -304,19 +325,25 @@ if (empty($lang_tag))
 			</div>
 		</div>
 		<div class="form-group">
-			<div class="col-md-1 col-sm-12 control-label">
+			<div class="col-md-1 col-sm-1 col-xs-12 control-label">
 				<label><?php echo L::graph_RANGE . ':'; ?></label>
 			</div>
-			<div class="col-md-4 col-xs-12" style="padding-bottom: 5px;">
+			<div class="col-md-4 col-sm-12 col-xs-12" style="padding-bottom: 5px;">
 				<div class="input-group">
 					<span class="input-group-addon" id="datetime_from_addon"><?php echo L::FROM_; ?></span>
 					<input type="text" class="form-control" id="datetime_from" name="from" aria-describedby="datetime_from_addon" value=""/>
+					<span class="input-group-btn">
+						<button type="button" class="btn btn-default" onclick="$('#datetime_from').val('');"><span class="fa fa-close"></span></button>
+					</span>
 				</div>
 			</div>
-			<div class="col-md-4 col-xs-12" style="padding-bottom: 5px;">
+			<div class="col-md-4 col-sm-12 col-xs-12" style="padding-bottom: 5px;">
 				<div class="input-group">
 					<span class="input-group-addon" id="datetime_to_addon"><?php echo L::TO_; ?></span>
 					<input type="text" class="form-control" id="datetime_to" name="to" aria-describedby="datetime_to_addon" value=""/>
+					<span class="input-group-btn">
+						<button type="button" class="btn btn-default" onclick="$('#datetime_to').val('');"><span class="fa fa-close"></span></button>
+					</span>
 				</div>
 			</div>
 		</div>
@@ -401,6 +428,11 @@ if (empty($lang_tag))
 				<div class="btn-group btn-group-sm control-zoom-x" role="group" aria-label="...">
 					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'x'},  'in');"><span class="fa fa-plus"></span></button>
 					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'x'}, 'out');"><span class="fa fa-minus"></span></button>
+				</div>
+				<div class="btn-group btn-group-sm" role="group" aria-label="..." style="margin-left: 20px;">
+					<div class="toolbar-text special-label">
+						<span><?php echo L::graph_POINTS_COUNT . ':&nbsp;'; ?></span><span class="badge badge-points-count">0</span>
+					</div>
 				</div>
 			</div>
 		</div>

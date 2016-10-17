@@ -443,10 +443,10 @@ function updateExperimentStatus(exp_id, uuid, onalways){
             if (uuid === ''){  // only in all status mode
                 el = $('.exp-table .exp-title .experiment-icon-record');
                 if(acnt>0){
-                    el.addClass('blink text-danger');
+                    el.addClass('blink text-danger2');
                 }else{
                     SDExperiment.stopTimer('MonId');  // Stop polling
-                    el.removeClass('blink text-danger');
+                    el.removeClass('blink text-danger2');
                 }
 
                 // Check errors
@@ -486,7 +486,7 @@ function showMonitorState(jel,data){
     jel.toggleClass('monitor-active', data.active);
 
     jel.find('.panel-title .monitor-icon-record')
-        .toggleClass('blink text-danger', data.active);
+        .toggleClass('blink text-danger2', data.active);
 
     jel.find('.panel-title .monitor-icon-errors')
         .toggle((data.err_cnt > 0)?true:false)
@@ -553,7 +553,7 @@ function showMonitorStateUndefined(jel) {
     var el;
     //jel.removeClass('monitor-active');
     //jel.find('.panel-title .monitor-icon-record')
-    //    .removeClass('blink text-danger');
+    //    .removeClass('blink text-danger2');
     jel.find('.panel-title .monitor-icon-errors')
         .toggle(true)
         .attr('title', SDLab.Language._('ERRORS'));

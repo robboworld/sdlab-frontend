@@ -502,12 +502,13 @@ BasePlot.prototype.pan = function(args) {
 };
 
 BasePlot.prototype.getTotalPointsCount = function(data){
-    if (data.length <= 0) {
+    var d = (typeof data === "undefined" || data === null) ? this.data : data;
+    if (d.length <= 0) {
         return 0;
     }
     var c = 0;
-    for (var i = 0; i < data.length; i++) {
-        c = c + data[i].data.length;
+    for (var i = 0; i < d.length; i++) {
+        c = c + d[i].data.length;
     }
     return c;
 };
@@ -819,7 +820,7 @@ TimeSeriesPlot.prototype._getSeriesIndexBySensor = function(sensor_id,sensor_val
     return -1;
 };
 
-TimeSeriesPlot.prototype.setRange = function(value) {
+TimeSeriesPlot.prototype.setRangeX = function(value) {
     var old = this.xrange;
     this.xrange = ((value !== null && value > 0) ? value : null);
 
@@ -833,7 +834,7 @@ TimeSeriesPlot.prototype.setRange = function(value) {
 
     return old;
 };
-TimeSeriesPlot.prototype.getRange = function(){
+TimeSeriesPlot.prototype.getRangeX = function(){
     return this.xrange;
 };
 

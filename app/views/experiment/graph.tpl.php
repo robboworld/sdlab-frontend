@@ -162,7 +162,7 @@ $xrangeymode = 'auto';
                 opts.max = null;
             }
             if (axis.direction === 'x') {
-                var r = g.getRange(),
+                var r = g.getRangeX(),
                     now = new Date();
                 opts.max = Number(now.getTime());
                 opts.min = ((r !== null) ? (opts.max - (r * 1000)) : null);
@@ -210,6 +210,7 @@ $xrangeymode = 'auto';
             g.scrollenabled = true; // TODO: setScroll(true/false) with change icon state
             g.refresh();
             onPlotScrollChange(oldstate, g.scrollenabled);
+            countersRefresh();
 
             // Plot data polling
             runPlotUpdate();
@@ -227,6 +228,7 @@ $xrangeymode = 'auto';
         if (typeof data.error === 'undefined') {
             var acnt = g.appendData(data.result);
             g.refresh();
+            countersRefresh();
 
             // Plot data polling
             runPlotUpdate();
@@ -246,7 +248,7 @@ $xrangeymode = 'auto';
     }
 
     function clickSetLastXRange(btn,range,scroll) {
-        g.setRange(range);
+        g.setRangeX(range);
         var oldstate = g.xrangeymode;
         //g.xrangeymode = 'auto';
         onPlotRangeXAutozoomYChange(oldstate, g.xrangeymode);
@@ -321,6 +323,9 @@ $xrangeymode = 'auto';
                 }
             }
         }
+    }
+    function countersRefresh() {
+        $('.badge-points-count').text(g.getTotalPointsCount());
     }
 </script>
 <div class="row">
@@ -456,6 +461,11 @@ $xrangeymode = 'auto';
 				<div class="btn-group btn-group-sm control-zoom-x" role="group" aria-label="...">
 					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'x'},  'in');"><span class="fa fa-plus"></span></button>
 					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'x'}, 'out');"><span class="fa fa-minus"></span></button>
+				</div>
+				<div class="btn-group btn-group-sm" role="group" aria-label="..." style="margin-left: 20px;">
+					<div class="toolbar-text special-label">
+						<span><?php echo L::graph_POINTS_COUNT . ':&nbsp;'; ?></span><span class="badge badge-points-count">0</span>
+					</div>
 				</div>
 			</div>
 		</div>

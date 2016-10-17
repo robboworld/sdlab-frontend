@@ -1,3 +1,6 @@
+<?php 
+// TODO: refactor for use as Simple plot with Save Plot form. Save x & y ranges, zoom, x & y labels and custom plot title.
+?>
 <script>
 	var data = [
 		{

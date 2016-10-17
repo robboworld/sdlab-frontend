@@ -85,7 +85,7 @@ if($setup_exists)
 			<tr>
 				<td class="padng-3px exp-header">
 					<h3 class="exp-title">
-						<span class="fa fa-circle experiment-icon-record <?php if ($experiment_active) : ?>blink text-danger<?php endif; ?>"></span>
+						<span class="fa fa-circle experiment-icon-record <?php if ($experiment_active) : ?>blink text-danger2<?php endif; ?>"></span>
 						<span><?php echo htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8'); 
 						?></span><a href="/?q=experiment/edit/<?php echo (int)$this->view->content->experiment->id; ?>" class="btn btn-edit"><span class="glyphicon glyphicon-pencil"></span></a>
 					</h3>
@@ -366,7 +366,7 @@ if($setup_exists)
 					</div>
 					<h5 class="panel-title">
 						<span class="fa fa-circle monitor-icon-record <?php
-							if ($mon->active) : ?>blink text-danger<?php endif; ?>"></span>
+							if ($mon->active) : ?>blink text-danger2<?php endif; ?>"></span>
 						<span class="glyphicon glyphicon-exclamation-sign monitor-icon-errors" title="<?php
 							echo L::ERRORS . ': ' . (int)$mon_err_cnt; ?>" <?php
 							if ((int)$mon_err_cnt == 0) : ?>style="display:none;"<?php endif; ?>></span>&nbsp;

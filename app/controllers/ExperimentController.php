@@ -1599,6 +1599,7 @@ class ExperimentController extends Controller
 		// Add language translates for scripts
 		Language::script(array(
 				'ERROR',
+				'FROM_', 'TO_',
 				'graph_PLEASE_SELECT_SENSORS', 'graph_PLEASE_SELECT_DIFFERENT_SENSORS', 'graph_AVAILABLE_RANGE'
 		));
 

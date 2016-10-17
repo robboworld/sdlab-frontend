@@ -126,7 +126,7 @@ blink, .blink {
 .mrg-bot-5px { margin-bottom: 5px; }
 .text-area { resize: vertical; min-height: 250px; }
 .width-auto { width: auto; }
-
+.text-danger2 { color: #d9534f; }
 
 /* exp-page */ 
 .exp-table {}
@@ -316,6 +316,9 @@ td.exp-header { position: relative; }
 	height: 15px;
 	width: 16px;
 	vertical-align: middle;
+}
+.btn-toolbar .btn-group .toolbar-text {
+	margin: 2px 0px;
 }
 
 /* Webcam streaming */

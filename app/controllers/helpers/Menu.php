@@ -46,21 +46,21 @@ class Menu
 	public static function get()
 	{
 		$menu['page/view'] = array(
-			'title' => L::SYSTEM,
+			'title' => L('SYSTEM'),
 			'icon' => 'glyphicon glyphicon-home',
 			'textclass' => 'hidden-sm hidden-xs',
 			'user_level' => 0
 		);
 		/*
 		$this->menu['sensors'] = array(
-			'title' => L::SENSORS,
+			'title' => L('SENSORS'),
 			'icon' => '',
 			'textclass' => 'hidden-xs',
 			'user_level' => 1
 		);
 		*/
 		$menu['experiment/view'] = array(
-			'title' => L::EXPERIMENTS,
+			'title' => L('EXPERIMENTS'),
 			'icon' => 'glyphicon glyphicon-list',
 			'textclass' => 'hidden-xs',
 			'user_level' => 1
@@ -68,14 +68,14 @@ class Menu
 
 		/*
 		$menu['page/view/journal'] = array(
-			'title' => L::JOURNAL,
+			'title' => L('JOURNAL'),
 			'icon' => '',
 			'textclass' => 'hidden-xs',
 			'user_level' => 1
 		);
 
 		$menu['page/view/graphs'] = array(
-			'title' => L::GRAPHS,
+			'title' => L('GRAPHS'),
 			'icon' => '',
 			'textclass' => 'hidden-xs',
 			'user_level' => 1
@@ -83,7 +83,7 @@ class Menu
 		*/
 
 		$menu['page/view/help'] = array(
-			'title' => L::HELP,
+			'title' => L('HELP'),
 			'icon' => 'glyphicon glyphicon-info-sign',
 			'textclass' => 'hidden-xs',
 			'user_level' => 0

@@ -25,11 +25,11 @@ class ExperimentController extends Controller
 	 */
 	public function create()
 	{
-		self::setTitle(L::experiment_TITLE_CREATION);
-		self::setContentTitle(L::experiment_TITLE_CREATION);
+		self::setTitle(L('experiment_TITLE_CREATION'));
+		self::setContentTitle(L('experiment_TITLE_CREATION'));
 
 		$this->view->form = new Form('create-experiment-form');
-		$this->view->form->submit->value = L::experiment_CREATE_EXPERIMENT;
+		$this->view->form->submit->value = L('experiment_CREATE_EXPERIMENT');
 
 		// Get Setups list for the form
 		// For admin load all setups, else not singletone Setups
@@ -258,7 +258,7 @@ class ExperimentController extends Controller
 					$this->view->content->monitors[$i]->setup->set('master_exp_id', null);
 					$this->view->content->monitors[$i]->setup->set('session_key', null);
 					$this->view->content->monitors[$i]->setup->set('access', Setup::$ACCESS_SHARED);
-					$this->view->content->monitors[$i]->setup->set('title', L::UNKNOWN);
+					$this->view->content->monitors[$i]->setup->set('title', L('UNKNOWN'));
 				}
 				// Inject configuration from monitor
 				if (isset($this->view->content->monitors[$i]->info))
@@ -308,7 +308,7 @@ class ExperimentController extends Controller
 			// All experiments
 
 			self::setViewTemplate('view.all');
-			self::setTitle(L::experiment_TITLE_ALL);
+			self::setTitle(L('experiment_TITLE_ALL'));
 
 			self::addJs('functions');
 			self::addJs('experiment/view.all');
@@ -348,12 +348,12 @@ class ExperimentController extends Controller
 		}
 
 		self::setViewTemplate('create');
-		self::setTitle(L::TITLE_EDIT_OF($experiment->title));
-		self::setContentTitle(L::TITLE_EDIT_OF_2($experiment->title));
+		self::setTitle(L('TITLE_EDIT_OF',array($experiment->title)));
+		self::setContentTitle(L('TITLE_EDIT_OF_2',array($experiment->title)));
 
 		// Form object
 		$this->view->form = new Form('edit-experiment-form');
-		$this->view->form->submit->value = L::SAVE;
+		$this->view->form->submit->value = L('SAVE');
 		$this->view->form->experiment = $experiment;
 
 		// Get Setups list for the form
@@ -660,8 +660,8 @@ class ExperimentController extends Controller
 		}
 
 
-		self::setTitle(L::journal_TITLE_JOURNAL_OF($experiment->title));
-		self::setContentTitle(L::journal_TITLE_JOURNAL_OF_2($experiment->title));
+		self::setTitle(L('journal_TITLE_JOURNAL_OF',array($experiment->title)));
+		self::setContentTitle(L('journal_TITLE_JOURNAL_OF_2',array($experiment->title)));
 		self::addJs('functions');
 		self::addJs('experiment/journal');
 		//self::addJs('lib/jquery.fileDownload');
@@ -674,7 +674,7 @@ class ExperimentController extends Controller
 
 		// Form object
 		$this->view->form = new Form('experiment-journal-form');
-		$this->view->form->submit->value = L::REFRESH;
+		$this->view->form->submit->value = L('REFRESH');
 		$this->view->form->experiment = $experiment;
 
 		// Request type
@@ -859,8 +859,8 @@ class ExperimentController extends Controller
 
 					// add name field
 					$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
-							constant('L::sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
-							constant('L::sensor_UNKNOWN');
+							L('sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+							L('sensor_UNKNOWN');
 				}
 				else
 				{
@@ -872,7 +872,7 @@ class ExperimentController extends Controller
 					$sensors[$key]->resolution  = null;
 
 					// add name field
-					$sensors[$key]->name        = constant('L::sensor_UNKNOWN');
+					$sensors[$key]->name        = L('sensor_UNKNOWN');
 				}
 				// add setup id field
 				$sensors[$key]->setup_id = 0;
@@ -1023,7 +1023,7 @@ class ExperimentController extends Controller
 			// View/Edit graph
 
 			self::setViewTemplate('graphsingle');
-			self::setTitle(L::graph_TITLE_GRAPH_FOR($experiment->title));
+			self::setTitle(L('graph_TITLE_GRAPH_FOR',array($experiment->title)));
 			self::addJs('lib/jquery.flot');
 			self::addJs('lib/jquery.flot.time.min');
 			self::addJs('lib/jquery.flot.navigate');
@@ -1055,7 +1055,7 @@ class ExperimentController extends Controller
 				// Edit graph
 
 				$this->view->form = new Form('plot-edit-form');
-				$this->view->form->submit->value = L::graph_SAVE;
+				$this->view->form->submit->value = L('graph_SAVE');
 
 				if(isset($_POST['form-id']) && $_POST['form-id'] === 'plot-edit-form')
 				{
@@ -1080,15 +1080,15 @@ class ExperimentController extends Controller
 			// Add new graph
 
 			self::setViewTemplate('graphsingle');
-			self::setTitle(L::graph_TITLE_ADD_GRAPH_FOR($experiment->title));
-			self::setContentTitle(L::graph_TITLE_ADD_GRAPH_FOR_2($experiment->title));
+			self::setTitle(L('graph_TITLE_ADD_GRAPH_FOR',array($experiment->title)));
+			self::setContentTitle(L('graph_TITLE_ADD_GRAPH_FOR_2',array($experiment->title)));
 		}
 		else
 		{
 			// List graphs
 
-			self::setTitle(L::graph_TITLE_GRAPHS_FOR($experiment->title));
-			//self::setContentTitle(L::graph_TITLE_GRAPHS_FOR_2($experiment->title));
+			self::setTitle(L('graph_TITLE_GRAPHS_FOR',array($experiment->title)));
+			//self::setContentTitle(L('graph_TITLE_GRAPHS_FOR_2',array($experiment->title)));
 			// Flot lib
 			self::addJs('lib/jquery.flot');
 			self::addJs('lib/jquery.flot.time.min');
@@ -1263,8 +1263,8 @@ class ExperimentController extends Controller
 
 						// add name field
 						$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
-								constant('L::sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
-								constant('L::sensor_UNKNOWN');
+								L('sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+								L('sensor_UNKNOWN');
 					}
 					else
 					{
@@ -1276,7 +1276,7 @@ class ExperimentController extends Controller
 						$sensors[$key]->resolution  = null;
 
 						// add name field
-						$sensors[$key]->name        = constant('L::sensor_UNKNOWN');
+						$sensors[$key]->name        = L('sensor_UNKNOWN');
 					}
 					// add setup id field
 					$sensors[$key]->setup_id = 0;
@@ -1340,14 +1340,14 @@ class ExperimentController extends Controller
 			{
 				// error on equal sensors
 				//System::go('experiment/view/' . (int)$experiment->id);
-				$this->view->content->error['ERROR_INVALID_PARAMETERS'] = L::ERROR_INVALID_PARAMETERS;
+				$this->view->content->error['ERROR_INVALID_PARAMETERS'] = L('ERROR_INVALID_PARAMETERS');
 			}
 		}
 		else
 		{
 			// error on empty sensors
 			//System::go('experiment/view/' . (int)$experiment->id);
-			$this->view->content->error['ERROR_INVALID_PARAMETERS'] = L::ERROR_INVALID_PARAMETERS;
+			$this->view->content->error['ERROR_INVALID_PARAMETERS'] = L('ERROR_INVALID_PARAMETERS');
 		}
 
 		// Filter datetimes
@@ -1364,7 +1364,7 @@ class ExperimentController extends Controller
 			catch (Exception $e)
 			{
 				// error on invalid format
-				$this->view->content->error['ERROR_INVALID_PARAMETERS'] = L::ERROR_INVALID_PARAMETERS;
+				$this->view->content->error['ERROR_INVALID_PARAMETERS'] = L('ERROR_INVALID_PARAMETERS');
 				$from = null;
 			}
 		}
@@ -1382,7 +1382,7 @@ class ExperimentController extends Controller
 			catch (Exception $e)
 			{
 				// error on invalid format
-				$this->view->content->error['ERROR_INVALID_PARAMETERS'] = L::ERROR_INVALID_PARAMETERS;
+				$this->view->content->error['ERROR_INVALID_PARAMETERS'] = L('ERROR_INVALID_PARAMETERS');
 				$to = null;
 			}
 		}
@@ -1531,8 +1531,8 @@ class ExperimentController extends Controller
 
 					// add name field
 					$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
-					constant('L::sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
-					constant('L::sensor_UNKNOWN');
+							L('sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+							L('sensor_UNKNOWN');
 				}
 				else
 				{
@@ -1544,7 +1544,7 @@ class ExperimentController extends Controller
 					$sensors[$key]->resolution  = null;
 
 					// add name field
-					$sensors[$key]->name        = constant('L::sensor_UNKNOWN');
+					$sensors[$key]->name        = L('sensor_UNKNOWN');
 				}
 				// add setup id field
 				$sensors[$key]->setup_id = 0;
@@ -1573,8 +1573,8 @@ class ExperimentController extends Controller
 		$this->view->content->from = $from;
 		$this->view->content->to = $to;
 
-		self::setTitle(L::graph_TITLE_SCATTER_FOR($experiment->title));
-		//self::setContentTitle(L::graph_TITLE_SCATTER_FOR_2($experiment->title));
+		self::setTitle(L('graph_TITLE_SCATTER_FOR',array($experiment->title)));
+		//self::setContentTitle(L('graph_TITLE_SCATTER_FOR_2',array($experiment->title)));
 		// Flot lib
 		self::addJs('lib/jquery.flot');
 		self::addJs('lib/jquery.flot.navigate');
@@ -1861,8 +1861,8 @@ class ExperimentController extends Controller
 
 						// add name field
 						$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
-								constant('L::sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
-								constant('L::sensor_UNKNOWN');
+								L('sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+								L('sensor_UNKNOWN');
 					}
 					else
 					{
@@ -1874,7 +1874,7 @@ class ExperimentController extends Controller
 						$sensors[$key]->resolution  = null;
 
 						// add name field
-						$sensors[$key]->name        = constant('L::sensor_UNKNOWN');
+						$sensors[$key]->name        = L('sensor_UNKNOWN');
 					}
 					// add setup id field
 					$sensors[$key]->setup_id = 0;
@@ -1940,15 +1940,15 @@ class ExperimentController extends Controller
 			// Header
 			$data_header = array();
 			$data_header[] = 'N';
-			$data_header[] = L::TIME;
+			$data_header[] = L('TIME');
 			foreach ($displayed_sensors as $skey => $sensor)
 			{
 				$data_header[] = $sensor->name
 						. ' ' . ((mb_strlen($sensor->value_name, 'utf-8') > 0 ) ?
-								constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name)) :
+								L('sensor_VALUE_NAME_' . strtoupper($sensor->value_name)) :
 								'-')
 						. ', ' . ((mb_strlen($sensor->value_name, 'utf-8') > 0 && mb_strlen($sensor->si_notation, 'utf-8') > 0) ?
-								constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)) :
+								L('sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)) :
 								'-')
 						. ' ' . '(id: ' . $skey . ')';
 			}
@@ -2090,7 +2090,7 @@ class ExperimentController extends Controller
 		// Check id
 		if(!isset($params['experiment']) && empty($params['experiment']))
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 			return false;
 		}
 
@@ -2098,14 +2098,14 @@ class ExperimentController extends Controller
 		$experiment = (new Experiment())->load((int)$params['experiment']);
 		if(!$experiment)
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 			return false;
 		}
 
 		// Check access to experiment
 		if(!$experiment->userCanView($this->session()))
 		{
-			$this->error = L::ACCESS_DENIED;
+			$this->error = L('ACCESS_DENIED');
 			return false;
 		}
 

@@ -12,27 +12,27 @@
 		<h3><?php echo htmlspecialchars($this->view->content->title, ENT_QUOTES, 'UTF-8'); ?></h3>
 		<p>
 			<button type="button" id="exportDetections" class="btn btn-primary">
-				<span class="glyphicon glyphicon-download"></span> <?php echo L::DOWNLOAD; ?>
+				<span class="glyphicon glyphicon-download"></span> <?php echo L('DOWNLOAD'); ?>
 			</button>
 			<button type="button" id="cleanDetections" class="btn btn-danger">
-				<span class="glyphicon glyphicon-trash"></span> <?php echo L::CLEAN; ?>
+				<span class="glyphicon glyphicon-trash"></span> <?php echo L('CLEAN'); ?>
 			</button>
 		</p>
-		<!-- <input type="checkbox"> <?php echo L::INCLUDE_TO_REPORT; ?> -->
+		<!-- <input type="checkbox"> <?php echo L('INCLUDE_TO_REPORT'); ?> -->
 		<table class="table-detections table table-striped table-bordered">
 			<thead>
 				<tr>
 					<td>№</td>
-					<td><?php echo L::TIME; ?></td>
+					<td><?php echo L('TIME'); ?></td>
 					<?php foreach ($this->view->content->displayed_sensors as $skey => $sensor) :?>
 					<td><?php echo htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?><br/>
 						<small><?php 
 							echo ((mb_strlen($sensor->value_name, 'utf-8') > 0 ) ? 
-									htmlspecialchars(constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8') : 
+									htmlspecialchars(L('sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8') : 
 									'-')
 									. ', '
 								. ((mb_strlen($sensor->value_name, 'utf-8') > 0 && mb_strlen($sensor->si_notation, 'utf-8') > 0) ? 
-									htmlspecialchars(constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)), ENT_QUOTES, 'UTF-8') : 
+									htmlspecialchars(L('sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)), ENT_QUOTES, 'UTF-8') : 
 									'-');
 						?></small><br/>
 						<small class="muted">(id: <?php echo htmlspecialchars($skey, ENT_QUOTES, 'UTF-8'); ?>)</small>
@@ -70,8 +70,8 @@
 	</div>
 
 	<div class="col-md-3">
-		<h3><?php echo L::SENSORS; ?>
-			<a class="btn btn-link btn-sm" id="collapseSensorsControl" role="button" data-toggle="collapse" href="#collapseSensors" aria-expanded="true" aria-controls="collapseSensors" title="<?php echo L::graph_FILTER_SHOW_HIDE; ?>">
+		<h3><?php echo L('SENSORS'); ?>
+			<a class="btn btn-link btn-sm" id="collapseSensorsControl" role="button" data-toggle="collapse" href="#collapseSensors" aria-expanded="true" aria-controls="collapseSensors" title="<?php echo L('graph_FILTER_SHOW_HIDE'); ?>">
 				<span class="glyphicon glyphicon-chevron-down"></span>
 			</a>
 		</h3>
@@ -83,7 +83,7 @@
 					</li>
 				<?php endforeach; ?>
 			</ul>
-			<input type="submit" class="btn btn-primary" value="<?php echo L::REFRESH; ?>" />
+			<input type="submit" class="btn btn-primary" value="<?php echo L('REFRESH'); ?>" />
 		</div>
 	</div>
 </div>

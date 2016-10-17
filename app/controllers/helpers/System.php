@@ -244,7 +244,7 @@ class System
 	public static function secToTime($sec)
 	{
 		$obj = Form::formTimeObject($sec);
-		return $obj->d . ' ' . L::DAYS_SHORT2 . ' ' . $obj->h . ' ' . L::HOURS_SHORT2 . ' ' . $obj->m . ' ' . L::MINUTES_SHORT2 . ' ' . $obj->s . ' '. L::SECONDS_SHORT2;
+		return $obj->d . ' ' . L('DAYS_SHORT2') . ' ' . $obj->h . ' ' . L('HOURS_SHORT2') . ' ' . $obj->m . ' ' . L('MINUTES_SHORT2') . ' ' . $obj->s . ' '. L('SECONDS_SHORT2');
 	}
 
 	/**
@@ -915,7 +915,7 @@ class System
 					// Get the group label.
 					if ($groupLabel = (string) $element['label'])
 					{
-						$label =  constant('L::' . $groupLabel);
+						$label = L($groupLabel);
 					}
 
 					// Initialize the group if necessary.

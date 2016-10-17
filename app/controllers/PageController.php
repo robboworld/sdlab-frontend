@@ -30,8 +30,8 @@ class PageController extends Controller
 
 		self::addJs('functions');
 
-		self::setTitle(L::SYSTEM);
-		self::setContentTitle(L::SDLAB_TITLE);
+		self::setTitle(L('SYSTEM'));
+		self::setContentTitle(L('SDLAB_TITLE'));
 		self::setViewTemplate($page);
 	}
 }

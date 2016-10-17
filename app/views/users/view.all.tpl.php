@@ -4,7 +4,7 @@
 <div class="col-md-12">
 	<div class="row">
 		<div class="col-md-6">
-			<h1><?php echo L::users_TITLE_ALL; ?></h1>
+			<h1><?php echo L('users_TITLE_ALL'); ?></h1>
 		</div>
 	</div>
 	<form id="sdform" method="post" action="?<?php echo $_SERVER['QUERY_STRING']?>" >
@@ -13,28 +13,28 @@
 			<thead>
 			<tr>
 				<th class="text-left">
-					<?php echo L::session_ID; ?>
+					<?php echo L('session_ID'); ?>
 				</th>
 				<th>
-					<?php echo L::MEMBER; ?>
+					<?php echo L('MEMBER'); ?>
 				</th>
 				<th>
-					<?php echo L::NAME; ?>
+					<?php echo L('NAME'); ?>
 				</th>
 				<th>
-					<?php echo L::session_KEY; ?>
+					<?php echo L('session_KEY'); ?>
 				</th>
 				<th class="text-left">
-					<?php echo L::session_DATE_START; ?>
+					<?php echo L('session_DATE_START'); ?>
 				</th>
 				<th class="text-left">
-					<?php echo L::session_DATE_END; ?>
+					<?php echo L('session_DATE_END'); ?>
 				</th>
 				<th>
-					<?php echo L::COMMENT; ?>
+					<?php echo L('COMMENT'); ?>
 				</th>
 				<th class="text-right">
-					<?php echo L::session_EXPIRES_TIME_DAYS; ?>
+					<?php echo L('session_EXPIRES_TIME_DAYS'); ?>
 				</th>
 			</tr>
 			</thead>

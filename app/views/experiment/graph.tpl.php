@@ -335,7 +335,7 @@ $xrangeymode = 'auto';
 		</a>
 	</div>
 	<div class="col-md-12">
-		<h3><?php echo L::graph_TITLE_GRAPHS_FOR_2(htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8')); ?></h3>
+		<h3><?php echo L('graph_TITLE_GRAPHS_FOR_2',array(htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8'))); ?></h3>
 	</div>
 </div>
 <div class="row" style="display:none;">
@@ -344,7 +344,7 @@ $xrangeymode = 'auto';
 			<thead>
 				<tr>
 					<td><label>#</label></td>
-					<td><label><?php echo L::graph_NAME; ?></label></td>
+					<td><label><?php echo L('graph_NAME'); ?></label></td>
 				</tr>
 			</thead>
 			<tbody>
@@ -354,7 +354,7 @@ $xrangeymode = 'auto';
 							<?php echo ++$i; ?>
 						</td>
 						<td>
-							<a href="?q=experiment/graph/<?php echo (int)$plot->exp_id;?>/<?php echo (int)$plot->id;?>"><?php echo L::GRAPH . ' #' . (int)$plot->id;?></a>
+							<a href="?q=experiment/graph/<?php echo (int)$plot->exp_id;?>/<?php echo (int)$plot->id;?>"><?php echo L('GRAPH') . ' #' . (int)$plot->id;?></a>
 						</td>
 					</tr>
 				<?php endforeach; ?>
@@ -364,7 +364,7 @@ $xrangeymode = 'auto';
 				<tr>
 					<td colspan="2">
 						<div class="alert alert-info" role="alert">
-						<?php echo L::graph_MSG_NO_SAVED_GRAPHS; ?>
+						<?php echo L('graph_MSG_NO_SAVED_GRAPHS'); ?>
 						</div>
 					</td>
 				</tr>
@@ -373,13 +373,13 @@ $xrangeymode = 'auto';
 		</table>
 	</div>
 	<div class="col-md-4">
-		<a href="?q=experiment/graph/<?php echo (int)$this->view->content->experiment->id;?>/add" class="btn btn-primary"><?php echo L::graph_ADD; ?></a>
+		<a href="?q=experiment/graph/<?php echo (int)$this->view->content->experiment->id;?>/add" class="btn btn-primary"><?php echo L('graph_ADD'); ?></a>
 	</div>
 </div>
 <hr style="display:none;" />
 <div class="row">
 	<div class="col-md-12">
-		<h3><?php echo L::graph_TITLE_ALL_DETECTIONS_BY_TIME; ?></h3>
+		<h3><?php echo L('graph_TITLE_ALL_DETECTIONS_BY_TIME'); ?></h3>
 	</div>
 
 	<div class="col-lg-9 col-md-12">
@@ -391,29 +391,29 @@ $xrangeymode = 'auto';
 					<button type="button" id="btn_scroll_x" class="btn btn-sm <?php echo ($scrollenabled ? 'btn-info active' : 'btn-default'); ?>" onclick="return changeScrollState(!$(this).data('state'));" data-state="<?php echo ($scrollenabled ? '1' : '0'); ?>"><span class="fa fa-lg <?php echo $scrollenabled ? 'fa-eye' : 'fa-eye-slash'; ?>" data-icon-0="fa-eye-slash" data-icon-1="fa-eye"></span></button>
 				</div>
 				<div class="btn-group btn-group-sm control-zoom-range-x" role="group" aria-label="...">
-					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 0;             echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_ALL; ?>"><?php echo L::graph_ZOOM_ALL; ?></button>
-					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 30;            echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_30S; ?>"><?php echo L::graph_ZOOM_30S_SHORT; ?></button>
-					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 1*60;          echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_1M; ?>"><?php echo L::graph_ZOOM_1M_SHORT; ?></button>
-					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 15*60;         echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_15M; ?>"><?php echo L::graph_ZOOM_15M_SHORT; ?></button>
-					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 30*60;         echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_30M; ?>"><?php echo L::graph_ZOOM_30M_SHORT; ?></button>
-					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 1*60*60;       echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L::graph_ZOOM_1H; ?>"><?php echo L::graph_ZOOM_1H_SHORT; ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 0;             echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L('graph_ZOOM_ALL'); ?>"><?php echo L('graph_ZOOM_ALL'); ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 30;            echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L('graph_ZOOM_30S'); ?>"><?php echo L('graph_ZOOM_30S_SHORT'); ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 1*60;          echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L('graph_ZOOM_1M'); ?>"><?php echo L('graph_ZOOM_1M_SHORT'); ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 15*60;         echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L('graph_ZOOM_15M'); ?>"><?php echo L('graph_ZOOM_15M_SHORT'); ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 30*60;         echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L('graph_ZOOM_30M'); ?>"><?php echo L('graph_ZOOM_30M_SHORT'); ?></button>
+					<button type="button" class="btn btn-sm btn-zoom-x btn-default<?php $thisrange = 1*60*60;       echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));" title="<?php echo L('graph_ZOOM_1H'); ?>"><?php echo L('graph_ZOOM_1H_SHORT'); ?></button>
 					<div class="btn-group btn-group-sm" role="group">
 						<button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-							<?php echo L::graph_ZOOM; ?>
+							<?php echo L('graph_ZOOM'); ?>
 							<span class="caret"></span>
 						</button>
 						<ul class="dropdown-menu">
-							<li class="btn-zoom-x<?php $thisrange = 1;             echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1S; ?></a></li>
-							<li class="btn-zoom-x<?php $thisrange = 5*60;          echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_5M; ?></a></li>
-							<li class="btn-zoom-x<?php $thisrange = 10*60;         echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_10M; ?></a></li>
-							<li class="btn-zoom-x<?php $thisrange = 12*60*60;      echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_12H; ?></a></li>
-							<li class="btn-zoom-x<?php $thisrange = 1*24*60*60;    echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1D; ?></a></li>
-							<li class="btn-zoom-x<?php $thisrange = 1*7*24*60*60;  echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1W; ?></a></li>
-							<li class="btn-zoom-x<?php $thisrange = 1*30*24*60*60; echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1MM; ?></a></li>
-							<li class="btn-zoom-x<?php $thisrange = 6*30*24*60*60; echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_6MM; ?></a></li>
-							<li class="btn-zoom-x<?php $thisrange = 365*24*60*60;  echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L::graph_ZOOM_1Y; ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 1;             echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L('graph_ZOOM_1S'); ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 5*60;          echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L('graph_ZOOM_5M'); ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 10*60;         echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L('graph_ZOOM_10M'); ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 12*60*60;      echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L('graph_ZOOM_12H'); ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 1*24*60*60;    echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L('graph_ZOOM_1D'); ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 1*7*24*60*60;  echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L('graph_ZOOM_1W'); ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 1*30*24*60*60; echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L('graph_ZOOM_1MM'); ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 6*30*24*60*60; echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L('graph_ZOOM_6MM'); ?></a></li>
+							<li class="btn-zoom-x<?php $thisrange = 365*24*60*60;  echo $timerange == $thisrange ? ' active' : '' ; ?>" data-value="<?php echo $thisrange; ?>" onclick="return clickSetLastXRange(this,$(this).data('value'));"><a href="javascript:void(0);"><?php echo L('graph_ZOOM_1Y'); ?></a></li>
 							<li role="separator" class="divider"></li>
-							<li><a href="javascript:void(0);" style="padding-left:4px;"><label class="checkbox"><input type="checkbox" id="chk_xrange_autozoom_y" value="1" <?php echo ($xrangeymode === 'auto' ? 'checked' : ''); ?>/>&nbsp;<?php echo L::graph_ZOOM_AUTO_Y; ?></label></a></li>
+							<li><a href="javascript:void(0);" style="padding-left:4px;"><label class="checkbox"><input type="checkbox" id="chk_xrange_autozoom_y" value="1" <?php echo ($xrangeymode === 'auto' ? 'checked' : ''); ?>/>&nbsp;<?php echo L('graph_ZOOM_AUTO_Y'); ?></label></a></li>
 						</ul>
 					</div>
 				</div>
@@ -422,10 +422,10 @@ $xrangeymode = 'auto';
 					<button type="button" class="btn btn-sm btn-default" onclick="stopPlotUpdate();"><span class="fa fa-pause"></span></button>
 				</div>
 				<div class="btn-group btn-group-sm graph-export">
-					<button type="button" class="btn btn-sm btn-info btn-graph-export" data-filetype="png"><span class="fa fa-download"></span><span class="hidden-xs">&nbsp;<?php echo L::graph_EXPORT; ?></span></button>
+					<button type="button" class="btn btn-sm btn-info btn-graph-export" data-filetype="png"><span class="fa fa-download"></span><span class="hidden-xs">&nbsp;<?php echo L('graph_EXPORT'); ?></span></button>
 					<button type="button" class="btn btn-sm btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 						<span class="caret"></span>
-						<span class="sr-only"><?php echo L::TOGGLE_DROPDOWN; ?></span>
+						<span class="sr-only"><?php echo L('TOGGLE_DROPDOWN'); ?></span>
 					</button>
 					<ul class="dropdown-menu">
 						<li><a href="javascript:void(0);" class="btn-graph-export" role="button" data-filetype="png"><span class="fa fa-file-image-o"></span><span class="">&nbsp;png</span></a></li>
@@ -464,33 +464,33 @@ $xrangeymode = 'auto';
 				</div>
 				<div class="btn-group btn-group-sm" role="group" aria-label="..." style="margin-left: 20px;">
 					<div class="toolbar-text special-label">
-						<span><?php echo L::graph_POINTS_COUNT . ':&nbsp;'; ?></span><span class="badge badge-points-count">0</span>
+						<span><?php echo L('graph_POINTS_COUNT') . ':&nbsp;'; ?></span><span class="badge badge-points-count">0</span>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 	<div class="col-lg-3 col-md-12">
-		<h4><?php echo L::SENSORS; ?></h4>
+		<h4><?php echo L('SENSORS'); ?></h4>
 
 		<?php if (empty($this->view->content->available_sensors)) : ?>
-		<div><?php echo L::graph_NO_SENSORS; ?></div>
+		<div><?php echo L('graph_NO_SENSORS'); ?></div>
 		<?php endif; ?>
 		<ul class="list-unstyled available-sensors small">
 			<?php foreach ($this->view->content->available_sensors as $sensor) : ?>
 				<li>
 					<label class="checkbox"><input type="checkbox" <?php /* if (array_key_exists($sensor->sensor_id, $this->view->content->displayed_sensors)) echo 'checked';*/?> checked name="show-sensor[]" value="<?php 
 						echo htmlspecialchars($sensor->sensor_id . '#' . (int)$sensor->sensor_val_id, ENT_QUOTES, 'UTF-8'); ?>"/>&nbsp;<?php 
-						echo htmlspecialchars(constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8') . ','
-							. htmlspecialchars(constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)), ENT_QUOTES, 'UTF-8')
+						echo htmlspecialchars(L('sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8') . ','
+							. htmlspecialchars(L('sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)), ENT_QUOTES, 'UTF-8')
 							. ' ('  . htmlspecialchars($sensor->sensor_id. '#' . (int)$sensor->sensor_val_id, ENT_QUOTES, 'UTF-8') . ')';
 						?></label>
 				</li>
 			<?php endforeach; ?>
 		</ul>
-		<button type="button" id="graph_refesh" class="btn btn-primary"><?php echo L::REFRESH; ?></button><br/><br/>
+		<button type="button" id="graph_refesh" class="btn btn-primary"><?php echo L('REFRESH'); ?></button><br/><br/>
 		<a href="javascript:void(0);" id="btn_scatter" class="btn btn-primary">
-			<span class="fa fa-line-chart"></span>&nbsp;<?php echo L::graph_SCATTER; ?>
+			<span class="fa fa-line-chart"></span>&nbsp;<?php echo L('graph_SCATTER'); ?>
 		</a>
 	</div>
 </div>

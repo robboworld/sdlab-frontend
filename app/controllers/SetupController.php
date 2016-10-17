@@ -22,8 +22,8 @@ class SetupController extends Controller
 	public function create()
 	{
 		// TODO: Access to creation only for admin?
-		self::setTitle(L::setup_TITLE_CREATION);
-		self::setContentTitle(L::setup_TITLE_CREATION);
+		self::setTitle(L('setup_TITLE_CREATION'));
+		self::setContentTitle(L('setup_TITLE_CREATION'));
 		self::addJs('functions');
 		self::addJs('setup/edit');
 		self::addCss('setup');
@@ -41,7 +41,7 @@ class SetupController extends Controller
 		}
 
 		$this->view->form = new Form('create-setup-form');
-		$this->view->form->submit->value = L::CREATE;
+		$this->view->form->submit->value = L('CREATE');
 
 		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'create-setup-form')
 		{
@@ -148,8 +148,8 @@ class SetupController extends Controller
 	public function edit()
 	{
 		self::setViewTemplate('create');
-		self::setTitle(L::setup_TITLE_EDIT);
-		self::setContentTitle(L::setup_TITLE_EDIT);
+		self::setTitle(L('setup_TITLE_EDIT'));
+		self::setContentTitle(L('setup_TITLE_EDIT'));
 		self::addJs('functions');
 		self::addJs('setup/edit');
 		self::addCss('setup');
@@ -165,7 +165,7 @@ class SetupController extends Controller
 
 
 		$this->view->form = new Form('edit-setup-form');
-		$this->view->form->submit->value = L::SAVE;
+		$this->view->form->submit->value = L('SAVE');
 
 		// Load Setup
 		$setup = (new Setup())->load($this->id);

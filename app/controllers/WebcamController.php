@@ -28,7 +28,7 @@ class WebcamController extends Controller
 		if(!is_null($this->id) && is_numeric($this->id))
 		{
 			self::setViewTemplate('view');
-			self::setTitle(L::webcam_TITLE);
+			self::setTitle(L('webcam_TITLE'));
 
 			self::addJs('functions');
 			self::addJs('class/Webcam');
@@ -170,7 +170,7 @@ class WebcamController extends Controller
 			// All webcams
 
 			self::setViewTemplate('view.all');
-			self::setTitle(L::webcam_TITLE_ALL);
+			self::setTitle(L('webcam_TITLE_ALL'));
 
 			self::addJs('functions');
 			self::addJs('class/Webcam');

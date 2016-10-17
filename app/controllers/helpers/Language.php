@@ -311,8 +311,12 @@ class Language extends i18n
 			foreach ($string as $str)
 			{
 				// Normalize the key and translate the string.
-				$translated = constant($prefix . '::' . $str);
-
+				$translated = call_user_func_array($prefix, array($str));
+				if ($translated === false)
+				{
+					// Translate method not found
+					$translated = $str;
+				}
 				if ($jsSafe)
 				{
 					// Javascript filter

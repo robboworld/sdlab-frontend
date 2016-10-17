@@ -145,7 +145,7 @@ class Html
 	 *                            list.select: either the value of one selected option or an array
 	 *                            of selected options. Default: none.
 	 *                            list.translate: Boolean. If set, text and labels are translated via
-	 *                            L::const.
+	 *                            L('const').
 	 *
 	 * @return  string  HTML for the select list
 	 *
@@ -280,7 +280,7 @@ class Html
 	 *                               -list.select: either the value of one selected option or an array
 	 *                                of selected options. Default: none.
 	 *                               -list.translate: Boolean. If set, text and labels are translated via
-	 *                                L::const. Default is false.
+	 *                                L('const'). Default is false.
 	 *                               -option.id: The property in each option array to use as the
 	 *                                selection id attribute. Defaults to none.
 	 *                               -option.key: The property in each option array to use as the
@@ -419,7 +419,7 @@ class Html
 
 			if ($options['groups'] && $key == '<OPTGROUP>')
 			{
-				$html .= $baseIndent . '<optgroup label="' . ($options['list.translate'] ? constant('L::' . $text) : $text) . '">' . $options['format.eol'];
+				$html .= $baseIndent . '<optgroup label="' . ($options['list.translate'] ? L($text) : $text) . '">' . $options['format.eol'];
 				$baseIndent = str_repeat($options['format.indent'], ++$options['format.depth']);
 			}
 			elseif ($options['groups'] && $key == '</OPTGROUP>')
@@ -440,7 +440,7 @@ class Html
 
 				if ($options['list.translate'] && !empty($label))
 				{
-					$label = constant('L::' . $label);
+					$label = L($label);
 				}
 
 				if ($options['option.label.toHtml'])
@@ -479,7 +479,7 @@ class Html
 
 				if ($options['list.translate'])
 				{
-					$text = constant('L::' . $text);
+					$text = L($text);
 				}
 
 				// Generate the option, encoding as required

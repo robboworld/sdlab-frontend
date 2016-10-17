@@ -25,7 +25,7 @@ class DetectionsController extends Controller
 	{
 		if(empty($params['plot']))
 		{
-			$this->error = L::ERROR_GRAPH_NOT_EXIST;
+			$this->error = L('ERROR_GRAPH_NOT_EXIST');
 
 			return false;
 		}
@@ -34,7 +34,7 @@ class DetectionsController extends Controller
 		$plot = (new Plot())->load($params['plot']);
 		if(!$plot)
 		{
-			$this->error = L::ERROR_GRAPH_NOT_EXIST;
+			$this->error = L('ERROR_GRAPH_NOT_EXIST');
 
 			return false;
 		}
@@ -43,7 +43,7 @@ class DetectionsController extends Controller
 		$experiment = (new Experiment())->load($plot->exp_id);
 		if(!$experiment)
 		{
-			$this->error = L::ACCESS_DENIED;
+			$this->error = L('ACCESS_DENIED');
 
 			return false;
 		}
@@ -51,7 +51,7 @@ class DetectionsController extends Controller
 		// Check access to experiment
 		if(!$experiment->userCanView($this->session()))
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -60,7 +60,7 @@ class DetectionsController extends Controller
 		$setup = (new Setup())->load($experiment->setup_id);
 		if(!$setup)
 		{
-			$this->error = L::ERROR_SETUP_NOT_FOUND;
+			$this->error = L('ERROR_SETUP_NOT_FOUND');
 
 			return false;
 		}
@@ -140,7 +140,7 @@ class DetectionsController extends Controller
 	{
 		if(empty($params['experiment']))
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -149,7 +149,7 @@ class DetectionsController extends Controller
 		$experiment = (new Experiment())->load($params['experiment']);
 		if(!$experiment)
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -157,7 +157,7 @@ class DetectionsController extends Controller
 		// Check access to experiment
 		if(!$experiment->userCanView($this->session()))
 		{
-			$this->error = L::ACCESS_DENIED;
+			$this->error = L('ACCESS_DENIED');
 
 			return false;
 		}
@@ -184,7 +184,7 @@ class DetectionsController extends Controller
 			catch (Exception $e)
 			{
 				// error on invalid format
-				$this->error = L::ERROR_INVALID_PARAMETERS;
+				$this->error = L('ERROR_INVALID_PARAMETERS');
 
 				return false;
 			}
@@ -200,7 +200,7 @@ class DetectionsController extends Controller
 			catch (Exception $e)
 			{
 				// error on invalid format
-				$this->error = L::ERROR_INVALID_PARAMETERS;
+				$this->error = L('ERROR_INVALID_PARAMETERS');
 
 				return false;
 			}
@@ -359,8 +359,8 @@ class DetectionsController extends Controller
 
 					// add name field
 					$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
-							constant('L::sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
-							constant('L::sensor_UNKNOWN');
+							L('sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+							L('sensor_UNKNOWN');
 				}
 				else
 				{
@@ -372,7 +372,7 @@ class DetectionsController extends Controller
 					$sensors[$key]->resolution  = null;
 
 					// add name field
-					$sensors[$key]->name        = constant('L::sensor_UNKNOWN');
+					$sensors[$key]->name        = L('sensor_UNKNOWN');
 				}
 				// add setup id field
 				$sensors[$key]->setup_id = 0;
@@ -421,7 +421,7 @@ class DetectionsController extends Controller
 		{
 			$data = new stdClass();
 			// TODO: add name of sensor to label from setup_info (but unknown which setup id was used for each detection, setup can be changed)
-			$data->label         = empty($sensor->value_name) ? L::sensor_UNKNOWN : constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name));
+			$data->label         = empty($sensor->value_name) ? L('sensor_UNKNOWN') : L('sensor_VALUE_NAME_' . strtoupper($sensor->value_name));
 			$data->sensor_id     = $sensor->sensor_id;
 			$data->sensor_val_id = (int)$sensor->sensor_val_id;
 			$data->color         = ++$i;
@@ -513,7 +513,7 @@ class DetectionsController extends Controller
 	{
 		if(empty($params['experiment']))
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -522,7 +522,7 @@ class DetectionsController extends Controller
 		$experiment = (new Experiment())->load($params['experiment']);
 		if(!$experiment)
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -530,7 +530,7 @@ class DetectionsController extends Controller
 		// Check access to experiment
 		if(!$experiment->userCanView($this->session()))
 		{
-			$this->error = L::ACCESS_DENIED;
+			$this->error = L('ACCESS_DENIED');
 
 			return false;
 		}
@@ -550,7 +550,7 @@ class DetectionsController extends Controller
 			else
 			{
 				// error on equal sensors
-				$this->error = L::ERROR_INVALID_PARAMETERS;
+				$this->error = L('ERROR_INVALID_PARAMETERS');
 
 				return false;
 			}
@@ -558,7 +558,7 @@ class DetectionsController extends Controller
 		else
 		{
 			// error on empty sensors
-			$this->error = L::ERROR_INVALID_PARAMETERS;
+			$this->error = L('ERROR_INVALID_PARAMETERS');
 
 			return false;
 		}
@@ -575,7 +575,7 @@ class DetectionsController extends Controller
 			catch (Exception $e)
 			{
 				// error on invalid format
-				$this->error = L::ERROR_INVALID_PARAMETERS;
+				$this->error = L('ERROR_INVALID_PARAMETERS');
 
 				return false;
 			}
@@ -591,7 +591,7 @@ class DetectionsController extends Controller
 			catch (Exception $e)
 			{
 				// error on invalid format
-				$this->error = L::ERROR_INVALID_PARAMETERS;
+				$this->error = L('ERROR_INVALID_PARAMETERS');
 
 				return false;
 			}
@@ -749,8 +749,8 @@ class DetectionsController extends Controller
 
 					// add name field
 					$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
-							constant('L::sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
-							constant('L::sensor_UNKNOWN');
+							L('sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+							L('sensor_UNKNOWN');
 				}
 				else
 				{
@@ -762,7 +762,7 @@ class DetectionsController extends Controller
 					$sensors[$key]->resolution  = null;
 
 					// add name field
-					$sensors[$key]->name        = constant('L::sensor_UNKNOWN');
+					$sensors[$key]->name        = L('sensor_UNKNOWN');
 				}
 				// add setup id field
 				$sensors[$key]->setup_id = 0;
@@ -789,7 +789,7 @@ class DetectionsController extends Controller
 
 		if ($sensor_x === null || $sensor_y === null)
 		{
-			$this->error = L::ERROR_SENSOR_NOT_FOUND;
+			$this->error = L('ERROR_SENSOR_NOT_FOUND');
 
 			return false;
 		}
@@ -841,18 +841,18 @@ class DetectionsController extends Controller
 		// TODO: add name of sensor to label from setup_info (but unknown which setup id was used for each detection, setup can be changed)
 		$data->label = 
 				((mb_strlen($sensor_x->value_name, 'utf-8') > 0 ) ?
-						constant('L::sensor_VALUE_NAME_' . strtoupper($sensor_x->value_name)) :
-						constant('L::sensor_UNKNOWN'))
+						L('sensor_VALUE_NAME_' . strtoupper($sensor_x->value_name)) :
+						L('sensor_UNKNOWN'))
 				. ((mb_strlen($sensor_x->value_name, 'utf-8') > 0 && mb_strlen($sensor_x->si_notation, 'utf-8') > 0) ?
-						(', ' . constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($sensor_x->value_name) . '_' . strtoupper($sensor_x->si_notation))) : 
+						(', ' . L('sensor_VALUE_SI_NOTATION_' . strtoupper($sensor_x->value_name) . '_' . strtoupper($sensor_x->si_notation))) : 
 						'')
 				. ' ('  . htmlspecialchars($sensor_x->sensor_id. '#' . (int)$sensor_x->sensor_val_id, ENT_QUOTES, 'UTF-8') . ')'
 				. ' - '
 				. ((mb_strlen($sensor_y->value_name, 'utf-8') > 0 ) ?
-						constant('L::sensor_VALUE_NAME_' . strtoupper($sensor_y->value_name)) :
-						constant('L::sensor_UNKNOWN'))
+						L('sensor_VALUE_NAME_' . strtoupper($sensor_y->value_name)) :
+						L('sensor_UNKNOWN'))
 				. ((mb_strlen($sensor_y->value_name, 'utf-8') > 0 && mb_strlen($sensor_y->si_notation, 'utf-8') > 0) ?
-						(', ' . constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($sensor_y->value_name) . '_' . strtoupper($sensor_y->si_notation))) : 
+						(', ' . L('sensor_VALUE_SI_NOTATION_' . strtoupper($sensor_y->value_name) . '_' . strtoupper($sensor_y->si_notation))) : 
 						'')
 				. ' ('  . htmlspecialchars($sensor_y->sensor_id. '#' . (int)$sensor_y->sensor_val_id, ENT_QUOTES, 'UTF-8') . ')';
 
@@ -942,7 +942,7 @@ class DetectionsController extends Controller
 	{
 		if(empty($params['id']))
 		{
-			$this->error = L::ERROR_DETECTIONS_NOT_FOUND;
+			$this->error = L('ERROR_DETECTIONS_NOT_FOUND');
 
 			return false;
 		}
@@ -965,14 +965,14 @@ class DetectionsController extends Controller
 		}
 		else
 		{
-			$this->error = L::ERROR_INVALID_PARAMETERS;
+			$this->error = L('ERROR_INVALID_PARAMETERS');
 
 			return false;
 		}
 
 		if (empty($ids))
 		{
-			$this->error = L::ERROR_INVALID_PARAMETERS;
+			$this->error = L('ERROR_INVALID_PARAMETERS');
 
 			return false;
 		}
@@ -1002,7 +1002,7 @@ class DetectionsController extends Controller
 				{
 					error_log('PDOError: '.var_export($stmt->errorInfo(),true));  //DEBUG
 
-					$this->error = L::FATAL_ERROR;
+					$this->error = L('FATAL_ERROR');
 					return false;
 				}
 			}
@@ -1010,7 +1010,7 @@ class DetectionsController extends Controller
 			{
 				error_log('PDOException delete(): '.var_export($e->getMessage(),true));  //DEBUG
 
-				$this->error = L::FATAL_ERROR;
+				$this->error = L('FATAL_ERROR');
 				return false;
 			}
 			$ids_exps = (array) $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -1035,7 +1035,7 @@ class DetectionsController extends Controller
 			// Warning on denied access to some detections data
 			if ($denied > 0)
 			{
-				$this->error = L::ACCESS_DENIED;
+				$this->error = L('ACCESS_DENIED');
 				//return false;  // But try delete only available
 			}
 		}
@@ -1045,7 +1045,7 @@ class DetectionsController extends Controller
 			// Use only first error
 			if (empty($this->error))
 			{
-				$this->error = L::ERROR_DETECTIONS_NOT_FOUND;
+				$this->error = L('ERROR_DETECTIONS_NOT_FOUND');
 			}
 			return false;
 		}
@@ -1060,7 +1060,7 @@ class DetectionsController extends Controller
 			{
 				error_log('PDOError: '.var_export($stmt->errorInfo(),true));  //DEBUG
 
-				$this->error = L::FATAL_ERROR;
+				$this->error = L('FATAL_ERROR');
 				return false;
 			}
 		}
@@ -1068,7 +1068,7 @@ class DetectionsController extends Controller
 		{
 			error_log('PDOException delete(): '.var_export($e->getMessage(),true));  //DEBUG
 
-			$this->error = L::FATAL_ERROR;
+			$this->error = L('FATAL_ERROR');
 			return false;
 		}
 
@@ -1091,7 +1091,7 @@ class DetectionsController extends Controller
 	{
 		if(empty($params['dt']) || empty($params['exp_id']))
 		{
-			$this->error = L::ERROR_INVALID_PARAMETERS;
+			$this->error = L('ERROR_INVALID_PARAMETERS');
 
 			return false;
 		}
@@ -1102,7 +1102,7 @@ class DetectionsController extends Controller
 		$experiment = (new Experiment())->load((int)$params['exp_id']);
 		if(!$experiment)
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -1110,7 +1110,7 @@ class DetectionsController extends Controller
 		// Check access to edit experiment
 		if(!$experiment->userCanEdit($this->session()))
 		{
-			$this->error = L::ACCESS_DENIED;
+			$this->error = L('ACCESS_DENIED');
 
 			return false;
 		}
@@ -1140,14 +1140,14 @@ class DetectionsController extends Controller
 		}
 		else
 		{
-			$this->error = L::ERROR_INVALID_PARAMETERS;
+			$this->error = L('ERROR_INVALID_PARAMETERS');
 
 			return false;
 		}
 
 		if (empty($dts))
 		{
-			$this->error = L::ERROR_INVALID_PARAMETERS;
+			$this->error = L('ERROR_INVALID_PARAMETERS');
 
 			return false;
 		}
@@ -1167,7 +1167,7 @@ class DetectionsController extends Controller
 			{
 				error_log('PDOError: '.var_export($stmt->errorInfo(),true));  //DEBUG
 
-				$this->error = L::FATAL_ERROR;
+				$this->error = L('FATAL_ERROR');
 				return false;
 			}
 		}
@@ -1175,7 +1175,7 @@ class DetectionsController extends Controller
 		{
 			error_log('PDOException delete(): '.var_export($e->getMessage(),true));  //DEBUG
 
-			$this->error = L::FATAL_ERROR;
+			$this->error = L('FATAL_ERROR');
 			return false;
 		}
 

@@ -25,8 +25,8 @@ class TimeController extends Controller
 		if ($this->session()->getUserLevel() == 3)
 		{
 			self::setViewTemplate('edit');
-			self::setTitle(L::time_TITLE_EDIT);
-			self::setContentTitle(L::time_TITLE_EDIT);
+			self::setTitle(L('time_TITLE_EDIT'));
+			self::setContentTitle(L('time_TITLE_EDIT'));
 
 			self::addJs('functions');
 			//self::addJs('class/Time');
@@ -37,7 +37,7 @@ class TimeController extends Controller
 
 			// Form object
 			$this->view->form = new Form('edit-time-form');
-			$this->view->form->submit->value = L::SAVE;
+			$this->view->form->submit->value = L('SAVE');
 
 			// Get current time and timezone
 			$now = new DateTime();
@@ -57,7 +57,7 @@ class TimeController extends Controller
 					array(
 							'type'     => 'option',
 							'value'    => '',
-							'text'     => L::time_SELECT_TIMEZONE,
+							'text'     => L('time_SELECT_TIMEZONE'),
 							'disabled' => false,
 							'class'    => '',
 							'onclick'  => ''

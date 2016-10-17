@@ -62,7 +62,7 @@ class UsersController extends Controller
 			}
 
 			self::setViewTemplate('view.all');
-			self::setTitle(L::users_TITLE_ALL);
+			self::setTitle(L('users_TITLE_ALL'));
 
 			self::addJs('functions');
 			//self::addJs('users/view.all');

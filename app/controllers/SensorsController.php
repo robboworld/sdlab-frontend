@@ -147,16 +147,16 @@ class SensorsController extends Controller
 					$value_name = System::getValsTranslate($value->{'Name'});
 					if (($value_name !== false) && (strlen($value_name) > 0))
 					{
-						$value->value_name  =   constant('L::sensor_VALUE_NAME_' . strtoupper($value_name));
+						$value->value_name  =   L('sensor_VALUE_NAME_' . strtoupper($value_name));
 
 						$field = System::getValsTranslate($value->{'Name'}, 'si_notation');
 						$value->si_notation = (($field !== false) && (strlen($field) > 0)) ?
-												constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($field)) :
+												L('sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($field)) :
 												false;
 
 						$field = System::getValsTranslate($value->{'Name'}, 'si_name');
 						$value->si_name     = (($field !== false) && (strlen($field) > 0)) ?
-												constant('L::sensor_VALUE_SI_NAME_' . strtoupper($value_name) . '_' . strtoupper($field)) :
+												L('sensor_VALUE_SI_NAME_' . strtoupper($value_name) . '_' . strtoupper($field)) :
 												false;
 					}
 					else
@@ -218,7 +218,7 @@ class SensorsController extends Controller
 	{
 		if (!is_array($params))
 		{
-			$this->error = L::ERROR;
+			$this->error = L('ERROR');
 
 			return false;
 		}
@@ -265,7 +265,7 @@ class SensorsController extends Controller
 
 		if (empty($items))
 		{
-			$this->error = L::ERROR;
+			$this->error = L('ERROR');
 
 			return false;
 		}
@@ -287,7 +287,7 @@ class SensorsController extends Controller
 	{
 		if(empty($params['experiment']))
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -296,7 +296,7 @@ class SensorsController extends Controller
 		$experiment = (new Experiment())->load($params['experiment']);
 		if(!$experiment)
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -305,7 +305,7 @@ class SensorsController extends Controller
 		// (view access need for share experiment in future)
 		if(!$experiment->userCanEdit($this->session()))
 		{
-			$this->error = L::ACCESS_DENIED;
+			$this->error = L('ACCESS_DENIED');
 
 			return false;
 		}
@@ -336,7 +336,7 @@ class SensorsController extends Controller
 			}
 			if(empty($monitor))
 			{
-				$this->error = L::ERROR_MONITOR_NOT_FOUND;
+				$this->error = L('ERROR_MONITOR_NOT_FOUND');
 
 				return false;
 			}
@@ -348,7 +348,7 @@ class SensorsController extends Controller
 			// Allow access to control of unknown orphaned Setup
 			if ($monitor->setup && !$monitor->setup->userCanControl($this->session(), $experiment->id))
 			{
-				$this->error = L::ACCESS_DENIED;
+				$this->error = L('ACCESS_DENIED');
 
 				return false;
 			}
@@ -368,7 +368,7 @@ class SensorsController extends Controller
 			// Check Setup
 			if(empty($experiment->setup_id))
 			{
-				$this->error = L::ERROR_SETUP_NOT_FOUND;
+				$this->error = L('ERROR_SETUP_NOT_FOUND');
 
 				return false;
 			}
@@ -386,7 +386,7 @@ class SensorsController extends Controller
 			$setup = (new Setup())->load($experiment->setup_id);
 			if (!$setup)
 			{
-				$this->error = L::ERROR_SETUP_NOT_FOUND;
+				$this->error = L('ERROR_SETUP_NOT_FOUND');
 
 				return false;
 			}
@@ -395,7 +395,7 @@ class SensorsController extends Controller
 			if (!$setup->userCanControl($this->session(), $experiment->id))
 			{
 				// Setup is busy by other experiment
-				$this->error = L::ACCESS_DENIED;
+				$this->error = L('ACCESS_DENIED');
 
 				return false;
 			}
@@ -443,7 +443,7 @@ class SensorsController extends Controller
 		$socket = new JSONSocket($this->config['socket']['path']);
 		if ($socket->error())
 		{
-			$this->error = L::ERROR;
+			$this->error = L('ERROR');
 
 			return false;
 		}
@@ -451,7 +451,7 @@ class SensorsController extends Controller
 		$respond = $socket->call('Lab.StrobeMonitor', (object) $request_params);
 		if(!$respond)
 		{
-			$this->error = L::ERROR;
+			$this->error = L('ERROR');
 
 			return false;
 		}
@@ -460,7 +460,7 @@ class SensorsController extends Controller
 			// If returned true try get results
 			if(!$respond['result'])
 			{
-				$this->error = L::setup_ERROR_STROBE_NOT_CREATED;
+				$this->error = L('setup_ERROR_STROBE_NOT_CREATED');
 
 				return false;
 			}
@@ -519,7 +519,7 @@ class SensorsController extends Controller
 	{
 		if(empty($params['experiment']))
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -528,7 +528,7 @@ class SensorsController extends Controller
 		$experiment = (new Experiment())->load($params['experiment']);
 		if(!$experiment)
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -536,7 +536,7 @@ class SensorsController extends Controller
 		// Check access to experiment edit
 		if(!$experiment->userCanEdit($this->session()))
 		{
-			$this->error = L::ACCESS_DENIED;
+			$this->error = L('ACCESS_DENIED');
 
 			return false;
 		}
@@ -545,7 +545,7 @@ class SensorsController extends Controller
 		// Check Setup
 		if(empty($experiment->setup_id))
 		{
-			$this->error = L::ERROR_SETUP_NOT_FOUND;
+			$this->error = L('ERROR_SETUP_NOT_FOUND');
 
 			return false;
 		}
@@ -555,7 +555,7 @@ class SensorsController extends Controller
 		if(empty($sensors))
 		{
 			// TODO: error message about empty setup or no sensors
-			$this->error = L::ERROR;
+			$this->error = L('ERROR');
 
 			return false;
 		}
@@ -564,7 +564,7 @@ class SensorsController extends Controller
 		$setup = (new Setup())->load($experiment->setup_id);
 		if (!$setup)
 		{
-			$this->error = L::ERROR_SETUP_NOT_FOUND;
+			$this->error = L('ERROR_SETUP_NOT_FOUND');
 
 			return false;
 		}
@@ -573,7 +573,7 @@ class SensorsController extends Controller
 		/*
 		if(Setup::isActive($setup->id, $experiment->id))
 		{
-			$this->error = L::setup_ACTIVE_ALREADY;
+			$this->error = L('setup_ACTIVE_ALREADY');
 
 			return false;
 		}
@@ -583,7 +583,7 @@ class SensorsController extends Controller
 		// TODO: if already assign to experiment than can control/Start? But there are other condition on experiment view with Start experiment access.
 		if (!$setup->userCanControl($this->session(), $experiment->id))
 		{
-			$this->error = L::ACCESS_DENIED;
+			$this->error = L('ACCESS_DENIED');
 
 			return false;
 		}
@@ -687,7 +687,7 @@ class SensorsController extends Controller
 		$socket = new JSONSocket($this->config['socket']['path']);
 		if ($socket->error())
 		{
-			$this->error = L::ERROR;
+			$this->error = L('ERROR');
 
 			return false;
 		}
@@ -695,7 +695,7 @@ class SensorsController extends Controller
 		$result = $socket->call('Lab.StartMonitor', (object) $request_params);
 		if (!$result)
 		{
-			$this->error = L::ERROR;
+			$this->error = L('ERROR');
 
 			return false;
 		}
@@ -704,7 +704,7 @@ class SensorsController extends Controller
 			// Try get uuid of created monitor
 			if (!isset($result['result']) || empty($result['result']))
 			{
-				$this->error = L::setup_ERROR_MONITORING_NOT_STARTED;
+				$this->error = L('setup_ERROR_MONITORING_NOT_STARTED');
 
 				return false;
 			}
@@ -753,7 +753,7 @@ class SensorsController extends Controller
 	{
 		if(empty($params['experiment']))
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -762,7 +762,7 @@ class SensorsController extends Controller
 		$experiment = (new Experiment())->load($params['experiment']);
 		if(!$experiment)
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -770,7 +770,7 @@ class SensorsController extends Controller
 		// Check access to experiment edit
 		if(!$experiment->userCanEdit($this->session()))
 		{
-			$this->error = L::ACCESS_DENIED;
+			$this->error = L('ACCESS_DENIED');
 
 			return false;
 		}
@@ -779,7 +779,7 @@ class SensorsController extends Controller
 		// Check Setup
 		if(empty($experiment->setup_id))
 		{
-			$this->error = L::ERROR_SETUP_NOT_FOUND;
+			$this->error = L('ERROR_SETUP_NOT_FOUND');
 
 			return false;
 		}
@@ -788,7 +788,7 @@ class SensorsController extends Controller
 		$setup = (new Setup())->load($experiment->setup_id);
 		if (!$setup)
 		{
-			$this->error = L::ERROR_SETUP_NOT_FOUND;
+			$this->error = L('ERROR_SETUP_NOT_FOUND');
 
 			return false;
 		}
@@ -797,7 +797,7 @@ class SensorsController extends Controller
 		/*
 		if(!Setup::isActive($setup->id,$experiment->id))
 		{
-			$this->error = L::setup_ERROR_SETUP_NOT_RUNNED;
+			$this->error = L('setup_ERROR_SETUP_NOT_RUNNED');
 
 			return false;
 		}
@@ -809,7 +809,7 @@ class SensorsController extends Controller
 		/*
 		if (!$setup->userCanControl($this->session(), $experiment->id))
 		{
-			$this->error = L::ACCESS_DENIED;
+			$this->error = L('ACCESS_DENIED');
 
 			return false;
 		}
@@ -836,7 +836,7 @@ class SensorsController extends Controller
 			$socket = new JSONSocket($this->config['socket']['path']);
 			if ($socket->error())
 			{
-				$this->error = L::ERROR;
+				$this->error = L('ERROR');
 
 				return false;
 			}
@@ -861,14 +861,14 @@ class SensorsController extends Controller
 				$socket = new JSONSocket($this->config['socket']['path']);
 				if ($socket->error())
 				{
-					$this->error = L::ERROR;
+					$this->error = L('ERROR');
 
 					return false;
 				}
 				$result = $socket->call('Lab.StopMonitor', $request_params);
 				if (!$result)
 				{
-					$this->error = L::ERROR;
+					$this->error = L('ERROR');
 
 					return false;
 				}
@@ -882,7 +882,7 @@ class SensorsController extends Controller
 				}
 				else
 				{
-					$this->error = L::setup_ERROR_MONITORING_NOT_STOPPED;
+					$this->error = L('setup_ERROR_MONITORING_NOT_STOPPED');
 					error_log('Error Lab.StopMonitor' . (isset($result->error) ? ': '.var_export($result->error,true) : ''));  //DEBUG
 
 					return false;
@@ -949,7 +949,7 @@ class SensorsController extends Controller
 	{
 		if(empty($params['experiment']))
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -958,7 +958,7 @@ class SensorsController extends Controller
 		$experiment = (new Experiment())->load($params['experiment']);
 		if(!$experiment)
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -966,7 +966,7 @@ class SensorsController extends Controller
 		// Check access to experiment view
 		if(!$experiment->userCanView($this->session()))
 		{
-			$this->error = L::ACCESS_DENIED;
+			$this->error = L('ACCESS_DENIED');
 
 			return false;
 		}
@@ -1007,7 +1007,7 @@ class SensorsController extends Controller
 			$socket = new JSONSocket($this->config['socket']['path']);
 			if($socket->error())
 			{
-				$this->error = L::ERROR;
+				$this->error = L('ERROR');
 
 				return false;
 			}
@@ -1194,7 +1194,7 @@ class SensorsController extends Controller
 					}
 					else
 					{
-						$mon_stopat_text   = L::TIME_UNKNOWN;
+						$mon_stopat_text   = L('TIME_UNKNOWN');
 					}
 				}
 
@@ -1228,14 +1228,14 @@ class SensorsController extends Controller
 	{
 		if(empty($params['experiment']))
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
 
 		if(empty($params['uuid']))
 		{
-			$this->error = L::ERROR_MONITOR_NOT_FOUND;
+			$this->error = L('ERROR_MONITOR_NOT_FOUND');
 
 			return false;
 		}
@@ -1244,7 +1244,7 @@ class SensorsController extends Controller
 		$experiment = (new Experiment())->load($params['experiment']);
 		if(!$experiment)
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -1253,7 +1253,7 @@ class SensorsController extends Controller
 		// (view access need for share experiment in future)
 		if(!$experiment->userCanEdit($this->session()))
 		{
-			$this->error = L::ACCESS_DENIED;
+			$this->error = L('ACCESS_DENIED');
 
 			return false;
 		}
@@ -1280,7 +1280,7 @@ class SensorsController extends Controller
 			//Check access to control Setup
 			if ($monitor->setup && !$monitor->setup->userCanControl($this->session(), $experiment->id))
 			{
-				$this->error = L::ACCESS_DENIED;
+				$this->error = L('ACCESS_DENIED');
 
 				return false;
 			}
@@ -1293,7 +1293,7 @@ class SensorsController extends Controller
 			$socket = new JSONSocket($this->config['socket']['path']);
 			if ($socket->error())
 			{
-				$this->error = L::ERROR;
+				$this->error = L('ERROR');
 
 				return false;
 			}
@@ -1318,14 +1318,14 @@ class SensorsController extends Controller
 				$socket = new JSONSocket($this->config['socket']['path']);
 				if ($socket->error())
 				{
-					$this->error = L::ERROR;
+					$this->error = L('ERROR');
 
 					return false;
 				}
 				$result = $socket->call('Lab.StopMonitor', $request_params);
 				if (!$socket)
 				{
-					$this->error = L::ERROR;
+					$this->error = L('ERROR');
 
 					return false;
 				}
@@ -1339,7 +1339,7 @@ class SensorsController extends Controller
 				}
 				else
 				{
-					$this->error = L::setup_ERROR_MONITORING_NOT_STOPPED;
+					$this->error = L('setup_ERROR_MONITORING_NOT_STOPPED');
 					error_log('Error Lab.StopMonitor' . (isset($result->error) ? ': '.var_export($result->error,true) : ''));  //DEBUG
 
 					return false;
@@ -1377,14 +1377,14 @@ class SensorsController extends Controller
 	{
 		if(empty($params['experiment']))
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
 
 		if(empty($params['uuid']))
 		{
-			$this->error = L::ERROR_MONITOR_NOT_FOUND;
+			$this->error = L('ERROR_MONITOR_NOT_FOUND');
 
 			return false;
 		}
@@ -1396,7 +1396,7 @@ class SensorsController extends Controller
 		$experiment = (new Experiment())->load($params['experiment']);
 		if(!$experiment)
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 
 			return false;
 		}
@@ -1405,7 +1405,7 @@ class SensorsController extends Controller
 		// (view access need for share experiment in future)
 		if(!$experiment->userCanEdit($this->session()))
 		{
-			$this->error = L::ACCESS_DENIED;
+			$this->error = L('ACCESS_DENIED');
 
 			return false;
 		}

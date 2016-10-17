@@ -48,11 +48,11 @@
 
 				<div class="pull-right text-right col-md-5">
 					<div class="btn-group ">
-						<a href="?q=session/edit" id="session-name" class="btn btn-sm btn-info navbar-btn" title="<?php echo L::session_EDIT; ?>">
+						<a href="?q=session/edit" id="session-name" class="btn btn-sm btn-info navbar-btn" title="<?php echo L('session_EDIT'); ?>">
 							<?php echo htmlspecialchars($session->name, ENT_QUOTES, 'UTF-8'); ?>
 						</a>
-						<a href="?q=session/destroy" class="btn btn-sm btn-default navbar-btn" title="<?php echo L::LOGOFF; ?>"><span class="glyphicon glyphicon-log-out"></span>&nbsp;<span class="hidden-sm hidden-xs"><?php echo L::LOGOFF; ?></span></a>
-						<a href="?q=session/create" class="btn btn-sm btn-default navbar-btn" title="<?php echo L::session_NEW_SESSION; ?>"><span class="glyphicon glyphicon-plus"></span>&nbsp;<span class="hidden-sm hidden-xs"><?php echo L::session_NEW_SESSION; ?></span></a>
+						<a href="?q=session/destroy" class="btn btn-sm btn-default navbar-btn" title="<?php echo L('LOGOFF'); ?>"><span class="glyphicon glyphicon-log-out"></span>&nbsp;<span class="hidden-sm hidden-xs"><?php echo L('LOGOFF'); ?></span></a>
+						<a href="?q=session/create" class="btn btn-sm btn-default navbar-btn" title="<?php echo L('session_NEW_SESSION'); ?>"><span class="glyphicon glyphicon-plus"></span>&nbsp;<span class="hidden-sm hidden-xs"><?php echo L('session_NEW_SESSION'); ?></span></a>
 					</div>
 
 				</div>
@@ -65,10 +65,10 @@
 
 					<form id="nav-buttons" class="navbar-form" action="?q=session/create<?php if(isset($_GET['q'])) : ?>&destination=<?php echo urlencode('?' . $_SERVER['QUERY_STRING']); endif; ?>" method="post">
 						<div class="input-group input-group-sm">
-							<input type="password" name="session_key" placeholder="<?php echo L::session_KEY_EXAMPLE; ?>" title="<?php echo L::session_KEY_EXAMPLE2; ?>" class="form-control">
+							<input type="password" name="session_key" placeholder="<?php echo L('session_KEY_EXAMPLE'); ?>" title="<?php echo L('session_KEY_EXAMPLE2'); ?>" class="form-control">
 							<span class="input-group-btn">
-								<button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-log-in">&nbsp;</span><span class="hidden-xs"><?php echo L::LOGIN; ?></span></button>
-								<a href="?q=session/create" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-plus">&nbsp;</span><span class="hidden-xs"><?php echo L::session_NEW_SESSION; ?></span></a>
+								<button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-log-in">&nbsp;</span><span class="hidden-xs"><?php echo L('LOGIN'); ?></span></button>
+								<a href="?q=session/create" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-plus">&nbsp;</span><span class="hidden-xs"><?php echo L('session_NEW_SESSION'); ?></span></a>
 							</span>
 						</div>
 					</form>

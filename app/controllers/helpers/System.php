@@ -106,7 +106,7 @@ class System
 
 		if (!is_array($default_query))
 		{
-			$q = (($default_query !== null) ? (string)$q : null);
+			$q = (($default_query !== null) ? (string)$default_query : null);
 			$default_query = $default_array;
 			$default_query['q'] = $q;
 		}

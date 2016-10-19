@@ -1,6 +1,6 @@
 $(document).ready(function(){
     // Rescan sensors
-	$('sensors-list .alert').alert();
+    $('.sensors-list .alert').alert();
     $('#sensors-rescan').click(function(){
         coreAPICall('Sensors.getSensors', {rescan: true, getinfo: true}, showRescanResults);
     });

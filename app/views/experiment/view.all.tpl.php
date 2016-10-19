@@ -9,9 +9,13 @@ $show_action = true;
 		</div>
 	</div>
 	<div>
-		<a href="?q=experiment" class="btn btn-primary"><span class="glyphicon glyphicon-plus">&nbsp;</span><?php echo L('experiment_NEW_EXPERIMENT'); ?></a>
+		<a href="?q=experiment" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span>&nbsp;<?php echo L('experiment_NEW_EXPERIMENT'); ?></a>
+		<?php if($this->session()->getUserLevel() == 3) :?>
+		<a href="?q=sensors/view" class="btn btn-primary"><span class="fa fa-wrench"></span>&nbsp;<?php echo L('SENSORS'); ?></a>
+		<?php endif; ?>
+
 	</div>
-	<form id="sdform" method="post" action="?<?php echo $_SERVER['QUERY_STRING']?>" >
+	<form id="sdform" method="post" action="?<?php echo $_SERVER['QUERY_STRING']?>">
 		<input type="hidden" name="force" value="0"/>
 	<?php if(isset($this->view->content->list )) : ?>
 		<table class="table">

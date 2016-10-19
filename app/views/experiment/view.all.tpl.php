@@ -85,14 +85,6 @@ $show_action = true;
 			</tbody>
 		</table>
 	<?php endif; ?>
-		<div class="sensors-list">
-		</div>
-		<div class="row">
-			<?php if($this->session()->getUserLevel() == 3) :?>
-			<div class="col-md-4 text-left">
-				<a href="javascript:void(0)" id="sensors-rescan" class="btn btn-primary"><?php echo L('sensor_REFRESH_LIST'); ?></a>
-			</div>
-			<?php endif; ?>
-		</div>
+
 	</form>
 </div>

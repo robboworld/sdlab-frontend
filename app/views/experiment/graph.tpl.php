@@ -459,8 +459,8 @@ $xrangeymode = 'auto';
 					<button type="button" class="btn btn-sm btn-default" onclick="g.pan({left:'+/2'});return true;"><span class="fa fa-long-arrow-right"></span></button>
 				</div>
 				<div class="btn-group btn-group-sm control-zoom-x" role="group" aria-label="...">
-					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'x'},  'in');"><span class="fa fa-plus"></span></button>
 					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'x'}, 'out');"><span class="fa fa-minus"></span></button>
+					<button type="button" class="btn btn-sm btn-default" onclick="return zoomPlot({axis:'x'}, 'in');"><span class="fa fa-plus"></span></button>
 				</div>
 				<div class="btn-group btn-group-sm" role="group" aria-label="..." style="margin-left: 20px;">
 					<div class="toolbar-text special-label">

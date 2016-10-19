@@ -4,13 +4,31 @@
  */
 class ExperimentController extends Controller
 {
-
-	public function __construct($action = 'create')
+	public function __construct($action = 'create', $config = array('default_action' => 'index'))
 	{
-		parent::__construct($action);
+		parent::__construct($action, $config);
 
-		// Get id from request query string experiment/edit/%id
+		// Register the methods as actions.
+		$this->registerAction('create', 'create');
+		$this->registerAction('view', 'view');
+		$this->registerAction('edit', 'edit');
+		$this->registerAction('delete', 'delete');
+		$this->registerAction('journal', 'journal');
+		$this->registerAction('graph', 'graph');
+		$this->registerAction('scatter', 'scatter');
+		$this->registerAction('clean', 'clean');
+		$this->registerAction('download', 'download');
+
+		// Register the methods as API methods.
+		$this->registerMAPI('isActive', 'isActive');
+		$this->registerMAPI('getGraphData', 'getGraphData');
+		$this->registerMAPI('getScatterData', 'getScatterData');
+		$this->registerMAPI('delete', 'delete');
+		$this->registerMAPI('deletebytime', 'deletebytime');
+
+		// Get id from request query string experiment/{action}/%id
 		$this->id = App::router(2);
+		// Get Application config
 		$this->config = App::config();
 	}
 

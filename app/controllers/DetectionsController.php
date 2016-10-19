@@ -4,12 +4,27 @@
  */
 class DetectionsController extends Controller
 {
-	public function __construct()
+	public function __construct($action = 'index', $config = array())
 	{
-		parent::__construct();
+		parent::__construct($action, $config);
+
+		$this->user_access_level = 0;
+
+		// Register the methods as actions.
+		// NO RENDER VIEW ACTIONS?
+		$this->unregisterAction('index');
+		$this->unregisterAction('__default');
+
+		// Register the methods as API methods.
+		$this->registerMAPI('getGraphSingleData', 'getGraphSingleData');
+		$this->registerMAPI('getGraphData', 'getGraphData');
+		$this->registerMAPI('getScatterData', 'getScatterData');
+		$this->registerMAPI('delete', 'delete');
+		$this->registerMAPI('deletebytime', 'deletebytime');
+
+		// Get Application config
 		$this->config = App::config();
 	}
-
 
 	/**
 	 * Get detections data for plot.
@@ -1180,11 +1195,5 @@ class DetectionsController extends Controller
 		}
 
 		return array('result' => true);
-	}
-
-
-	public function error()
-	{
-		return $this->error;
 	}
 }

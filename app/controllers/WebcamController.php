@@ -5,12 +5,21 @@
 class WebcamController extends Controller
 {
 
-	public function __construct($action = 'view')
+	public function __construct($action = 'view', $config = array('default_action' => 'index'))
 	{
-		parent::__construct($action);
+		parent::__construct($action, $config);
+
+		// Register the methods as actions.
+		$this->registerAction('view', 'view');
+		$this->registerAction('start', 'start');
+		$this->registerAction('stop', 'stop');
+		$this->registerAction('startall', 'startall');
+		$this->registerAction('stopall', 'stopall');
 
 		// Get id from request query string webcam/view/%id
 		$this->id = App::router(2);
+
+		// Get Application config
 		$this->config = App::config();
 	}
 

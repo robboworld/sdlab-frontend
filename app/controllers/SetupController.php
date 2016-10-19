@@ -6,9 +6,13 @@
  */
 class SetupController extends Controller
 {
-	public function __construct($action = 'create')
+	public function __construct($action, $config = array('default_action' => 'index'))
 	{
-		parent::__construct($action);
+		parent::__construct($action, $config);
+
+		// Register the methods as actions.
+		$this->registerAction('create', 'create');
+		$this->registerAction('edit', 'edit');
 
 		// Get id from request query string setup/edit/%id
 		$this->id = App::router(2);
@@ -431,7 +435,9 @@ class SetupController extends Controller
 
 	/**
 	 * Insert into setup_conf all sensors selected in form
+	 * 
 	 * @param array $sensors
+	 * 
 	 * @return bool
 	 */
 	public function setSensors(array $sensors)
@@ -479,6 +485,7 @@ class SetupController extends Controller
 
 	/**
 	 * Reset all rows in setup_conf where setup_id = this setup id
+	 * 
 	 * @return bool
 	 */
 	public function resetSensors()

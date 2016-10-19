@@ -4,16 +4,39 @@
  */
 class SensorsController extends Controller
 {
-
-	public function __construct()
+	public function __construct($action = 'view', $config = array('default_action' => 'index'))
 	{
-		parent::__construct();
+		parent::__construct($action, $config);
+
+		// Register the methods as actions.
+		$this->registerAction('view', 'view');
+
+		// Register the methods as API methods.
+		$this->registerMAPI('getSensors', 'getSensors');
+		$this->registerMAPI('getData', 'getData');
+		$this->registerMAPI('getDataItems', 'getDataItems');
+		$this->registerMAPI('experimentStrob', 'experimentStrob');
+		$this->registerMAPI('experimentStart', 'experimentStart');
+		$this->registerMAPI('experimentStop', 'experimentStop');
+		$this->registerMAPI('experimentStatus', 'experimentStatus');
+		$this->registerMAPI('monitorStop', 'monitorStop');
+		$this->registerMAPI('monitorRemove', 'monitorRemove');
+
+		// Get id from request query string experiment/{action}/%id
+		$this->id = App::router(2);
+		// Get Application config
 		$this->config = App::config();
 	}
 
-
 	public function index()
 	{
+		System::go('experiment/view');
+	}
+
+	public function view()
+	{
+		// TODO: view single sensor info
+
 		$this->addJs('functions');
 		$this->addJs('chart');
 		$this->addJs('Sensor');
@@ -23,7 +46,7 @@ class SensorsController extends Controller
 				'ERROR',
 				'sensor_VALUE_NAME_TEMPERATURE',  // chart
 				'GRAPH', 'INFO'            // Sensor
-				                           // - sensors
+				// - sensors
 		));
 
 		$this->addCss('sensors');
@@ -31,10 +54,11 @@ class SensorsController extends Controller
 		$this->view->content->sensors_list = 'test inc';
 		$this->view->template = 'index';
 
- 		//$this->view->content = $this->renderTemplate('index');
+		//$this->view->content = $this->renderTemplate('index');
 		// TODO: Remove all unnessesary in this controller, use only for API calls
-	}
 
+		// TODO: list sensors & register sensors
+	}
 
 	/**
 	 * Get list of available sensors.

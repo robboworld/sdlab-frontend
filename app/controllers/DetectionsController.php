@@ -4,15 +4,16 @@
  */
 class DetectionsController extends Controller
 {
-	public function __construct($action, $config = array())
+	public function __construct($action = 'index', $config = array())
 	{
 		parent::__construct($action, $config);
 
 		$this->user_access_level = 0;
 
 		// Register the methods as actions.
-		// NO RENDER VIEW ACTIONS
+		// NO RENDER VIEW ACTIONS?
 		$this->unregisterAction('index');
+		$this->unregisterAction('__default');
 
 		// Register the methods as API methods.
 		$this->registerMAPI('getGraphSingleData', 'getGraphSingleData');
@@ -24,7 +25,6 @@ class DetectionsController extends Controller
 		// Get Application config
 		$this->config = App::config();
 	}
-
 
 	/**
 	 * Get detections data for plot.

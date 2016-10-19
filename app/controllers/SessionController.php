@@ -6,7 +6,7 @@
  */
 class SessionController extends Controller
 {
-	public function __construct($action, $config = array())
+	public function __construct($action = 'index', $config = array())
 	{
 		parent::__construct($action, $config);
 
@@ -18,10 +18,21 @@ class SessionController extends Controller
 		$this->registerAction('destroy', 'destroy');
 		// UnRegister the methods as actions.
 		$this->unregisterAction('index');
+		$this->unregisterAction('__default');
 	}
 
 	public function create()
 	{
+		// Check access
+		// Now can create new sesssion if already logged in
+		/*
+		if($this->session())
+		{
+			// Only for unregistered
+			System::go('session/edit');
+		}
+		*/
+
 		if(isset($_POST['session_key']))
 		{
 			$session = new Session();

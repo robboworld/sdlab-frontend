@@ -6,7 +6,7 @@
  */
 class PageController extends Controller
 {
-	public function __construct($action = 'view', $config = array('default_action' => 'view'))
+	public function __construct($action = 'view', $config = array('default_action' => 'index'))
 	{
 		parent::__construct($action, $config);
 
@@ -15,7 +15,14 @@ class PageController extends Controller
 		// Register the methods as actions.
 		$this->registerAction('view', 'view');
 		// UnRegister the methods as actions.
-		$this->unregisterAction('index');
+		//$this->unregisterAction('index');
+		//$this->unregisterAction('__default');
+	}
+
+	public function index()
+	{
+		//System::goerror(404);
+		System::go('page/view');
 	}
 
 	public function view()

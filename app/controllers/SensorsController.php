@@ -4,7 +4,7 @@
  */
 class SensorsController extends Controller
 {
-	public function __construct($action, $config = array('default_action' => 'index'))
+	public function __construct($action = 'view', $config = array('default_action' => 'index'))
 	{
 		parent::__construct($action, $config);
 

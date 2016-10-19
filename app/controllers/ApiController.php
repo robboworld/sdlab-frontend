@@ -55,11 +55,17 @@ class ApiController extends Controller
 
 		$api_method_class = $method_query[0].'Controller';
 
-		if (class_exists($api_method_class))
+		try
 		{
-			$this->controller = new $api_method_class;
-			$this->method = strlen((string)$method_query[1]) != 0 ? (string)$method_query[1] : null;
-			$this->params = isset($_GET['params']) ? $_GET['params'] : array();
+			if (class_exists($api_method_class))
+			{
+				$this->controller = new $api_method_class;
+				$this->method = strlen((string)$method_query[1]) != 0 ? (string)$method_query[1] : null;
+				$this->params = isset($_GET['params']) ? $_GET['params'] : array();
+			}
+		}
+		catch (Exception $e)
+		{
 		}
 	}
 
@@ -84,7 +90,6 @@ class ApiController extends Controller
 			// Inject App in called controller
 			// xxx: cannot do that in constructor of new sub controller, because it creates when no binded $this->app in the current api controller!
 			$this->controller->app = $this->app;
-
 
 			// Call method
 			$result = $this->controller->executeAPI($this->method, $this->params);

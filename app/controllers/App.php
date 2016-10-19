@@ -22,10 +22,19 @@ class App
 		if(isset($query_array[0]) && ($query_array[0] != ''))
 		{
 			$controller_class = ucfirst($query_array[0]).'Controller';
-			if (!class_exists($controller_class))
+
+			try
+			{
+				if (!class_exists($controller_class))
+				{
+					throw new Exception('controller not found.', 500);
+				}
+			}
+			catch (Exception $e)
 			{
 				throw new Exception('controller not found.', 500);
 			}
+
 			if (isset($query_array[1]))
 			{
 				$controller = new $controller_class($query_array[1]);

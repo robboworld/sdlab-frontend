@@ -6,12 +6,16 @@
  */
 class PageController extends Controller
 {
-
-	public function __construct($action = 'view')
+	public function __construct($action = 'view', $config = array('default_action' => 'view'))
 	{
-		$this->user_access_level = 0;
-		parent::__construct($action);
+		parent::__construct($action, $config);
 
+		$this->user_access_level = 0;
+
+		// Register the methods as actions.
+		$this->registerAction('view', 'view');
+		// UnRegister the methods as actions.
+		$this->unregisterAction('index');
 	}
 
 	public function view()

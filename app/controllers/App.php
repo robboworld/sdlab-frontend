@@ -11,6 +11,7 @@ class App
 
 	public function __construct()
 	{
+		// Set Application config
 		$this->config = self::config();
 
 		// Get language
@@ -21,6 +22,10 @@ class App
 		if(isset($query_array[0]) && ($query_array[0] != ''))
 		{
 			$controller_class = ucfirst($query_array[0]).'Controller';
+			if (!class_exists($controller_class))
+			{
+				throw new Exception('controller not found.', 500);
+			}
 			if (isset($query_array[1]))
 			{
 				$controller = new $controller_class($query_array[1]);
@@ -36,7 +41,7 @@ class App
 		}
 
 
-		if($controller->user_access_level() >= 1)
+		if($controller->getUserAccessLevel() >= 1)
 		{
 			if(!isset($_SESSION['sdlab']) || !isset($_SESSION['sdlab']['session_key']) || !$_SESSION['sdlab']['session_key'])
 			{
@@ -58,7 +63,7 @@ class App
 
 			}
 		}
-		else if($controller->user_access_level() == 0)
+		else if($controller->getUserAccessLevel() == 0)
 		{
 			if(!empty($_SESSION['sdlab']['session_key']))
 			{
@@ -100,9 +105,11 @@ class App
 	{
 		if(!is_null($controller))
 		{
+			// Set reference to instantiated controller
 			$this->controller = $controller;
-			$this->controller->app = $this;
 
+			// Set this to controller application reference
+			$this->controller->app = $this;
 		}
 		return $this->controller;
 	}
@@ -120,7 +127,7 @@ class App
 		}
 		else
 		{
-			throw new Exception('controller is not object.');
+			throw new Exception('controller is not object.', 500);
 		}
 	}
 

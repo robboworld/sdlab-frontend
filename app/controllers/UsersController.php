@@ -7,12 +7,17 @@
 class UsersController extends Controller
 {
 
-	public function __construct($action)
+	public function __construct($action, $config = array('default_action' => 'index'))
 	{
-		parent::__construct($action);
+		parent::__construct($action, $config);
+
+		// Register the methods as actions.
+		$this->registerAction('view', 'view');
 
 		// Get id from request query string users/edit/%id
 		$this->id = App::router(2);
+
+		// Get Application config
 		$this->config = App::config();
 	}
 

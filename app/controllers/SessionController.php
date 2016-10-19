@@ -6,7 +6,20 @@
  */
 class SessionController extends Controller
 {
-	public $user_access_level = 0;
+	public function __construct($action, $config = array())
+	{
+		parent::__construct($action, $config);
+
+		$this->user_access_level = 0;
+
+		// Register the methods as actions.
+		$this->registerAction('create', 'create');
+		$this->registerAction('edit', 'edit');
+		$this->registerAction('destroy', 'destroy');
+		// UnRegister the methods as actions.
+		$this->unregisterAction('index');
+	}
+
 	public function create()
 	{
 		if(isset($_POST['session_key']))

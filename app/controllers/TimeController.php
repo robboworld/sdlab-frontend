@@ -4,9 +4,14 @@
  */
 class TimeController extends Controller
 {
-	public function __construct($action = 'index')
+	public function __construct($action, $config = array('default_action' => 'index'))
 	{
-		parent::__construct($action);
+		parent::__construct($action, $config);
+
+		// Register the methods as actions.
+		$this->registerAction('edit', 'edit');
+
+		// Get Application config
 		$this->config = App::config();
 	}
 
@@ -14,7 +19,6 @@ class TimeController extends Controller
 	{
 		System::go('time/edit');
 	}
-
 
 	/**
 	 * Action: Edit
@@ -179,7 +183,6 @@ class TimeController extends Controller
 			System::go();
 		}
 	}
-
 
 	/**
 	 * Method to get the field input markup for a grouped list.

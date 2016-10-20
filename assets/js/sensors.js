@@ -1,136 +1,90 @@
-/* TODO: REMOVE! NOT USED SCRIPTS!*/
-
-var sensorsList = new Object();
-
-/*
-var sensorList = {}
-for(var i =1; i <=2; i++){
-    sensorList[i] = new Sensor({
-        Name: '{sensor ' + i + '}'
-    });
-    //sensorList[i].testCreateWidget($('#widget-workspace'));
-}
-*/
-
-function destroySensorWidget(id){
-    $('#'+id).remove();
-}
-
-function updateSensorsList(sensors){
-
-    // TODO: need to compare with full list sensors
-    if(typeof sensors.error === 'undefined'){
-
-        /*
-        sensors.forEach(function(entry){
-            console.log(entry);
-            var sensor = new Sensor(entry);
-            if([sensor.id] in sensorsList){
-                console.log('exists');
-            }
-            else{
-                sensorsList[sensor.id] = sensor;
-            }
-
-        })
-        */
-        for (var id in sensors){
-            console.log(sensors[id]);
-        }
-        updateSensorsListHTML();
-    }
-    else
-    {
-        setInterfaceError($('#available-sensors').before(), /*'API error: ' +*/ sensors.error, "danger", false, true, 3000);
-        $('#available-sensors').append(list);
-    }
-}
-
-function updateSensorsListHTML(){
-    var sensorsListHolder = $('#available-sensors');
-    var list = '';
-
-    for (sensor in sensorsList){
-        sensorsList[sensor].widgetActive == true ? active = ' active': active = '';
-        list += '<a class="list-group-item '+ active +'" href="#" data-id="'+ sensorsList[sensor].id+'">'+ sensorsList[sensor].name+'<span class="badge">0</span></span></a>';
-    }
-
-    sensorsListHolder.html(list);
-}
-
-/*On-load section*/
-
 $(document).ready(function(){
-
-    /*
-    // Leave page question
-    $(document).on('click', 'a:not([href*="#"])', function(e){
-        if(!confirm(SDLab.Language._('QUESTION_LEAVE_PAGE'))){
-            e.preventDefault();
-        }
-    });
-    */
-
-    // Update sensors list event listener
-    coreAPICall('Sensors.getSensors', null, updateSensorsList);
-    $(document).on('click', '#sensors-list-update', function(){
-        coreAPICall('Sensors.getSensors', null, updateSensorsList);
-    });
-
-    // Create sensor widget in workspace and destroy it
-    $(document).on('click', '#available-sensors a', function(){
-        if($(this).hasClass('active')){
-            $(this).removeClass('active');
-            sensorsList[$(this).attr('data-id')].destroyWidget();
-        }
-        else
-        {
-            $(this).addClass('active');
-            /*
-            createSensorWidget(
-                $(this).attr('data-id'),
-                'id: ' + $(this).attr('data-id'),
-                0,
-                $(this).attr('data-letter')
-            );
-            */
-            sensorsList[$(this).attr('data-id')].createWidget($('#sensors-workspace'));
-        }
-
-    })
-
-    $(document).on('click', '.show-graph:not(.active)', function(e){
-        e.preventDefault();
-        var widget = $(this).parent().parent().parent();
-
-        $(widget).find('a.btn').removeClass('active');
-        $(this).addClass('active');
-
-        widget.graph = widget.find('.widget-graph');
-        $(widget).find('.widget-pane').removeClass('active');
-        widget.graph.addClass('active');
-        testFlot(widget.graph);
-    });
-
-    $(document).on('click', '.show-info:not(.active)', function(e){
-        e.preventDefault();
-        var widget = $(this).parent().parent().parent();
-
-        $(widget).find('a.btn').removeClass('active');
-        $(this).addClass('active');
-
-        $(widget).find('.widget-pane').removeClass('active');
-        $(widget).find('.widget-pane.info').addClass('active');
-    })
-
-    $(document).on('click', '#menu-item-sensors-list', function(){
-        coreAPICall('Sensors.getSensors', null, updateSensorsList);
-        $('#sensors-list-bar').toggle();
-        $('#workspace').toggleClass('col-lg-offset-3');
-    });
-
-    $(document).on('click', '#workspace', function(){
-        $('#sensors-list-bar').hide();
-        $('#workspace').removeClass('col-lg-offset-3');
-    })
-})
+	$('#sensor-list-table').on('click', '.sensor-icon-btn', function(){
+		var sensorId = $(this).parents('tr').data('sensor-id');
+		$(this).removeClass('glyphicon-eye-open').addClass('glyphicon-refresh').addClass('spin');
+		var el = $(this);
+		updateSensorValue(sensorId, function(){el.removeClass('spin').removeClass('glyphicon-refresh').addClass('glyphicon-eye-open');});
+	});
+	// Rescan sensors
+	$('#sensors_rescan').click(function(){
+		emptyInterfaceError('#sensors_msgs');
+		$('#sensors_rescan .btn-icon').addClass('fa-spin');
+		coreAPICall('Sensors.getSensors', {rescan: true, getinfo: true}, updateSensorsList, updateSensorsListErr);
+	});
+	toggleSensorsListAlert('#sensor-list-table');
+});
+function updateSensorsList(resp){
+	var data = parseJSON(resp);
+	$('#sensor-list-table tbody').empty();
+	$('#sensors_rescan .btn-icon').removeClass('fa-spin');
+	if(data && typeof data.error === 'undefined'){
+		var cnt=0, sensor, info, sid, newrow;
+		$('#sensor-list-table tbody').empty();
+		for (id in data.result){
+			sensor = data.result[id];
+			info = (typeof sensor.sensor_name !== 'undefined') ? true : false;
+			sensor.id = id;
+			for (var i=0;i<sensor.Values.length;i++){
+				sid = '' + sensor.id + '#' + i;
+				newrow = $('\
+					<tr data-sensor-id="'+ sid +'" class="row-sensor">\
+						<td>' + sid + '</td>\
+						<td>' + (info ? sensor.Values[i].value_name : '-') + '</td>\
+						<td>' + (info ? sensor.Values[i].si_notation : '-') + '</td>\
+						<td>' + (info ? sensor.Values[i].si_name : '-') + '</td>\
+						<td>' + sensor.Values[i].Range.Min + '</td>\
+						<td>' + sensor.Values[i].Range.Max + '</td>\
+						<td>' + ((info && typeof sensor.Values[i].error !== 'undefined') ? sensor.Values[i].error : '-') + '</td>\
+						<td><span class="glyphicon glyphicon-eye-open sensor-icon-btn" style="cursor:pointer;"></span>&nbsp;<span class="sensor-value"></span></td>\
+					</tr>'
+				);
+				if(info){
+					newrow.find('tr').data('sensorname',sensor.Values[i].value_name);
+				}
+				$('#sensor-list-table tbody').append(newrow);
+				cnt++;
+			}
+		}
+		if (!cnt) {
+			setInterfaceError($('#sensors_msgs'),'<span class="glyphicon glyphicon-info-sign"></span>&nbsp;'+SDLab.Language._('setup_MSG_NO_AVAILABLE_SENSORS'), "info", true);
+		}
+	} else {
+		setInterfaceError($('#sensors_msgs'),'<span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;'+SDLab.Language._('ERROR'), "danger", true);
+	}
+	toggleSensorsListAlert('#sensor-list-table');
+}
+function updateSensorsListErr(){
+	$('#sensor-list-table tbody').empty();
+	$('#sensors_rescan .btn-icon').removeClass('fa-spin');
+	setInterfaceError($('#sensors_msgs'),'<span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;'+SDLab.Language._('ERROR'), "danger", true);
+}
+function toggleSensorsListAlert(selector){
+	var els = $(selector);
+	if(els.length<=0) return;
+	els.each(function(){
+		$(this).find('tfoot').toggle($(this).find('tfoot .alert').length>0);
+	});
+}
+function updateSensorValue(id, onalways){
+	var pos = id.lastIndexOf("#"), idx = 0, sid = id;
+	if(pos > 0){
+		sid = id.slice(0, pos);
+		idx = parseInt(id.substr(pos+1));
+	}
+	var rq = coreAPICall('Sensors.GetData', {
+		"Sensor": sid,
+		"ValueIdx": idx
+	}, function(resp){
+		var data = parseJSON(resp);
+		if(data && typeof data.result !== 'undefined' && typeof data.result.Reading !== 'undefined'){
+			$('#sensor-list-table tr[data-sensor-id="'+id+'"]').find('.sensor-value').html(data.result.Reading);
+			$('#sensor-list-table tr[data-sensor-id="'+id+'"]').removeClass('bg-danger');
+		}else{
+			$('#sensor-list-table tr[data-sensor-id="'+id+'"]').find('.sensor-value').html('--');
+			$('#sensor-list-table tr[data-sensor-id="'+id+'"]').addClass('bg-danger');
+		}
+	});
+	if(typeof onalways === "function"){
+		rq.always(function(d,textStatus,err) {onalways();});
+	}
+}

@@ -373,8 +373,9 @@ class DetectionsController extends Controller
 					$sensors[$key]       = clone $reg_sensors[$key];
 
 					// add name field
+					$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $reg_sensors[$key]->value_name);
 					$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
-							L('sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+							L('sensor_VALUE_NAME_' . strtoupper($value_name)) :
 							L('sensor_UNKNOWN');
 				}
 				else
@@ -436,7 +437,8 @@ class DetectionsController extends Controller
 		{
 			$data = new stdClass();
 			// TODO: add name of sensor to label from setup_info (but unknown which setup id was used for each detection, setup can be changed)
-			$data->label         = empty($sensor->value_name) ? L('sensor_UNKNOWN') : L('sensor_VALUE_NAME_' . strtoupper($sensor->value_name));
+			$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->value_name);
+			$data->label         = empty($sensor->value_name) ? L('sensor_UNKNOWN') : L('sensor_VALUE_NAME_' . strtoupper($value_name));
 			$data->sensor_id     = $sensor->sensor_id;
 			$data->sensor_val_id = (int)$sensor->sensor_val_id;
 			$data->color         = ++$i;
@@ -763,8 +765,9 @@ class DetectionsController extends Controller
 					$sensors[$key]       = clone $reg_sensors[$key];
 
 					// add name field
+					$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $reg_sensors[$key]->value_name);
 					$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
-							L('sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+							L('sensor_VALUE_NAME_' . strtoupper($value_name)) :
 							L('sensor_UNKNOWN');
 				}
 				else
@@ -854,20 +857,24 @@ class DetectionsController extends Controller
 		$result = array();
 		$data = new stdClass();
 		// TODO: add name of sensor to label from setup_info (but unknown which setup id was used for each detection, setup can be changed)
+		$x_value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor_x->value_name);
+		$x_si_notation = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor_x->si_notation);
+		$y_value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor_y->value_name);
+		$y_si_notation = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor_y->si_notation);
 		$data->label = 
 				((mb_strlen($sensor_x->value_name, 'utf-8') > 0 ) ?
-						L('sensor_VALUE_NAME_' . strtoupper($sensor_x->value_name)) :
+						L('sensor_VALUE_NAME_' . strtoupper($x_value_name)) :
 						L('sensor_UNKNOWN'))
 				. ((mb_strlen($sensor_x->value_name, 'utf-8') > 0 && mb_strlen($sensor_x->si_notation, 'utf-8') > 0) ?
-						(', ' . L('sensor_VALUE_SI_NOTATION_' . strtoupper($sensor_x->value_name) . '_' . strtoupper($sensor_x->si_notation))) : 
+						(', ' . L('sensor_VALUE_SI_NOTATION_' . strtoupper($x_value_name) . '_' . strtoupper($x_si_notation))) : 
 						'')
 				. ' ('  . htmlspecialchars($sensor_x->sensor_id. '#' . (int)$sensor_x->sensor_val_id, ENT_QUOTES, 'UTF-8') . ')'
 				. ' - '
 				. ((mb_strlen($sensor_y->value_name, 'utf-8') > 0 ) ?
-						L('sensor_VALUE_NAME_' . strtoupper($sensor_y->value_name)) :
+						L('sensor_VALUE_NAME_' . strtoupper($y_value_name)) :
 						L('sensor_UNKNOWN'))
 				. ((mb_strlen($sensor_y->value_name, 'utf-8') > 0 && mb_strlen($sensor_y->si_notation, 'utf-8') > 0) ?
-						(', ' . L('sensor_VALUE_SI_NOTATION_' . strtoupper($sensor_y->value_name) . '_' . strtoupper($sensor_y->si_notation))) : 
+						(', ' . L('sensor_VALUE_SI_NOTATION_' . strtoupper($y_value_name) . '_' . strtoupper($y_si_notation))) : 
 						'')
 				. ' ('  . htmlspecialchars($sensor_y->sensor_id. '#' . (int)$sensor_y->sensor_val_id, ENT_QUOTES, 'UTF-8') . ')';
 

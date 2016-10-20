@@ -876,8 +876,9 @@ class ExperimentController extends Controller
 					$sensors[$key]       = clone $reg_sensors[$key];
 
 					// add name field
+					$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $reg_sensors[$key]->value_name);
 					$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
-							L('sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+							L('sensor_VALUE_NAME_' . strtoupper($value_name)) :
 							L('sensor_UNKNOWN');
 				}
 				else
@@ -1280,8 +1281,9 @@ class ExperimentController extends Controller
 						$sensors[$key]       = clone $reg_sensors[$key];
 
 						// add name field
+						$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $reg_sensors[$key]->value_name);
 						$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
-								L('sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+								L('sensor_VALUE_NAME_' . strtoupper($value_name)) :
 								L('sensor_UNKNOWN');
 					}
 					else
@@ -1548,8 +1550,9 @@ class ExperimentController extends Controller
 					$sensors[$key]       = clone $reg_sensors[$key];
 
 					// add name field
+					$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $reg_sensors[$key]->value_name);
 					$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
-							L('sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+							L('sensor_VALUE_NAME_' . strtoupper($value_name)) :
 							L('sensor_UNKNOWN');
 				}
 				else
@@ -1878,8 +1881,9 @@ class ExperimentController extends Controller
 						$sensors[$key]       = clone $reg_sensors[$key];
 
 						// add name field
+						$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $reg_sensors[$key]->value_name);
 						$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
-								L('sensor_VALUE_NAME_' . strtoupper($reg_sensors[$key]->value_name)) :
+								L('sensor_VALUE_NAME_' . strtoupper($value_name)) :
 								L('sensor_UNKNOWN');
 					}
 					else
@@ -1961,12 +1965,14 @@ class ExperimentController extends Controller
 			$data_header[] = L('TIME');
 			foreach ($displayed_sensors as $skey => $sensor)
 			{
+				$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->value_name);
+				$si_notation = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->si_notation);
 				$data_header[] = $sensor->name
 						. ' ' . ((mb_strlen($sensor->value_name, 'utf-8') > 0 ) ?
-								L('sensor_VALUE_NAME_' . strtoupper($sensor->value_name)) :
+								L('sensor_VALUE_NAME_' . strtoupper($value_name)) :
 								'-')
 						. ', ' . ((mb_strlen($sensor->value_name, 'utf-8') > 0 && mb_strlen($sensor->si_notation, 'utf-8') > 0) ?
-								L('sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)) :
+								L('sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($si_notation)) :
 								'-')
 						. ' ' . '(id: ' . $skey . ')';
 			}

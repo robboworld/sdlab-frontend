@@ -564,9 +564,12 @@ if($setup_exists)
 							<div class="widget-pane info active">
 								<h3 class="sensor-value"><?php echo L('PLEASE_WAIT'); ?></h3>
 								<small class="sensor-value-name"><?php
+									$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->value_name);
+									$si_notation = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->si_notation);
+									$si_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->si_name);
 									echo htmlspecialchars(((!empty($sensor->si_notation)) ?
-											L('sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation))
-											. ' (' . L('sensor_VALUE_SI_NAME_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_name)) . ')' : '')
+											L('sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($si_notation))
+											. ' (' . L('sensor_VALUE_SI_NAME_' . strtoupper($value_name) . '_' . strtoupper($si_name)) . ')' : '')
 										, ENT_QUOTES, 'UTF-8');
 								?></small>
 							</div>

@@ -171,7 +171,17 @@ if (empty($this->view->form->setup->amount))
 										<input type="hidden" name="sensors[<?php echo $sensor->sensor_id; ?>][<?php echo (int)$sensor->sensor_val_id; ?>][id]" value="<?php echo $sensor->sensor_id; ?>"/>
 										<input type="hidden" name="sensors[<?php echo $sensor->sensor_id; ?>][<?php echo (int)$sensor->sensor_val_id; ?>][val_id]" value="<?php echo (int)$sensor->sensor_val_id; ?>"/>
 									</td>
-									<td><?php echo htmlspecialchars(L('sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8'); ?></td>
+									<td><?php
+									if (isset($sensor->value_name) && mb_strlen($sensor->value_name,'utf-8')>0)
+									{
+										$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->value_name);
+										echo htmlspecialchars(L('sensor_VALUE_NAME_' . strtoupper($value_name)), ENT_QUOTES, 'UTF-8');
+									}
+									else
+									{
+										echo htmlspecialchars(L('sensor_UNKNOWN'), ENT_QUOTES, 'UTF-8');
+									}
+									?></td>
 									<td class="sensor-setup-name"><input type="text" placeholder="<?php echo L('sensor_NAME'); ?>" name="sensors[<?php echo $sensor->sensor_id; ?>][<?php echo (int)$sensor->sensor_val_id; ?>][name]" class="form-control" required="required" value="<?php
 										if (isset($sensor->name) && mb_strlen($sensor->name,'utf-8')>0)
 										{
@@ -181,7 +191,8 @@ if (empty($this->view->form->setup->amount))
 										{
 											if (isset($sensor->value_name) && mb_strlen($sensor->value_name,'utf-8')>0)
 											{
-												echo htmlspecialchars(L('sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8');
+												$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->value_name);
+												echo htmlspecialchars(L('sensor_VALUE_NAME_' . strtoupper($value_name)), ENT_QUOTES, 'UTF-8');
 											}
 										}
 									?>"/></td>

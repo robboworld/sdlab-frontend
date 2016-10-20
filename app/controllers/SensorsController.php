@@ -182,16 +182,20 @@ class SensorsController extends Controller
 					$value_name = System::getValsTranslate($value->{'Name'});
 					if (($value_name !== false) && (strlen($value_name) > 0))
 					{
-						$value->value_name  =   L('sensor_VALUE_NAME_' . strtoupper($value_name));
+						$value_name_clean = (string) preg_replace('/[^A-Z0-9_]/i', '_', $value_name);
+
+						$value->value_name  =   L('sensor_VALUE_NAME_' . strtoupper($value_name_clean));
 
 						$field = System::getValsTranslate($value->{'Name'}, 'si_notation');
+						$field_clean = (string) preg_replace('/[^A-Z0-9_]/i', '_', (string)$field);
 						$value->si_notation = (($field !== false) && (strlen($field) > 0)) ?
-												L('sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($field)) :
+												L('sensor_VALUE_SI_NOTATION_' . strtoupper($value_name_clean) . '_' . strtoupper($field_clean)) :
 												false;
 
 						$field = System::getValsTranslate($value->{'Name'}, 'si_name');
+						$field_clean = (string) preg_replace('/[^A-Z0-9_]/i', '_', (string)$field);
 						$value->si_name     = (($field !== false) && (strlen($field) > 0)) ?
-												L('sensor_VALUE_SI_NAME_' . strtoupper($value_name) . '_' . strtoupper($field)) :
+												L('sensor_VALUE_SI_NAME_' . strtoupper($value_name_clean) . '_' . strtoupper($field_clean)) :
 												false;
 					}
 					else

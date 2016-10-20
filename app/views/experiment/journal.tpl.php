@@ -26,13 +26,15 @@
 					<td><?php echo L('TIME'); ?></td>
 					<?php foreach ($this->view->content->displayed_sensors as $skey => $sensor) :?>
 					<td><?php echo htmlspecialchars($sensor->name, ENT_QUOTES, 'UTF-8'); ?><br/>
-						<small><?php 
+						<small><?php
+							$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->value_name);
+							$si_notation = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->si_notation);
 							echo ((mb_strlen($sensor->value_name, 'utf-8') > 0 ) ? 
-									htmlspecialchars(L('sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8') : 
+									htmlspecialchars(L('sensor_VALUE_NAME_' . strtoupper($value_name)), ENT_QUOTES, 'UTF-8') : 
 									'-')
 									. ', '
 								. ((mb_strlen($sensor->value_name, 'utf-8') > 0 && mb_strlen($sensor->si_notation, 'utf-8') > 0) ? 
-									htmlspecialchars(L('sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)), ENT_QUOTES, 'UTF-8') : 
+									htmlspecialchars(L('sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($si_notation)), ENT_QUOTES, 'UTF-8') : 
 									'-');
 						?></small><br/>
 						<small class="muted">(id: <?php echo htmlspecialchars($skey, ENT_QUOTES, 'UTF-8'); ?>)</small>

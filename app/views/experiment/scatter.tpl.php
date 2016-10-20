@@ -299,8 +299,10 @@ if (empty($lang_tag))
 						$kx = ($this->view->content->sensor_x !== null) ? ('' . $this->view->content->sensor_x->sensor_id . '#' . (int)$this->view->content->sensor_x->sensor_val_id) : null;
 					?>
 					<option value="<?php echo htmlspecialchars($sensor->sensor_id . '#' . (int)$sensor->sensor_val_id, ENT_QUOTES, 'UTF-8'); ?>" <?php if (($kx!== null) && ($kx == $k)) echo 'selected'; ?>><?php
-						echo htmlspecialchars(L('sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8') . ','
-							. htmlspecialchars(L('sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)), ENT_QUOTES, 'UTF-8')
+						$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->value_name);
+						$si_notation = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->si_notation);
+						echo htmlspecialchars(L('sensor_VALUE_NAME_' . strtoupper($value_name)), ENT_QUOTES, 'UTF-8') . ','
+							. htmlspecialchars(L('sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($si_notation)), ENT_QUOTES, 'UTF-8')
 							. ' ('  . htmlspecialchars($sensor->sensor_id. '#' . (int)$sensor->sensor_val_id, ENT_QUOTES, 'UTF-8') . ')';
 					?></option>
 					<?php endforeach; ?>
@@ -314,10 +316,12 @@ if (empty($lang_tag))
 					<option value="" <?php if ($this->view->content->sensor_y === null) echo 'selected'; ?>><?php echo L('sensor_SELECT_OPTION'); ?></option>
 					<?php foreach ($this->view->content->available_sensors as $k => $sensor) :
 						$kx = ($this->view->content->sensor_y !== null) ? ('' . $this->view->content->sensor_y->sensor_id . '#' . (int)$this->view->content->sensor_y->sensor_val_id) : null;
+						$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->value_name);
+						$si_notation = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->si_notation);
 					?>
 					<option value="<?php echo htmlspecialchars($sensor->sensor_id . '#' . (int)$sensor->sensor_val_id, ENT_QUOTES, 'UTF-8'); ?>" <?php if (($kx!== null) && ($kx == $k)) echo 'selected'; ?>><?php
-						echo htmlspecialchars(L('sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8') . ','
-							. htmlspecialchars(L('sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)), ENT_QUOTES, 'UTF-8')
+						echo htmlspecialchars(L('sensor_VALUE_NAME_' . strtoupper($value_name)), ENT_QUOTES, 'UTF-8') . ','
+							. htmlspecialchars(L('sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($si_notation)), ENT_QUOTES, 'UTF-8')
 							. ' ('  . htmlspecialchars($sensor->sensor_id. '#' . (int)$sensor->sensor_val_id, ENT_QUOTES, 'UTF-8') . ')';
 					?></option>
 					<?php endforeach; ?>

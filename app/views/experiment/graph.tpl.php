@@ -479,10 +479,12 @@ $xrangeymode = 'auto';
 		<ul class="list-unstyled available-sensors small">
 			<?php foreach ($this->view->content->available_sensors as $sensor) : ?>
 				<li>
-					<label class="checkbox"><input type="checkbox" <?php /* if (array_key_exists($sensor->sensor_id, $this->view->content->displayed_sensors)) echo 'checked';*/?> checked name="show-sensor[]" value="<?php 
-						echo htmlspecialchars($sensor->sensor_id . '#' . (int)$sensor->sensor_val_id, ENT_QUOTES, 'UTF-8'); ?>"/>&nbsp;<?php 
-						echo htmlspecialchars(L('sensor_VALUE_NAME_' . strtoupper($sensor->value_name)), ENT_QUOTES, 'UTF-8') . ','
-							. htmlspecialchars(L('sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation)), ENT_QUOTES, 'UTF-8')
+					<label class="checkbox"><input type="checkbox" <?php /* if (array_key_exists($sensor->sensor_id, $this->view->content->displayed_sensors)) echo 'checked';*/?> checked name="show-sensor[]" value="<?php
+						echo htmlspecialchars($sensor->sensor_id . '#' . (int)$sensor->sensor_val_id, ENT_QUOTES, 'UTF-8'); ?>"/>&nbsp;<?php
+						$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->value_name);
+						$si_notation = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->si_notation);
+						echo htmlspecialchars(L('sensor_VALUE_NAME_' . strtoupper($value_name)), ENT_QUOTES, 'UTF-8') . ','
+							. htmlspecialchars(L('sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($si_notation)), ENT_QUOTES, 'UTF-8')
 							. ' ('  . htmlspecialchars($sensor->sensor_id. '#' . (int)$sensor->sensor_val_id, ENT_QUOTES, 'UTF-8') . ')';
 						?></label>
 				</li>

@@ -36,7 +36,7 @@ function updateSensorsList(resp){
                         <td>' + sensor.Values[i].Range.Min + '</td>\
                         <td>' + sensor.Values[i].Range.Max + '</td>\
                         <td>' + ((info && typeof sensor.Values[i].error !== 'undefined') ? sensor.Values[i].error : '-') + '</td>\
-                        <td><span class="glyphicon glyphicon-eye-open sensor-icon-btn" style="cursor:pointer;"></span>&nbsp;<span class="sensor-value">--</span></td>\
+                        <td><span class="glyphicon glyphicon-eye-open sensor-icon-btn" style="cursor:pointer;"></span>&nbsp;<span class="sensor-value"></span></td>\
                     </tr>'
                 );
                 if(info){
@@ -75,7 +75,7 @@ function updateSensorValue(id, onalways){
     var rq = coreAPICall('Sensors.GetData', {
         "Sensor": sid,
         "ValueIdx": idx
-    }, function(data){
+    }, function(resp){
         var data = parseJSON(resp);
         if(data && typeof data.result !== 'undefined' && typeof data.result.Reading !== 'undefined'){
             $('#sensor-list-table tr[data-sensor-id="'+id+'"]').find('.sensor-value').html(data.result.Reading);
@@ -118,7 +118,7 @@ function updateSensorValue(id, onalways){
 				<th title="<?php echo L('sensor_VALUE_MIN_RANGE'); ?>"><?php echo L('sensor_VALUE_MIN'); ?></th>
 				<th title="<?php echo L('sensor_VALUE_MAX_RANGE'); ?>"><?php echo L('sensor_VALUE_MAX'); ?></th>
 				<th><?php echo L('sensor_VALUE_ERROR'); ?></th>
-				<th class="fa fa-tv"></th>
+				<th><span class="fa fa-tv"></span></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -158,7 +158,7 @@ function updateSensorValue(id, onalways){
 					<?php echo isset($data->error) ? htmlspecialchars($data->error, ENT_QUOTES, 'UTF-8') : '-'; ?>
 				</td>
 				<td>
-					<span class="glyphicon glyphicon-eye-open sensor-icon-btn" style="cursor:pointer;"></span>&nbsp;<span class="sensor-value">--</span>
+					<span class="glyphicon glyphicon-eye-open sensor-icon-btn" style="cursor:pointer;"></span>&nbsp;<span class="sensor-value"></span>
 				</td>
 			</tr>
 		<?php $i++; $cnt++; endforeach;
@@ -167,7 +167,7 @@ function updateSensorValue(id, onalways){
 		</tbody>
 		<tfoot style="display: none;">
 			<tr>
-				<td colspan="7" id="sensors_msgs">
+				<td colspan="8" id="sensors_msgs">
 					<?php if (!$cnt) : ?>
 					<div class="alert alert-info" role="alert">
 						<span class="glyphicon glyphicon-info-sign"></span>&nbsp;<?php echo L('setup_MSG_NO_AVAILABLE_SENSORS'); ?>

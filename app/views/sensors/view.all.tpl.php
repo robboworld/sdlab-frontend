@@ -1,22 +1,29 @@
 <script type="text/javascript">
 $(document).ready(function(){
     // Rescan sensors
-    $('#sensors-rescan').click(function(){
-        coreAPICall('Sensors.getSensors', {rescan: true, getinfo: true}, updateSensorsList);
+    $('#sensors_rescan').click(function(){
+        emptyInterfaceError('#sensors_msgs');
+        $('#sensors_rescan .btn-icon').addClass('fa-spin');
+        coreAPICall('Sensors.getSensors', {rescan: true, getinfo: true}, updateSensorsList, updateSensorsListErr);
     });
+    toggleSensorsListAlert('#sensor-list-table');
 });
-function updateSensorsList(data){
-    if(typeof data.error === 'undefined'){
+function updateSensorsList(resp){
+    var data = parseJSON(resp);
+    $('#sensor-list-table tbody').empty();
+    $('#sensors_rescan .btn-icon').removeClass('fa-spin');
+    if(data && typeof data.error === 'undefined'){
+        var cnt=0, sensor, info, sid, newrow;
         $('#sensor-list-table tbody').empty();
         for (id in data.result){
-            var sensor = data.result[id],
-                info = (typeof sensor.sensor_name !== 'undefined') ? true : false;
+            sensor = data.result[id];
+            info = (typeof sensor.sensor_name !== 'undefined') ? true : false;
             sensor.id = id;
             for (var i=0;i<sensor.Values.length;i++){
-                var sid = '' + sensor.id + '#' + i,
-                    newrow = $('\
+                sid = '' + sensor.id + '#' + i;
+                newrow = $('\
                     <tr data-sensor-id="'+ sid +'" class="row-sensor">\
-                        <td>' + sensor.id + '</td>\
+                        <td>' + sid + '</td>\
                         <td>' + (info ? sensor.Values[i].value_name : '-') + '</td>\
                         <td>' + (info ? sensor.Values[i].si_notation : '-') + '</td>\
                         <td>' + (info ? sensor.Values[i].si_name : '-') + '</td>\
@@ -29,27 +36,27 @@ function updateSensorsList(data){
                     newrow.find('tr').data('sensorname',sensor.Values[i].value_name);
                 }
                 $('#sensor-list-table tbody').append(newrow);
+                cnt++;
             }
         }
-        toggleSensorsListAlert('#sensor-list-table');
+        if (!cnt) {
+            setInterfaceError($('#sensors_msgs'),'<span class="glyphicon glyphicon-info-sign"></span>&nbsp;'+SDLab.Language._('setup_MSG_NO_AVAILABLE_SENSORS'), "info", true);
+        }
     } else {
-        toggleSensorsListAlert('#sensor-list-table');
-        //error
-        alert(SDLab.Language._('ERROR'));
+        setInterfaceError($('#sensors_msgs'),'<span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;'+SDLab.Language._('ERROR'), "danger", true);
     }
+    toggleSensorsListAlert('#sensor-list-table');
+}
+function updateSensorsListErr(){
+    $('#sensor-list-table tbody').empty();
+    $('#sensors_rescan .btn-icon').removeClass('fa-spin');
+    setInterfaceError($('#sensors_msgs'),'<span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;'+SDLab.Language._('ERROR'), "danger", true);
 }
 function toggleSensorsListAlert(selector){
     var els = $(selector);
     if(els.length<=0) return;
     els.each(function(){
-        if($(this).find('tfoot .alert').length>0){
-            var rows = $(this).find('tbody tr:visible');
-            if(rows.length==0){
-                $(this).find('tfoot').show();
-            }else{
-                $(this).find('tfoot').hide();
-            }
-        }
+        $(this).find('tfoot').toggle($(this).find('tfoot .alert').length>0);
     });
 }
 </script>
@@ -62,13 +69,16 @@ function toggleSensorsListAlert(selector){
 	<div class="row">
 		<?php if($this->session()->getUserLevel() == 3) : ?>
 		<div class="col-md-4 text-left">
-			<a href="javascript:void(0)" id="sensors-rescan" class="btn btn-primary"><?php echo L('sensor_REFRESH_LIST'); ?></a>
+			<a href="javascript:void(0)" id="sensors_rescan" class="btn btn-primary">
+				<span class="fa fa-refresh btn-icon"></span><span class="">&nbsp;<?php echo L('sensor_REFRESH_LIST');
+			?></span></a>
 		</div>
 		<?php endif; ?>
 	</div>
 	<?php if(isset($this->view->content->list )) : ?>
 
-	<table class="table table-responsive" id="sensor-list-table">
+	<br/>
+	<table class="table table-responsive table-condensed" id="sensor-list-table">
 		<thead>
 			<tr>
 				<th>ID</th>
@@ -81,7 +91,9 @@ function toggleSensorsListAlert(selector){
 			</tr>
 		</thead>
 		<tbody>
-		<?php foreach($this->view->content->list as $sensor_id => $item) :
+		<?php
+		$cnt = 0;
+		foreach($this->view->content->list as $sensor_id => $item) :
 			$sensor_name = (string) preg_replace('/\-.*/i', '', $sensor_id);
 			$i = 0;
 			foreach($item->{'Values'} as $sensor_val_id => &$data) :
@@ -94,9 +106,9 @@ function toggleSensorsListAlert(selector){
 
 			<tr class="row-sensor" data-sensor-id="<?php echo htmlspecialchars($key, ENT_QUOTES, 'UTF-8');?>">
 				<td>
-					<?php echo htmlspecialchars($sensor_id, ENT_QUOTES, 'UTF-8');?>
+					<?php echo htmlspecialchars($key, ENT_QUOTES, 'UTF-8');?>
 				</td>
-				<td class="sensor-setup-valname>
+				<td class="sensor-setup-valname">
 					<?php echo htmlspecialchars($data->value_name, ENT_QUOTES, 'UTF-8'); ?>
 				</td>
 				<td>
@@ -115,17 +127,18 @@ function toggleSensorsListAlert(selector){
 					<?php echo isset($data->error) ? htmlspecialchars($data->error, ENT_QUOTES, 'UTF-8') : '-'; ?>
 				</td>
 			</tr>
-		<?php $i++; endforeach;
+		<?php $i++; $cnt++; endforeach;
 		endforeach; ?>
 
 		</tbody>
 		<tfoot style="display: none;">
 			<tr>
-				<td colspan="7">
+				<td colspan="7" id="sensors_msgs">
+					<?php if (!$cnt) : ?>
 					<div class="alert alert-info" role="alert">
-						<span class="glyphicon glyphicon-info-sign"></span>
-						<span><?php echo L('setup_MSG_NO_AVAILABLE_SENSORS'); ?></span>
+						<span class="glyphicon glyphicon-info-sign"></span>&nbsp;<?php echo L('setup_MSG_NO_AVAILABLE_SENSORS'); ?>
 					</div>
+					<?php endif; ?>
 				</td>
 			</tr>
 		</tfoot>

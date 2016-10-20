@@ -11,7 +11,7 @@
  * @return jqxhr object
  */
 function coreAPICall(method, params, onSuccess, onError){
-    return rq = $.ajax({
+    var rq = $.ajax({
         url: '?q=api',
         method: 'get',
         data: {
@@ -30,8 +30,31 @@ function coreAPICall(method, params, onSuccess, onError){
             }
         }
     });
+    return rq;
 }
 
+function isJsonString(str)
+{
+    if (typeof str == 'undefined') return false;
+
+    var l = str.length;
+    var e = l - 1;
+
+    if (l == 0) return false;
+    if (str[0] != '{' && str[0] != '[') return false;
+    if (str[e] != '}' && str[e] != ']') return false;
+
+    return true;
+}
+
+function parseJSON(data)
+{
+    if (typeof data == 'object') return data;
+    if (typeof data != 'string') return false;
+    if (!isJsonString(data)) return false;
+
+    return $.parseJSON(data);
+}
 
 /**
  * Add error widget to custom place

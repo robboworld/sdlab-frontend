@@ -60,7 +60,7 @@ class SensorsController extends Controller
 			// Add language translates for scripts
 			Language::script(array(
 					'ERROR',
-					'sensor_NAME'  // sensor/view
+					'setup_MSG_NO_AVAILABLE_SENSORS'
 			));
 
 

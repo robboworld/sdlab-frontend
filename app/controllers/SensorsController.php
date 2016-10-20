@@ -30,40 +30,54 @@ class SensorsController extends Controller
 
 	public function index()
 	{
-		System::go('experiment/view');
+		System::go('sensors/view');
 	}
 
 	public function view()
 	{
-		// TODO: view single sensor info
+		if(!is_null($this->id) && is_numeric($this->id))
+		{
+			// Single sensor page
 
-		$this->addJs('functions');
-		$this->addJs('chart');
-		$this->addJs('Sensor');
-		$this->addJs('sensors');
-		// Add language translates for scripts
-		Language::script(array(
-				'ERROR',
-				'sensor_VALUE_NAME_TEMPERATURE',  // chart
-				'GRAPH', 'INFO'            // Sensor
-				// - sensors
-		));
+			// TODO: view single sensor info
 
-		$this->addCss('sensors');
-		//$this->view->content->sensors_list = $this->sensorList($this->getSensors()->Values);
-		$this->view->content->sensors_list = 'test inc';
-		$this->view->template = 'index';
+			System::go('sensors/view');
+		}
+		else
+		{
+			// All available sensors
 
-		//$this->view->content = $this->renderTemplate('index');
-		// TODO: Remove all unnessesary in this controller, use only for API calls
+			self::setViewTemplate('view.all');
+			self::setTitle(L('sensor_TITLE_ALL'));
+			self::setContentTitle(L('sensor_TITLE_ALL'));
+		
+			self::addJs('functions');
+			//$this->addJs('sensors');
+			//$this->addJs('Sensor');
 
-		// TODO: list sensors & register sensors
+			$this->addCss('sensors');
+
+			// Add language translates for scripts
+			Language::script(array(
+					'ERROR',
+					'setup_MSG_NO_AVAILABLE_SENSORS'
+			));
+
+
+			// Get available sensors list
+			$this->view->content->list = array();
+			$result = $this->getSensors(array('getinfo' => true));
+			if ($result && isset($result['result']) && !empty($result['result']))
+			{
+				$this->view->content->list = &$result['result'];
+			}
+		}
 	}
 
 	/**
 	 * Get list of available sensors.
 	 * API method: Sensors.getSensors
-	 * API params: getinfo:boolean
+	 * API params: rescan:boolean, getinfo:boolean
 	 * 
 	 * @param  array  $params Array of parameters
 	 * 

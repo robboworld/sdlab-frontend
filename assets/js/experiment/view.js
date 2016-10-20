@@ -1,14 +1,4 @@
 $(document).ready(function(){
-    /*
-    var sensorList = {}
-    for(var i =1; i <=2; i++){
-        sensorList[i] = new Sensor({
-            Name: '{sensor ' + i + '}'
-        });
-        //sensorList[i].testCreateWidget($('#widget-workspace'));
-    }
-    */
-
     var sensors = [];
     $('.sensor-widget').each(function(){
         var sensorId = $(this).data('sensor-id');

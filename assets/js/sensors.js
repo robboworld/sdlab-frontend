@@ -2,7 +2,15 @@
 
 var sensorsList = new Object();
 
-
+/*
+var sensorList = {}
+for(var i =1; i <=2; i++){
+    sensorList[i] = new Sensor({
+        Name: '{sensor ' + i + '}'
+    });
+    //sensorList[i].testCreateWidget($('#widget-workspace'));
+}
+*/
 
 function destroySensorWidget(id){
     $('#'+id).remove();

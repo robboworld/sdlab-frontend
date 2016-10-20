@@ -1,5 +1,11 @@
 <script type="text/javascript">
 $(document).ready(function(){
+    $('#sensor-list-table').on('click', '.sensor-icon-btn', function(){
+        var sensorId = $(this).parents('tr').data('sensor-id');
+        $(this).removeClass('glyphicon-eye-open').addClass('glyphicon-refresh').addClass('spin');
+        var el = $(this);
+        updateSensorValue(sensorId, function(){el.removeClass('spin').removeClass('glyphicon-refresh').addClass('glyphicon-eye-open');});
+    });
     // Rescan sensors
     $('#sensors_rescan').click(function(){
         emptyInterfaceError('#sensors_msgs');
@@ -30,6 +36,7 @@ function updateSensorsList(resp){
                         <td>' + sensor.Values[i].Range.Min + '</td>\
                         <td>' + sensor.Values[i].Range.Max + '</td>\
                         <td>' + ((info && typeof sensor.Values[i].error !== 'undefined') ? sensor.Values[i].error : '-') + '</td>\
+                        <td><span class="glyphicon glyphicon-eye-open sensor-icon-btn" style="cursor:pointer;"></span>&nbsp;<span class="sensor-value">--</span></td>\
                     </tr>'
                 );
                 if(info){
@@ -59,6 +66,29 @@ function toggleSensorsListAlert(selector){
         $(this).find('tfoot').toggle($(this).find('tfoot .alert').length>0);
     });
 }
+function updateSensorValue(id, onalways){
+    var pos = id.lastIndexOf("#"), idx = 0, sid = id;
+    if(pos > 0){
+        sid = id.slice(0, pos);
+        idx = parseInt(id.substr(pos+1));
+    }
+    var rq = coreAPICall('Sensors.GetData', {
+        "Sensor": sid,
+        "ValueIdx": idx
+    }, function(data){
+        var data = parseJSON(resp);
+        if(data && typeof data.result !== 'undefined' && typeof data.result.Reading !== 'undefined'){
+            $('#sensor-list-table tr[data-sensor-id="'+id+'"]').find('.sensor-value').html(data.result.Reading);
+            $('#sensor-list-table tr[data-sensor-id="'+id+'"]').removeClass('bg-danger');
+        }else{
+            $('#sensor-list-table tr[data-sensor-id="'+id+'"]').find('.sensor-value').html('--');
+            $('#sensor-list-table tr[data-sensor-id="'+id+'"]').addClass('bg-danger');
+        }
+    });
+    if(typeof onalways === "function"){
+        rq.always(function(d,textStatus,err) {onalways();});
+    }
+}
 </script>
 <div class="col-md-12">
 	<div class="row">
@@ -84,10 +114,11 @@ function toggleSensorsListAlert(selector){
 				<th>ID</th>
 				<th><?php echo L('sensor_VALUE_NAME'); ?></th>
 				<th><?php echo L('sensor_VALUE_SI_NOTATION'); ?></th>
-				<th><?php echo L('sensor_VALUE_SI_NAME'); ?></th>
-				<th><?php echo L('sensor_VALUE_MIN_RANGE'); ?></th>
-				<th><?php echo L('sensor_VALUE_MAX_RANGE'); ?></th>
+				<th title="<?php echo L('sensor_VALUE_SI_NAME'); ?>"><?php echo L('sensor_VALUE_SI_NSHORT'); ?></th>
+				<th title="<?php echo L('sensor_VALUE_MIN_RANGE'); ?>"><?php echo L('sensor_VALUE_MIN'); ?></th>
+				<th title="<?php echo L('sensor_VALUE_MAX_RANGE'); ?>"><?php echo L('sensor_VALUE_MAX'); ?></th>
 				<th><?php echo L('sensor_VALUE_ERROR'); ?></th>
+				<th class="fa fa-tv"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -125,6 +156,9 @@ function toggleSensorsListAlert(selector){
 				</td>
 				<td>
 					<?php echo isset($data->error) ? htmlspecialchars($data->error, ENT_QUOTES, 'UTF-8') : '-'; ?>
+				</td>
+				<td>
+					<span class="glyphicon glyphicon-eye-open sensor-icon-btn" style="cursor:pointer;"></span>&nbsp;<span class="sensor-value">--</span>
 				</td>
 			</tr>
 		<?php $i++; $cnt++; endforeach;

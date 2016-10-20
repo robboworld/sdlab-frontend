@@ -212,7 +212,7 @@ if (empty($this->view->form->setup->amount))
 							<th>ID</th>
 							<th><?php echo L('sensor_VALUE_NAME'); ?></th>
 							<th><?php echo L('sensor_VALUE_SI_NOTATION'); ?></th>
-							<th><?php echo L('sensor_VALUE_SI_NAME'); ?></th>
+							<th title="<?php echo L('sensor_VALUE_SI_NAME'); ?>"><?php echo L('sensor_VALUE_SI_NSHORT'); ?></th>
 							<th><?php echo L('sensor_VALUE_MIN_RANGE'); ?></th>
 							<th><?php echo L('sensor_VALUE_MAX_RANGE'); ?></th>
 							<th><?php echo L('sensor_VALUE_ERROR'); ?></th>

@@ -52,10 +52,7 @@ class SensorsController extends Controller
 			$this->setContentTitle(L('sensor_TITLE_ALL'));
 		
 			$this->addJs('functions');
-			$this->addJs('sensors');
-			//$this->addJs('Sensor');
-
-			$this->addCss('sensors');
+			$this->addJs('sensors/sensors');
 
 			// Add language translates for scripts
 			Language::script(array(

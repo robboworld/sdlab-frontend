@@ -355,7 +355,7 @@ class Controller
 			$this->view->template = $this->action;
 		}
 
-		$tpl_path = VIEWS.'/'.self::getControllerName().'/'.$this->view->template.'.tpl.php';
+		$tpl_path = VIEWS.'/'.$this->getControllerName().'/'.$this->view->template.'.tpl.php';
 		if (file_exists($tpl_path))
 		{
 			include($tpl_path);

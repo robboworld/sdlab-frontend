@@ -47,11 +47,11 @@ class SensorsController extends Controller
 		{
 			// All available sensors
 
-			self::setViewTemplate('view.all');
-			self::setTitle(L('sensor_TITLE_ALL'));
-			self::setContentTitle(L('sensor_TITLE_ALL'));
+			$this->setViewTemplate('view.all');
+			$this->setTitle(L('sensor_TITLE_ALL'));
+			$this->setContentTitle(L('sensor_TITLE_ALL'));
 		
-			self::addJs('functions');
+			$this->addJs('functions');
 			//$this->addJs('sensors');
 			//$this->addJs('Sensor');
 

@@ -39,10 +39,10 @@ class PageController extends Controller
 			$this->view->ip_address = System::get_ip_address('eth0');
 		}
 
-		self::addJs('functions');
+		$this->addJs('functions');
 
-		self::setTitle(L('SYSTEM'));
-		self::setContentTitle(L('SDLAB_TITLE'));
-		self::setViewTemplate($page);
+		$this->setTitle(L('SYSTEM'));
+		$this->setContentTitle(L('SDLAB_TITLE'));
+		$this->setViewTemplate($page);
 	}
 }

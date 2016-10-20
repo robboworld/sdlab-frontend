@@ -28,12 +28,12 @@ class TimeController extends Controller
 	{
 		if ($this->session()->getUserLevel() == 3)
 		{
-			self::setViewTemplate('edit');
-			self::setTitle(L('time_TITLE_EDIT'));
-			self::setContentTitle(L('time_TITLE_EDIT'));
+			$this->setViewTemplate('edit');
+			$this->setTitle(L('time_TITLE_EDIT'));
+			$this->setContentTitle(L('time_TITLE_EDIT'));
 
-			self::addJs('functions');
-			//self::addJs('class/Time');
+			$this->addJs('functions');
+			//$this->addJs('class/Time');
 			// Add language translates for scripts
 			//Language::script(array(
 			//		'time_WAIT_FOR_REBOOT'  // class/Time
@@ -93,7 +93,7 @@ class TimeController extends Controller
 						//'children' => array()
 				);
 			}
-			$this->view->form->timezones_html = self::getTimezoneInput('time_timezone_id', 'time_timezone', $this->view->form->timezone, false, $elements, array('class' => 'form-control'));
+			$this->view->form->timezones_html = $this->getTimezoneInput('time_timezone_id', 'time_timezone', $this->view->form->timezone, false, $elements, array('class' => 'form-control'));
 
 			// Form save
 			if (isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'edit-time-form')

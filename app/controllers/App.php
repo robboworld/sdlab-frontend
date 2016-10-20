@@ -85,7 +85,7 @@ class App
 			$this->controller($controller);
 		}
 
-		self::execute();
+		$this->execute();
 	}
 
 	public static function router($item = null)

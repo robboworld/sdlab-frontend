@@ -61,8 +61,8 @@ class SessionController extends Controller
 				}
 			}
 		}
-		self::setTitle(L('session_NEW_SESSION'));
-		self::setContentTitle(L('session_NEW_SESSION'));
+		$this->setTitle(L('session_NEW_SESSION'));
+		$this->setContentTitle(L('session_NEW_SESSION'));
 	}
 
 	public function edit()
@@ -105,7 +105,7 @@ class SessionController extends Controller
 			Form::redirect();
 		}
 
-		self::setTitle(L('session_TITLE_EDIT'));
+		$this->setTitle(L('session_TITLE_EDIT'));
 
 		// Load experiments available in session
 		$experiments_in_session = ExperimentController::loadExperiments($this->session()->getKey());

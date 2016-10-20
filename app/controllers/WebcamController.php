@@ -36,11 +36,11 @@ class WebcamController extends Controller
 	{
 		if(!is_null($this->id) && is_numeric($this->id))
 		{
-			self::setViewTemplate('view');
-			self::setTitle(L('webcam_TITLE'));
+			$this->setViewTemplate('view');
+			$this->setTitle(L('webcam_TITLE'));
 
-			self::addJs('functions');
-			self::addJs('class/Webcam');
+			$this->addJs('functions');
+			$this->addJs('class/Webcam');
 			// Add language translates for scripts
 			//Language::script(array(
 			//));
@@ -178,12 +178,12 @@ class WebcamController extends Controller
 		{
 			// All webcams
 
-			self::setViewTemplate('view.all');
-			self::setTitle(L('webcam_TITLE_ALL'));
+			$this->setViewTemplate('view.all');
+			$this->setTitle(L('webcam_TITLE_ALL'));
 
-			self::addJs('functions');
-			self::addJs('class/Webcam');
-			//self::addJs('webcam/view.all');
+			$this->addJs('functions');
+			$this->addJs('class/Webcam');
+			//$this->addJs('webcam/view.all');
 			// Add language translates for scripts
 			//Language::script(array(
 			//));

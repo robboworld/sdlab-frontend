@@ -36,7 +36,7 @@ class Session extends Model
 	public function __construct()
 	{
 		parent::__construct();
-		self::generateKey();
+		$this->generateKey();
 		$this->DateStart = time();
 		$this->expiry = 0;
 	}

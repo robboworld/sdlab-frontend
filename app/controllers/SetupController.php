@@ -26,11 +26,11 @@ class SetupController extends Controller
 	public function create()
 	{
 		// TODO: Access to creation only for admin?
-		self::setTitle(L('setup_TITLE_CREATION'));
-		self::setContentTitle(L('setup_TITLE_CREATION'));
-		self::addJs('functions');
-		self::addJs('setup/edit');
-		self::addCss('setup');
+		$this->setTitle(L('setup_TITLE_CREATION'));
+		$this->setContentTitle(L('setup_TITLE_CREATION'));
+		$this->addJs('functions');
+		$this->addJs('setup/edit');
+		$this->addCss('setup');
 		// Add language translates for scripts
 		Language::script(array(
 				'ERROR', 'sensor_NAME', 'REMOVE'  // setup/edit
@@ -151,12 +151,12 @@ class SetupController extends Controller
 
 	public function edit()
 	{
-		self::setViewTemplate('create');
-		self::setTitle(L('setup_TITLE_EDIT'));
-		self::setContentTitle(L('setup_TITLE_EDIT'));
-		self::addJs('functions');
-		self::addJs('setup/edit');
-		self::addCss('setup');
+		$this->setViewTemplate('create');
+		$this->setTitle(L('setup_TITLE_EDIT'));
+		$this->setContentTitle(L('setup_TITLE_EDIT'));
+		$this->addJs('functions');
+		$this->addJs('setup/edit');
+		$this->addCss('setup');
 		// Add language translates for scripts
 		Language::script(array(
 				'ERROR', 'sensor_NAME', 'REMOVE'  // setup/edit

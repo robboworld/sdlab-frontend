@@ -43,8 +43,8 @@ class ExperimentController extends Controller
 	 */
 	public function create()
 	{
-		self::setTitle(L('experiment_TITLE_CREATION'));
-		self::setContentTitle(L('experiment_TITLE_CREATION'));
+		$this->setTitle(L('experiment_TITLE_CREATION'));
+		$this->setContentTitle(L('experiment_TITLE_CREATION'));
 
 		$this->view->form = new Form('create-experiment-form');
 		$this->view->form->submit->value = L('experiment_CREATE_EXPERIMENT');
@@ -160,9 +160,9 @@ class ExperimentController extends Controller
 		{
 			// Single experiment page
 
-			self::addJs('functions');
-			self::addJs('class/Sensor');
-			self::addJs('experiment/view');
+			$this->addJs('functions');
+			$this->addJs('class/Sensor');
+			$this->addJs('experiment/view');
 			// Add language translates for scripts
 			Language::script(array(
 					'ERROR',
@@ -319,17 +319,17 @@ class ExperimentController extends Controller
 				$this->view->content->session = $this->session();
 			}
 
-			self::setTitle($experiment->title);
+			$this->setTitle($experiment->title);
 		}
 		else
 		{
 			// All experiments
 
-			self::setViewTemplate('view.all');
-			self::setTitle(L('experiment_TITLE_ALL'));
+			$this->setViewTemplate('view.all');
+			$this->setTitle(L('experiment_TITLE_ALL'));
 
-			self::addJs('functions');
-			self::addJs('experiment/view.all');
+			$this->addJs('functions');
+			$this->addJs('experiment/view.all');
 			// Add language translates for scripts
 			Language::script(array(
 					'journal_QUESTION_REMOVE_EXPERIMENT_WITH_1', 'journal_QUESTION_REMOVE_EXPERIMENT_WITH_JS_N', 'ERROR'  // experiment/view.all
@@ -365,9 +365,9 @@ class ExperimentController extends Controller
 			System::go('experiment/view');
 		}
 
-		self::setViewTemplate('create');
-		self::setTitle(L('TITLE_EDIT_OF',array($experiment->title)));
-		self::setContentTitle(L('TITLE_EDIT_OF_2',array($experiment->title)));
+		$this->setViewTemplate('create');
+		$this->setTitle(L('TITLE_EDIT_OF',array($experiment->title)));
+		$this->setContentTitle(L('TITLE_EDIT_OF_2',array($experiment->title)));
 
 		// Form object
 		$this->view->form = new Form('edit-experiment-form');
@@ -678,12 +678,12 @@ class ExperimentController extends Controller
 		}
 
 
-		self::setTitle(L('journal_TITLE_JOURNAL_OF',array($experiment->title)));
-		self::setContentTitle(L('journal_TITLE_JOURNAL_OF_2',array($experiment->title)));
-		self::addJs('functions');
-		self::addJs('experiment/journal');
-		//self::addJs('lib/jquery.fileDownload');
-		self::addJs('lib/jquery.fileDownload.min');
+		$this->setTitle(L('journal_TITLE_JOURNAL_OF',array($experiment->title)));
+		$this->setContentTitle(L('journal_TITLE_JOURNAL_OF_2',array($experiment->title)));
+		$this->addJs('functions');
+		$this->addJs('experiment/journal');
+		//$this->addJs('lib/jquery.fileDownload');
+		$this->addJs('lib/jquery.fileDownload.min');
 
 		// Add language translates for scripts
 		Language::script(array(
@@ -1040,13 +1040,13 @@ class ExperimentController extends Controller
 		{
 			// View/Edit graph
 
-			self::setViewTemplate('graphsingle');
-			self::setTitle(L('graph_TITLE_GRAPH_FOR',array($experiment->title)));
-			self::addJs('lib/jquery.flot');
-			self::addJs('lib/jquery.flot.time.min');
-			self::addJs('lib/jquery.flot.navigate');
-			self::addJs('functions');
-			self::addJs('chart');
+			$this->setViewTemplate('graphsingle');
+			$this->setTitle(L('graph_TITLE_GRAPH_FOR',array($experiment->title)));
+			$this->addJs('lib/jquery.flot');
+			$this->addJs('lib/jquery.flot.time.min');
+			$this->addJs('lib/jquery.flot.navigate');
+			$this->addJs('functions');
+			$this->addJs('chart');
 			// Add language translates for scripts
 			Language::script(array(
 					'ERROR',
@@ -1097,26 +1097,26 @@ class ExperimentController extends Controller
 		{
 			// Add new graph
 
-			self::setViewTemplate('graphsingle');
-			self::setTitle(L('graph_TITLE_ADD_GRAPH_FOR',array($experiment->title)));
-			self::setContentTitle(L('graph_TITLE_ADD_GRAPH_FOR_2',array($experiment->title)));
+			$this->setViewTemplate('graphsingle');
+			$this->setTitle(L('graph_TITLE_ADD_GRAPH_FOR',array($experiment->title)));
+			$this->setContentTitle(L('graph_TITLE_ADD_GRAPH_FOR_2',array($experiment->title)));
 		}
 		else
 		{
 			// List graphs
 
-			self::setTitle(L('graph_TITLE_GRAPHS_FOR',array($experiment->title)));
-			//self::setContentTitle(L('graph_TITLE_GRAPHS_FOR_2',array($experiment->title)));
+			$this->setTitle(L('graph_TITLE_GRAPHS_FOR',array($experiment->title)));
+			//$this->setContentTitle(L('graph_TITLE_GRAPHS_FOR_2',array($experiment->title)));
 			// Flot lib
-			self::addJs('lib/jquery.flot');
-			self::addJs('lib/jquery.flot.time.min');
-			self::addJs('lib/jquery.flot.navigate');
+			$this->addJs('lib/jquery.flot');
+			$this->addJs('lib/jquery.flot.time.min');
+			$this->addJs('lib/jquery.flot.navigate');
 			// PDF export libs
-			self::addJs('lib/jspdf.min');
-			self::addJs('lib/html2canvas');
+			$this->addJs('lib/jspdf.min');
+			$this->addJs('lib/html2canvas');
 			//
-			self::addJs('functions');
-			self::addJs('chart');
+			$this->addJs('functions');
+			$this->addJs('chart');
 
 			// Add language translates for scripts
 			Language::script(array(
@@ -1591,28 +1591,28 @@ class ExperimentController extends Controller
 		$this->view->content->from = $from;
 		$this->view->content->to = $to;
 
-		self::setTitle(L('graph_TITLE_SCATTER_FOR',array($experiment->title)));
-		//self::setContentTitle(L('graph_TITLE_SCATTER_FOR_2',array($experiment->title)));
+		$this->setTitle(L('graph_TITLE_SCATTER_FOR',array($experiment->title)));
+		//$this->setContentTitle(L('graph_TITLE_SCATTER_FOR_2',array($experiment->title)));
 		// Flot lib
-		self::addJs('lib/jquery.flot');
-		self::addJs('lib/jquery.flot.navigate');
+		$this->addJs('lib/jquery.flot');
+		$this->addJs('lib/jquery.flot.navigate');
 		// Flot plugins JUMFlot
-		self::addJs('lib/jquery.flot.JUMlib');
-		self::addJs('lib/jquery.flot.heatmap');
-		self::addJs('lib/jquery.flot.bubbles');
+		$this->addJs('lib/jquery.flot.JUMlib');
+		$this->addJs('lib/jquery.flot.heatmap');
+		$this->addJs('lib/jquery.flot.bubbles');
 		// or all JUMFlot
-		//self::addJs('lib/JUMFlot');
-		//self::addJs('lib/JUMFlot.min');
+		//$this->addJs('lib/JUMFlot');
+		//$this->addJs('lib/JUMFlot.min');
 		// PDF export libs
-		self::addJs('lib/jspdf.min');
-		self::addJs('lib/html2canvas');
+		$this->addJs('lib/jspdf.min');
+		$this->addJs('lib/html2canvas');
 		// Datetime picker
-		//self::addJs('lib/jquery.datetimepicker.full');
-		self::addJs('lib/jquery.datetimepicker.full.min');
-		self::addCss('jquery.datetimepicker.min');
+		//$this->addJs('lib/jquery.datetimepicker.full');
+		$this->addJs('lib/jquery.datetimepicker.full.min');
+		$this->addCss('jquery.datetimepicker.min');
 		//
-		self::addJs('functions');
-		self::addJs('chart');
+		$this->addJs('functions');
+		$this->addJs('chart');
 
 		// Add language translates for scripts
 		Language::script(array(

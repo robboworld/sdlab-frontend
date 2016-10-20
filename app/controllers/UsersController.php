@@ -66,11 +66,11 @@ class UsersController extends Controller
 				$filter_user_level = array(1);
 			}
 
-			self::setViewTemplate('view.all');
-			self::setTitle(L('users_TITLE_ALL'));
+			$this->setViewTemplate('view.all');
+			$this->setTitle(L('users_TITLE_ALL'));
 
-			self::addJs('functions');
-			//self::addJs('users/view.all');
+			$this->addJs('functions');
+			//$this->addJs('users/view.all');
 			// Add language translates for scripts
 			//Language::script(array(
 			//		'ERROR'  // users/view.all

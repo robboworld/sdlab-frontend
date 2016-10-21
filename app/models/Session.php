@@ -1,5 +1,9 @@
-<?
-
+<?php
+/**
+ * Class Session
+ *
+ * Session data model
+ */
 class Session extends Model
 {
 	private $id;
@@ -11,23 +15,33 @@ class Session extends Model
 	protected $comments;
 	protected $expiry;
 
+
 	/**
-	 * User level
+	 * Available user levels
 	 *   0   - guest
 	 *   >=1 - registered
 	 *   3   - admin (only for session with ID = 1)
+	 *
+	 * @var array
+	 */
+	private static $user_levels = array(0,1,2,3);
+
+	/**
+	 * User level
+	 *
 	 * @var integer
 	 */
 	private $user_level = 1;
 
-	function __construct()
+	public function __construct()
 	{
 		parent::__construct();
-		self::generateKey();
+		$this->generateKey();
 		$this->DateStart = time();
 		$this->expiry = 0;
 	}
-	function save()
+
+	public function save()
 	{
 
 		if(isset($this->id))
@@ -69,7 +83,7 @@ class Session extends Model
 		if($result) return true;
 	}
 
-	function load($key)
+	public function load($key)
 	{
 		$row = $this->db->query("select * from sessions where session_key = " . $this->db->quote($key));
 		$session = $row->fetch(PDO::FETCH_OBJ);
@@ -79,10 +93,10 @@ class Session extends Model
 			$this->id = $session->id;
 			$this->session_key = $session->session_key;
 
-			$this->name = !empty($session->name) ? $session->name : L::session_NAME_NOT_PROVIDE;
+			$this->name = !empty($session->name) ? $session->name : L('session_NAME_NOT_PROVIDE');
 			if(!empty($session->DateStart)) $this->DateStart = $session->DateStart;
 			$this->DateEnd = $session->DateEnd;
-			$this->title = !empty($session->title) ? $session->title : L::session_WITHOUT_NAME;
+			$this->title = !empty($session->title) ? $session->title : L('session_WITHOUT_NAME');
 			if(!empty($session->comments)) $this->comments = $session->comments;
 			if(!empty($session->expiry)) $this->expiry = $session->expiry;
 
@@ -127,9 +141,9 @@ class Session extends Model
 	 * @param $key
 	 * @return bool
 	 */
-	static function keyExists($key)
+	public static function keyExists($key)
 	{
-		$dbh = (new DB())->query("select id from sessions where session_key = '$key'");
+		$dbh = (new DB())->query("select id from sessions where session_key = '$key' limit 1");
 		$result = $dbh->fetch(PDO::FETCH_OBJ);
 		if($result)
 		{
@@ -139,7 +153,6 @@ class Session extends Model
 		{
 			return false;
 		}
-
 	}
 
 	/**
@@ -151,7 +164,7 @@ class Session extends Model
 	}
 
 
-	function setSession()
+	public function setSession()
 	{
 		$_SESSION['sdlab'] = array(
 			'id' => $this->id,
@@ -161,8 +174,41 @@ class Session extends Model
 			'comments' => $this->comments
 		);
 	}
-	static function destroySession()
+	public static function destroySession()
 	{
 		unset($_SESSION['sdlab']);
+	}
+
+
+	/**
+	 * Get available user levels list
+	 * 
+	 * @param   boolean  $used  Get only used levels (true) or all available (false)
+	 * 
+	 * @return  array
+	 */
+	public static function getUserLevels($used = false)
+	{
+		$levels = array();
+
+		if ($used)
+		{
+			// TODO: add new level field to sessions table
+			/*
+			$db = (new DB())->query("select distinct level from sessions");
+			$rows = $db->fetch(PDO::FETCH_COLUMN);
+			if(!empty($rows))
+			{
+				$levels = $rows;
+			}
+			*/
+			$levels = array(1,3);
+		}
+		else
+		{
+			$levels = self::$user_levels;
+		}
+
+		return $levels;
 	}
 }

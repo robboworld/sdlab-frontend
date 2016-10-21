@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Class Lang
  * Override i18n class
@@ -251,7 +251,7 @@ class Language extends i18n
 				$link = '?q=page/view';
 				$html .= '<li ' . (($active === $lang) ? 'class="active"' : '') . '><a href="' . $link . '&lang=' . strtolower($lang) . '" class="btn btn-link btn-xs">'
 							. '<img width="18" class="" src="' . $imgpath . '/' . $lang . '.gif">'
-							. '<span class="hidden-xs">' . strtoupper($lang) . '</span>'
+							. '<span class="hidden-sm hidden-xs">' . strtoupper($lang) . '</span>'
 						. '</a></li>';
 			}
 			$html .= '</ul>';
@@ -311,8 +311,12 @@ class Language extends i18n
 			foreach ($string as $str)
 			{
 				// Normalize the key and translate the string.
-				$translated = constant($prefix . '::' . $str);
-	
+				$translated = call_user_func_array($prefix, array($str));
+				if ($translated === false)
+				{
+					// Translate method not found
+					$translated = $str;
+				}
 				if ($jsSafe)
 				{
 					// Javascript filter

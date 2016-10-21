@@ -1,18 +1,21 @@
-<?
-
+<?php
 /**
- *
+ * Class JSONSocket
+ * 
+ * Connection with backend through socket (jsonrpc calls)
  */
-
 class JSONSocket
 {
+	const ENOTSOCK     = 88;
+	const ENOTSOCK_STR = 'Socket operation on non-socket';
+
 	public $socket;
 	private $buffer_size = 50; // unused
 	private $error;
 	private $errorno;
 	private $request;
 
-	function __construct($path)
+	public function __construct($path)
 	{
 		//$this->socket = socket_create(AF_UNIX, SOCK_STREAM, null);
 		//socket_connect($this->socket, $path);
@@ -21,16 +24,19 @@ class JSONSocket
 		$this->socket = fsockopen('unix://'.$path, 0, $this->errorno, $this->error);
 		if (!$this->socket)
 		{
-			error_log('Error fsockopen(): ' . $errno . ' - ' . $errstr); //DEBUG
+			error_log('Error fsockopen(): ' . $this->errorno . ' - ' . $this->error); //DEBUG
 		}
 	}
 
-	function __destruct()
+	public function __destruct()
 	{
-		if(!empty($this->socket) && is_resource($this->socket)) fclose($this->socket);
+		if(!empty($this->socket) && is_resource($this->socket))
+		{
+			fclose($this->socket);
+		}
 	}
 
-	function call($method, $params)
+	public function call($method, $params)
 	{
 		$request = new stdClass();
 		$request->jsonrpc = '2.0';
@@ -67,7 +73,10 @@ class JSONSocket
 
 		if (empty($this->socket) || !is_resource($this->socket))
 		{
-			error_log('Error socketWrite(): Socket operation on non-socket'); //DEBUG
+			$this->errorno = self::ENOTSOCK;
+			$this->error   = self::ENOTSOCK_STR;
+			error_log('Error socketWrite(): ' . $this->error); //DEBUG
+
 			return false;
 		}
 
@@ -78,12 +87,18 @@ class JSONSocket
 	{
 		if(!$this->socket)
 		{
-			error_log('Error socketReceive(): Socket operation on non-socket'); //DEBUG
+			$this->errorno = self::ENOTSOCK;
+			$this->error   = self::ENOTSOCK_STR;
+			error_log('Error socketReceive(): ' . $this->error); //DEBUG
+
 			return false;
 		}
 
 		$result = fgets($this->socket);
-		if(!empty($this->socket) && is_resource($this->socket)) fclose($this->socket);
+		if(!empty($this->socket) && is_resource($this->socket))
+		{
+			fclose($this->socket);
+		}
 		$object = json_decode($result);
 		if(is_object($object))
 		{
@@ -92,12 +107,16 @@ class JSONSocket
 				error_log('Error socketReceive():'.var_export($object,true)); //DEBUG
 				return false;
 			}
-			if($object->result)
+			//if($object->result)  //xxx: not works with empty values
+			//if(isset($object->result))  //xxx: not works with null
+			if(property_exists($object, 'result'))
 			{
-				return $object->result;
+				return array(
+						'result' => $object->result
+				);
 			}
 		}
-		else 
+		else
 		{
 			error_log('Error output socketReceive():'.var_export($result,true)); //DEBUG
 			return false;
@@ -106,15 +125,20 @@ class JSONSocket
 		return false;
 	}
 
-	function error()
+	public function error()
 	{
+		if (!$this->errorno)
+		{
+			return null;
+		}
+
 		return array(
-			'no' => $this->errorno,
+			'no'     => $this->errorno,
 			'string' => $this->error
 		);
 	}
 
-	static function availableTransport()
+	public static function availableTransport()
 	{
 		return stream_get_transports();
 	}

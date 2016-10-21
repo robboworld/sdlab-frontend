@@ -1,23 +1,19 @@
 $(document).ready(function(){
-    console.log('Edit setup.');
-
-    if($('input[name="setup-type"]:checked').size() > 0){
+    if($('input[name="setup-type"]:checked').length > 0){
         $('.setup-type, #setup-type-alert').hide();
-        $('input[type="submit"]').removeAttr('disabled');
+        $('input[type="submit"]').prop('disabled',false);
         $('#'+$('input[name="setup-type"]:checked').attr('data-id')).show();
     }
 
-
     $(document).on('change', 'input[name="setup-type"]', function(e){
         $('.setup-type, #setup-type-alert').hide();
-        $('#'+$('input[name="setup-type"]:checked').attr('data-id')).show();
-        $('input[name="setup-type"]:checked').parent().parent().find('label').removeClass('active');
-        $('input[name="setup-type"]:checked').parent().addClass('active');
+        var schk = $('input[name="setup-type"]:checked');
+        $('#'+schk.attr('data-id')).show();
+        schk.parent().parent().find('label').removeClass('active');
+        schk.parent().addClass('active');
 
-        $('input[type="submit"]').removeAttr('disabled');
+        $('input[type="submit"]').prop('disabled',false);
     })
-
-
 
     // Update list of available sensors
     $(document).on('click', '#sensors-list-update', function(){
@@ -52,8 +48,8 @@ function updateSensorsList(data){
 
     if(typeof data.error === 'undefined'){
         $('#sensor-list-table tbody').empty();
-        for (id in data){
-            var sensor = data[id];
+        for (id in data.result){
+            var sensor = data.result[id];
             sensor.id = id;
             var info = (typeof sensor.sensor_name !== 'undefined') ? true : false;
             for (var i=0;i<sensor.Values.length;i++){
@@ -61,7 +57,7 @@ function updateSensorsList(data){
                 var exists = $('#sensors-in-setup tbody').find('input[name="sensors['+sensor.id+']['+i+'][id]"]'), newrow;
                 if(exists.size() == 0){
                     newrow = $('\
-                        <tr sensor-id="'+ sid +'" class="success">\
+                        <tr data-sensor-id="'+ sid +'" class="success">\
                             <td><input type="checkbox" checked="checked"/></td>\
                             <td>' + sensor.id + '</td>\
                             <td class="sensor-setup-valname">' + (info ? sensor.Values[i].value_name : '-') + '</td>\
@@ -84,7 +80,7 @@ function updateSensorsList(data){
                         sensorname = jsensorname.first().val();
                     }
                     newrow = $('\
-                        <tr sensor-id="'+ sid +'" class="success" style="display: none;" ' + ((typeof sensorname !== 'undefined' && sensorname !== '') ? ('data-sensorname="'+sensorname+'"') : '') + '>\
+                        <tr data-sensor-id="'+ sid +'" class="success" style="display: none;" ' + ((typeof sensorname !== 'undefined' && sensorname !== '') ? ('data-sensorname="'+sensorname+'"') : '') + '>\
                             <td><input type="checkbox"/></td>\
                             <td>' + sensor.id + '</td>\
                             <td class="sensor-setup-valname">' + (info ? sensor.Values[i].value_name : '-') + '</td>\
@@ -113,7 +109,7 @@ function updateSensorsList(data){
 
 function addSensorsToSetup(){
     $('#sensor-list-table').find(':checked').parent().parent().each(function(id){
-        var sensorId = $(this).attr('sensor-id');
+        var sensorId = $(this).data('sensor-id');
         var pos = sensorId.lastIndexOf("#"), idx = 0, sid = sensorId;
         if(pos > 0){
             sid = sensorId.slice(0, pos);
@@ -150,7 +146,7 @@ function removeSensorFromSetup(obj){
     var sensorname = rmrow.find('.sensor-setup-name input[type=text]').val();
 
     rmrow.remove();
-    $('tr[sensor-id="'+ sensorId +'"]').removeClass('success').data('sensorname',sensorname).show();
+    $('tr[data-sensor-id="'+ sensorId +'"]').removeClass('success').data('sensorname',sensorname).show();
 
     console.log('Remove sensor #'+ sensorId +' from setup configuration.');
 }

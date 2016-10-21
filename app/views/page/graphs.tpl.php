@@ -6,7 +6,7 @@
 	<div class="col-md-4 pull-right">
 		<h3>{FULL_NAME} {GROUP}</h3>
 	</div>
-	<h3><? echo L::graph_TITLE_GRAPHS_FOR_2('<a href="?q=page/view/experiment">{Experiment name}</a>'); ?></h3>
+	<h3><?php echo L('graph_TITLE_GRAPHS_FOR_2',array('<a href="?q=page/view/experiment">{Experiment name}</a>')); ?></h3>
 
 </div>
 <div class="col-md-8">
@@ -15,7 +15,7 @@
 			<tr>
 				<td></td>
 				<td></td>
-				<td><? echo L::INCLUDE_TO_REPORT; ?></td>
+				<td><?php echo L('INCLUDE_TO_REPORT'); ?></td>
 			</tr>
 		</thead>
 		<tbody>
@@ -41,5 +41,5 @@
 			</tr>
 		</tbody>
 	</table>
-	<a href="?q=page/view/graphs.edit" class="btn btn-default"><? echo L::ADD; ?></a>
+	<a href="?q=page/view/graphs.edit" class="btn btn-default"><?php echo L('ADD'); ?></a>
 </div>

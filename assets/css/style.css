@@ -1,6 +1,11 @@
 body {
 	overflow-x: hidden;
 }
+#navigation.container {
+	margin-bottom: 10px;
+	padding: 0;
+	width: 100%;
+}
 #data-container {
 	/*
 	padding-left: 165px;
@@ -114,7 +119,6 @@ blink, .blink {
 }
 
 
-
 /* universal class */
 .ln-hgt-16px { height: 16px; line-height: 14px; }
 .bg-default { background-color: #EEE; }
@@ -122,22 +126,18 @@ blink, .blink {
 .mrg-bot-5px { margin-bottom: 5px; }
 .text-area { resize: vertical; min-height: 250px; }
 .width-auto { width: auto; }
+.text-danger2 { color: #d9534f; }
+
 /* exp-page */ 
+.exp-table {}
+.exp-table .padng-3px { padding: 3px; }
 h3.exp-title {
-	margin: 0;
-	line-height: 40px;
-}
-.exp-table h3 {
-	line-height: 27px;
-	max-width: 74%;
 	display: inline-block;
+	max-width: 74%;
+	margin: 0;
 	padding-left: 40px;
 }
-.exp-table .padng-3px { padding: 3px; }
-.exp-table .btn-edit {
-	position: absolute;
-	left: 20px;
-}
+.exp-table .btn-edit { padding 0 12px; }
 .special-label {
 	border: 1px solid transparent;
 	display: inline-block;
@@ -151,10 +151,14 @@ h3.exp-title {
 	background-color: #fff;
 	color: #428bca;
 }
-.exp-title a { margin-bottom: 3px; }
-.exp-title span { vertical-align: middle; }
-.exp-title span.glyphicon { vertical-align: text-top; }
-
+td.exp-header { position: relative; }
+.exp-title a { }
+.exp-title span { }
+.exp-title .experiment-icon-record {
+  position: absolute;
+  top: 5px;
+  left: 8px;
+}
 .row-experiment .remove-button,
 .row-experiment .edit-button {
   background: white;
@@ -175,6 +179,43 @@ h3.exp-title {
 }
 .row-experiment:hover .edit-button {
   background: #428bca;
+}
+.panel-group-monitors.panel-group .panel {
+  overflow: visible;
+}
+.panel-primary > .panel-heading .btn-none {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+.panel-primary > .panel-heading a.btn-none,
+.panel-primary > .panel-heading a.btn-none:focus {
+  color: #fff;
+  text-decoration: none;
+}
+.panel-primary > .panel-heading a.btn-none:focus {
+  outline: 0 none;
+  /*
+  outline: thin dotted;
+  outline-offset: -2px;
+  */
+}
+.panel-primary > .panel-heading a.btn-none:active,
+.panel-primary > .panel-heading a.btn-none:hover {
+  outline: 0 none;
+}
+
+.panel-primary > .panel-heading a.btn-none:hover {
+  color: #2a6496;
+  text-decoration: none;
+}
+.monitor-panel .panel-heading .panel-collapse-control .btn-none {
+  margin-left: 10px;
+}
+.panel.monitor-panel .panel-collapse .table {
+  margin-bottom: 0;
+}
+.mon-table .setup-access {
+  padding-right: 18px;
 }
 
 .period-work {
@@ -216,9 +257,11 @@ h3.exp-title {
 	.setup-label-long + div { text-align: center; }
 }
 
+
 /* Menu */
 #nav-buttons { padding: 0; }
 #nav-buttons input { min-width: 130px; }
+
 
 /* Journal page */
 .table-detections .detection-num {
@@ -234,4 +277,57 @@ h3.exp-title {
 #collapseSensors {
 	background-color: rgba(255,255,255,0.8);
 	padding: 5px;
+}
+
+/* Plot pages */
+.table-detections .detection-num {
+	cursor: pointer;
+}
+.control-zoom-range-x .dropdown-menu {
+	min-width: 100px;
+}
+.control-zoom-range-x .dropdown-menu label.checkbox {
+	font-weight: normal;
+	margin: 0;
+}
+.plot-control-panel-top > .btn-toolbar > .btn-group {
+	margin-bottom: 5px;
+}
+.fa-plot-points-points {
+	background: url('../images/points-points16x16.png') no-repeat scroll 0 -1px transparent;
+	height: 15px;
+	width: 16px;
+	vertical-align: middle;
+}
+.fa-plot-points-none {
+	background: url('../images/points-none16x16.png') no-repeat scroll 0 -1px transparent;
+	height: 15px;
+	width: 16px;
+	vertical-align: middle;
+}
+.fa-plot-points-heatmap {
+	background: url('../images/points-heatmap16x16.png') no-repeat scroll 0 -1px transparent;
+	height: 15px;
+	width: 16px;
+	vertical-align: middle;
+}
+.fa-plot-points-bubbles {
+	background: url('../images/points-bubbles16x16.png') no-repeat scroll 0 -1px transparent;
+	height: 15px;
+	width: 16px;
+	vertical-align: middle;
+}
+.btn-toolbar .btn-group .toolbar-text {
+	margin: 2px 0px;
+}
+
+/* Webcam streaming */
+.stream-wrapper {
+	position: relative;
+	overflow: hidden;
+	z-index: 0;
+	margin: 2px 0;
+}
+.webcam-info.dl-horizontal dt {
+	text-align: left;
 }

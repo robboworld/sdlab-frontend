@@ -1,14 +1,20 @@
-<?
+<?php
+/**
+ * Config
+ * Array with application configuration
+ */
+return array(
 
-$config = array();
+		/* Config connection with backend service through sockets.*/
+		'socket' => array(
+				'path'        => '/run/sdlab.sock',
+		),
 
-/* Config connection with backend service through sockets.*/
-$config['socket']['path'] = '/run/sdlab.sock';
-
-/* Configuration laboratory */
-$config['lab']['name'] = 'DLab001';
-$config['lab']['lang'] = 'ru';
-$config['lab']['page_suffix'] = 'ScratchDuino';
-$config['lab']['admin_key'] = '123456';
-
-return $config;
+		/* Configuration laboratory */
+		'lab'    => array(
+				'name'        => 'DLab001',
+				'lang'        => 'ru',
+				'page_suffix' => 'ScratchDuino',
+				'admin_key'   => '123456',
+		),
+);

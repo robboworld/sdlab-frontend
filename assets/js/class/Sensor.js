@@ -30,26 +30,6 @@ function Sensor(options){
         this.widgetActive = true;
     }
 
-    // Create sensor widget (test)
-    // TODO: delete test create
-    this.testCreateWidget = function(holder){
-        var output =
-            '<div class="col-md-3" id="'+ this.id +'">\
-            <div class="panel panel-default">\
-                <div class="panel-heading">\
-                    <span class="panel-title"><span class="glyphicon glyphicon-eye-open"></span> ' + this.name + '</span>\
-                </div>\
-                <div class="panel-body">\
-                    <div class="widget-pane info active ">\
-                        <h3>230.001</h3>\
-                    </div>\
-                </div>\
-            </div>\
-        </div>';
-        $(holder).append(output);
-        this.widgetActive = true;
-    }
-
     // Remove sensor widget
     this.destroyWidget = function(){
         $('#'+this.id).remove(); // TODO: create check for removing widget

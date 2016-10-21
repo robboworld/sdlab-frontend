@@ -1,0 +1,6 @@
+## No directory listings
+IndexIgnore *
+
+## Can be commented out if causes errors, see notes above.
+Options +FollowSymlinks
+Options -Indexes

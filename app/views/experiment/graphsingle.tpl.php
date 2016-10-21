@@ -1,5 +1,7 @@
+<?php 
+// TODO: refactor for use as Simple plot with Save Plot form. Save x & y ranges, zoom, x & y labels and custom plot title.
+?>
 <script>
-
 	var data = [
 		{
 			label: "Temperature-test",
@@ -28,10 +30,8 @@
 			]
 		}];
 
-	function dataRecived(data){
-		console.log(data);
-
-		var g = new Graph(data);
+	function dataReceived(data){
+		var g = new BasePlot(data);
 		var options = {
 			xaxis: {
 				//zoomRange: [data[0].data[0][0], data[0].data[data.length-1][0]],
@@ -47,63 +47,63 @@
 			}
 		};
 
-		buildGraph(data, $('#graph-workspace'), options)
+		buildGraph(data, $('#graph_workspace'), options)
 	}
 
 	$(document).ready(function(){
 
-		coreAPICall('Detections.getGraphData', {
+		coreAPICall('Detections.getGraphSingleData', {
 			plot: 1
-		}, dataRecived)
+		}, dataReceived)
 
 	})
 </script>
 
 
 <div class="col-md-12">
-	<a href="/?q=experiment/graph/<? print $this->view->content->experiment->id; ?>" class="btn btn-sm btn-default">
-		<span class="glyphicon glyphicon-chevron-left"></span> <? echo L::graph_TITLE_ALL_GRAPHS_FOR_2($this->view->content->experiment->title) ?>
+	<a href="/?q=experiment/graph/<?php echo (int)$this->view->content->experiment->id; ?>" class="btn btn-sm btn-default">
+		<span class="glyphicon glyphicon-chevron-left"></span> <?php echo L('graph_TITLE_ALL_GRAPHS_FOR_2',array(htmlspecialchars($this->view->content->experiment->title, ENT_QUOTES, 'UTF-8'))); ?>
 	</a>
 </div>
 <br><br>
 <div class="col-md-12">
 	<div class="col-md-10 well">
 		<form class="form-inline">
-			<input type="hidden" name="form-id" value="<? print $this->view->form->id; ?>">
+			<input type="hidden" name="form-id" value="<?php echo htmlspecialchars($this->view->form->id, ENT_QUOTES, 'UTF-8'); ?>"/>
 			<div class="form-group col-md-6">
 				<label for="x-axis" class="col-md-12">
-					<? echo L::graph_ABSCISSA; ?>:
+					<?php echo L('graph_ABSCISSA'); ?>:
 				</label>
 				<div class="col-md-12">
-					<? echo L::graph_EXPRESSION; ?>: <input id="x-axis" class="form-control" type="text" value="t" disabled>
+					<?php echo L('graph_EXPRESSION'); ?>: <input id="x-axis" class="form-control" type="text" value="t" disabled="disabled"/>
 				</div>
 			</div>
 			<div class="form-group col-md-6">
 				<label for="y-axis" class="col-md-12">
-					<? echo L::graph_ORDINATE; ?>:
+					<?php echo L('graph_ORDINATE'); ?>:
 				</label>
 				<div class="col-md-12">
 					<div class="ordinate-item">
 						<select name="ordinate-sensor-id[]" class="form-control">
-							<option><? echo L::sensor_SELECT_OPTION; ?></option>
+							<option><?php echo L('sensor_SELECT_OPTION'); ?></option>
 						</select>
-						<? echo L::graph_EXPRESSION; ?>: <input id="ordinate-scale" class="form-control" type="text" value="" placeholder="<? echo L::graph_EXPRESSION; ?>">
+						<?php echo L('graph_EXPRESSION'); ?>: <input id="ordinate-scale" class="form-control" type="text" value="" placeholder="<?php echo L('graph_EXPRESSION'); ?>"/>
 					</div>
 				</div>
 				<div class="col-md-12">
-					<br>
-					<a href="#" class="btn btn-default"><? echo L::sensor_ADD; ?></a>
+					<br/>
+					<a href="#" class="btn btn-default"><?php echo L('sensor_ADD'); ?></a>
 				</div>
 			</div>
 		</form>
 	</div>
 	<div class="col-md-2">
-		<input class="btn btn-default" value="<? print $this->view->form->submit->value; ?>">
+		<input class="btn btn-default" value="<?php echo htmlspecialchars($this->view->form->submit->value, ENT_QUOTES, 'UTF-8'); ?>"/>
 	</div>
 </div>
 
 <div class="col-md-12">
-	<div class="col-md-12" id="graph-workspace" style="height: 400px; padding-left: 15px;">
+	<div class="col-md-12" id="graph_workspace" style="height: 400px; padding-left: 15px;">
 		&nbsp;
 	</div>
 </div>

@@ -1,12 +1,14 @@
-<?
-
+<?php
 /**
  * Class Model
+ * 
+ * Base model
  */
 abstract class Model implements ModelInterface
 {
 	protected $db;
-	function __construct()
+
+	public function __construct()
 	{
 		try{
 			$this->db = new DB();
@@ -27,6 +29,7 @@ abstract class Model implements ModelInterface
 	{
 		return $this->$var;
 	}
+
 	public function __get($var)
 	{
 		return $this->$var;

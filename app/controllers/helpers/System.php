@@ -1,7 +1,6 @@
-<?
-
+<?php
 /** 
- * class System
+ * Class System
  * 
  * Static system methods
  */
@@ -14,6 +13,7 @@ class System
 	const DATETIME_RFC3339NANO_UTC = 'Y-m-d\TH:i:s.u\Z';
 	const DATETIME_FORMAT1         = 'Y.m.d H:i:s';
 	const DATETIME_FORMAT1NANO     = 'Y.m.d H:i:s.u';
+	const DATETIME_FORMAT1NANOXLS  = 'Y.m.d H:i:s,u';
 	const DATETIME_FORMAT2         = 'd.m.Y H:i:s';
 	const DATETIME_FORMAT3         = 'Y.m.d H:i:s e';
 
@@ -24,14 +24,25 @@ class System
 	 */
 	protected static $zones = array('Africa', 'America', 'Antarctica', 'Arctic', 'Asia', 'Atlantic', 'Australia', 'Europe', 'Indian', 'Pacific');
 
-	static function dump($var)
+	public static function dump($var)
 	{
-		print('<pre>');
+		echo '<pre>';
 		var_dump($var);
-		print('</pre>');
+		echo '</pre>';
 	}
 
-	static function dateformat($string, $format = 'd.m.Y H:i:s', $timezone = null)
+	/**
+	 * Format text datetime
+	 * 
+	 * @param string $string    input datetime string in format for DateTime
+	 * @param string $format    new datetime format
+	 * @param string $timezone  new timezone, one of the supported timezone names or 'now' for local
+	 * 
+	 * @return string
+	 * 
+	 * @throws Exception
+	 */
+	public static function dateformat($string, $format = 'Y.m.d H:i:s', $timezone = null)
 	{
 		$dt = new DateTime($string);
 
@@ -52,17 +63,167 @@ class System
 	}
 
 	/**
-	 * @param string $query_string
+	 * Redirect and exit
+	 * 
+	 * @param string $query_path    path value for q query param
+	 * @param string $query_string  other query params as query string in format "a=1&b=2", used with query_path
+	 * @param string $fragment      fragment part of url, used with query_path
 	 */
-	static function go($query_string = null)
+	public static function go($query_path = null, $query_string = null, $fragment = null)
 	{
-		if($query_string == null)
+		if($query_path == null)
 		{
 			header('Location: /');
 		}
 		else
 		{
-			header('Location: ?q='.$query_string);
+			header('Location: ?q=' . $query_path
+					. (($query_string !== null && $query_string !== '') ? ('&' . $query_string) : '')
+					. (($fragment     !== null && $fragment     !== '') ? ('#' . $fragment)     : '')
+			);
+		}
+
+		exit();
+	}
+
+	/**
+	 * Go to the destination url by request query var.
+	 * Goes to default query if no destination valiable found.
+	 * 
+	 * @param mixed  $default_query  Default redirect query path string or array with: q (path), query_string, fragment
+	 * @param string $method         Method (POST|GET|auto)
+	 * @param string $query_var      Request var name
+	 */
+	public static function goback($default_query = null, $method = 'get', $query_var = 'destination', $noBackToCurrentPath = false)
+	{
+		$method = strtolower($method);
+		$value = null;
+		$default_array = array(
+				'q'            => null,
+				'query_string' => null,
+				'fragment'     => null
+		);
+
+		if (!is_array($default_query))
+		{
+			$q = (($default_query !== null) ? (string)$default_query : null);
+			$default_query = $default_array;
+			$default_query['q'] = $q;
+		}
+
+		switch ($method)
+		{
+			case 'auto':  // from REQUEST than from GET
+				$value = self::getVarBackurl($query_var);
+				break;
+			case 'post':
+				$value = self::getVar($query_var, null, 'post');
+				break;
+			case 'get':
+			default:
+				$value = self::getVar($query_var, null, 'get');
+				break;
+		}
+
+		if ($value !== null && strlen($value) != 0)
+		{
+			// Parse components of destination url with params parse
+			$url_components = parse_url($value);
+			$url_components['queryparams'] = array();
+			if (isset($url_components['query']))
+			{
+				parse_str($url_components['query'], $url_components['queryparams']);
+			}
+
+			// Get special query params and fragment
+			$q        = null;
+			$fragment = null;
+			if (isset($url_components['fragment']))
+			{
+				$fragment = self::cleanVar($url_components['fragment'], 'cmd');
+			}
+			if (isset($url_components['queryparams']["q"]))
+			{
+				$q = self::cleanVar($url_components['queryparams']['q'], 'path');
+			}
+
+			if ($q !== null)
+			{
+				if ($noBackToCurrentPath && (isset($_GET['q']) && ($q == $_GET['q'])))
+				{
+					self::go(
+							$default_query['q'],
+							$default_query['query_string'],
+							$default_query['fragment']
+					);
+				}
+				else
+				{
+					unset($url_components['queryparams']['q']);  // remove path from query params
+
+					self::go(
+							$q,
+							http_build_query($url_components['queryparams']),
+							$fragment
+					);
+				}
+			}
+			else
+			{
+				self::go(
+						$default_query['q'],
+						$default_query['query_string'],
+						$default_query['fragment']
+				);
+			}
+		}
+		else
+		{
+			self::go(
+					$default_query['q'],
+					$default_query['query_string'],
+					$default_query['fragment']
+			);
+		}
+	}
+
+	/**
+	 * Output error/status and exit (404,403,500 and etc).
+	 * 
+	 * @param integer $errcode
+	 * @param string  $str
+	 */
+	public static function goerror($code = 500, $str = null)
+	{
+		// Clean output buffer
+		while (@ob_end_clean()) {
+			// do nothing
+		}
+
+		switch ($code)
+		{
+			case 404:
+				header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found', true, 404);
+				if(!empty($str))
+				{
+					echo $str;
+				}
+				break;
+
+			case 403:
+				{
+					header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
+					if(!empty($str))
+					{
+						echo $str;  //'You are forbidden!';
+					}
+				}
+				break;
+
+			case 500:
+			default:
+				header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+				break;
 		}
 
 		exit();
@@ -71,22 +232,27 @@ class System
 	/**
 	 * Convert number of seconds to nanoseconds
 	 * 
-	 * @param  interger|float  $var  Seconds
+	 * @param  int|float  $var  Seconds
 	 * 
-	 * @return interger|float
+	 * @return int|float
 	 */
-	static function nano($var)
+	public static function nano($var)
 	{
 		return $var * 1000000000;
 	}
 
-	static function secToTime($sec)
+	public static function secToTime($sec)
 	{
 		$obj = Form::formTimeObject($sec);
-		return $obj->d . ' ' . L::DAYS_SHORT2 . ' ' . $obj->h . ' ' . L::HOURS_SHORT2 . ' ' . $obj->m . ' ' . L::MINUTES_SHORT2 . ' ' . $obj->s . ' '. L::SECONDS_SHORT2;
+		return $obj->d . ' ' . L('DAYS_SHORT2') . ' ' . $obj->h . ' ' . L('HOURS_SHORT2') . ' ' . $obj->m . ' ' . L('MINUTES_SHORT2') . ' ' . $obj->s . ' '. L('SECONDS_SHORT2');
 	}
 
-	static function nulldate()
+	/**
+	 * Null date in backend
+	 * 
+	 * @return string
+	 */
+	public static function nulldate()
 	{
 		return "0001-01-01T00:00:00Z";
 	}
@@ -107,7 +273,7 @@ class System
 	 * 
 	 * @return string
 	 */
-	static function cutdatemsec($string)
+	public static function cutdatemsec($string)
 	{
 		return (string) preg_replace('/\.\d+(Z|(\+|\-).*)/i', '${1}', $string);
 	}
@@ -129,7 +295,7 @@ class System
 	 *
 	 * @return string|integer  Number of second parts (nanoseconds)
 	 */
-	static function getdatemsec($string)
+	public static function getdatemsec($string)
 	{
 		$i = preg_match('/\.(\d+)(Z|(\+|\-).*)/i', $string, $mathes);
 		if ($i && isset($mathes[1]))
@@ -157,8 +323,10 @@ class System
 	 * @param  string  $string
 	 *
 	 * @return string
+	 * 
+	 * @throws Exception
 	 */
-	static function convertDatetimeToUTC($string)
+	public static function convertDatetimeToUTC($string)
 	{
 		$nsec = static::getdatemsec($string);
 		$dt = new DateTime(static::cutdatemsec($string));
@@ -169,14 +337,17 @@ class System
 
 	/**
 	 * Convert datetime string with nanoseconds from UTC to local time
-	 * @see System::convertDatetimeToUTC
+	 * @see formats comments in System::convertDatetimeToUTC
 	 *
-	 * @param  string  $string
+	 * @param  string  $string    Input date string (empty or null for now time)
+	 * @param  string  $format    Output datetime format
 	 * @param  string  $timezone  Timezone name or 'now' for current TZ or null, if use from time string
 	 *
 	 * @return string
+	 * 
+	 * @throws Exception
 	 */
-	static function datemsecformat($string, $format = 'd.m.Y H:i:s.u', $timezone = null)
+	public static function datemsecformat($string, $format = 'Y.m.d H:i:s.u', $timezone = null)
 	{
 		$nsec = static::getdatemsec($string);
 		$dt = new DateTime(static::cutdatemsec($string));
@@ -205,7 +376,7 @@ class System
 	 * 
 	 * @return string  Text string for field name or False on error/not found
 	 */
-	static function getValsTranslate($name, $field = '')
+	public static function getValsTranslate($name, $field = '')
 	{
 		// TODO: create special dictionary of available sensors with characteristics in db or get from backend (modify API request Lab.ListSensors)
 
@@ -230,7 +401,7 @@ class System
 				'humidity' => array(
 						'value_name'    => 'humidity',
 						'si_name'       => 'percent',
-						'si_notation'   => 'percent'  // xxx: as "%" in translates, because cannt use symbol in lang key-constant
+						'si_notation'   => 'percent'  // xxx: as "%" in translates, because cannot use symbol in lang key-constant
 				),
 				'illuminance' => array(
 						'value_name'    => 'illuminance',
@@ -252,6 +423,16 @@ class System
 						'si_name'       => 'volt',
 						'si_notation'   => 'V'
 				),
+				'distance' => array(
+						'value_name'    => 'distance',
+						'si_name'       => 'meter',
+						'si_notation'   => 'm'
+				),
+				'induction' => array(
+						'value_name'    => 'induction',
+						'si_name'       => 'tesla',
+						'si_notation'   => 'T'
+				),
 		);
 
 		if (is_string($field) && isset($cat[$name]))
@@ -271,7 +452,7 @@ class System
 	}
 
 
-	static function get_ip_address($ifname = 'eth0')
+	public static function get_ip_address($ifname = 'eth0')
 	{
 		$ips = static::get_ip_addresses($ifname);
 
@@ -284,7 +465,7 @@ class System
 	 * 
 	 * @return array:
 	 */
-	static function get_interfaces($pattern = null)
+	public static function get_interfaces($pattern = null)
 	{
 
 		$osName = strtoupper(PHP_OS);
@@ -323,7 +504,7 @@ class System
 	 * 
 	 * @return array:
 	 */
-	static function get_ip_addresses($ifname = null)
+	public static function get_ip_addresses($ifname = null)
 	{
 		$osName = strtoupper(PHP_OS);
 		$ipRes = null;
@@ -393,7 +574,7 @@ class System
 	 *
 	 * @since   11.1
 	 */
-	static function clean($source, $type = 'raw')
+	public static function cleanVar($source, $type = 'raw')
 	{
 		// Handle the type constraint
 		switch (strtoupper($type))
@@ -457,6 +638,8 @@ class System
 				$result = @ (string) $matches[0];
 				break;
 
+			// TODO: add URL clean var rule
+
 			case 'TRIM':
 				$result = (string) trim($source);
 				//include 'phputf8.trim';
@@ -479,12 +662,123 @@ class System
 
 
 	/**
+	 * Fetches and returns a given variable.
+	 *
+	 * The default behaviour is fetching variables depending on the
+	 * current request method: GET and HEAD will result in returning
+	 * an entry from $_GET, POST and PUT will result in returning an
+	 * entry from $_POST.
+	 *
+	 * You can force the source by setting the $hash parameter:
+	 *
+	 * post    $_POST
+	 * get     $_GET
+	 * files   $_FILES
+	 * cookie  $_COOKIE
+	 * env     $_ENV
+	 * server  $_SERVER
+	 * method  via current $_SERVER['REQUEST_METHOD']
+	 * default $_REQUEST
+	 *
+	 * @param   string   $name     Variable name.
+	 * @param   string   $default  Default value if the variable does not exist.
+	 * @param   string   $hash     Where the var should come from (POST, GET, FILES, COOKIE, METHOD).
+	 * @param   string   $type     Return type for the variable, for valid values see {@link System::cleanVar()}.
+	 * @param   integer  $mask     Filter mask for the variable.
+	 * 
+	 * @return  mixed  Requested variable.
+	 * 
+	 * @see Joomla 3.2+ JRequest::getVar()
+	 *
+	 */
+	public static function getVar($name, $default = null, $hash = 'default', $type = 'none')
+	{
+		// Ensure hash and type are uppercase
+		$hash = strtoupper($hash);
+
+		if ($hash === 'METHOD')
+		{
+			$hash = strtoupper($_SERVER['REQUEST_METHOD']);
+		}
+
+		$type = strtoupper($type);
+
+		// Get the input hash
+		switch ($hash)
+		{
+			case 'GET':
+				$input = &$_GET;
+				break;
+			case 'POST':
+				$input = &$_POST;
+				break;
+			case 'FILES':
+				$input = &$_FILES;
+				break;
+			case 'COOKIE':
+				$input = &$_COOKIE;
+				break;
+			case 'ENV':
+				$input = &$_ENV;
+				break;
+			case 'SERVER':
+				$input = &$_SERVER;
+				break;
+			default:
+				$input = &$_REQUEST;
+				$hash = 'REQUEST';
+				break;
+		}
+
+		if (isset($input[$name]) && $input[$name] !== null)
+		{
+			// Get the variable from the input hash and clean it
+			$var = self::cleanVar($input[$name], $type);
+		}
+		elseif ($default !== null)
+		{
+			// Clean the default value
+			$var = self::cleanVar($default, $type);
+		}
+		else
+		{
+			$var = $default;
+		}
+
+		return $var;
+	}
+
+
+	/**
+	 * Fetches and returns a backurl variable value.
+	 * Try from REQUEST array, than from GET.
+	 *
+	 * @param   string   $name     Variable name
+	 * 
+	 * @return  mixed  Requested variable value, null if empty
+	 */
+	public static function getVarBackurl($name = 'destination')
+	{
+		// Try get from REQUEST vars
+		$backurl = self::getVar($name);
+
+		// Try get from GET vars
+		if ($backurl === null || strlen($backurl) == 0)
+		{
+			$backurl = self::getVar($name, null, 'get');
+		}
+
+		return (($backurl === null || strlen($backurl) == 0) ? null : $backurl);
+	}
+
+
+	/**
 	 * Get float microtime (sec.msec).
 	 * For debug purposes.
 	 * 
 	 * @return float
 	 */
-	static function microtime_float()
+	public static function microtime_float()
 	{
 		//list($usec, $sec) = explode(" ", microtime());
 		//return ((float)$usec + (float)$sec);
@@ -495,11 +789,13 @@ class System
 	/**
 	 * Method to get the time zone field option groups.
 	 * 
+	 * @param   array  $elements  additional groups elements
+	 * 
 	 * @return  array  The field option objects as a nested array in groups.
 	 * 
 	 * @see JFormFieldTimezone::getGroups() in Joomla.Platform.Form (/libraries/joomla/form/fields/timezone.php)
 	 */
-	static function getTimezonesGroups($elements = array())
+	public static function getTimezonesGroups($elements = array())
 	{
 		static $base_groups = null;
 
@@ -619,7 +915,7 @@ class System
 					// Get the group label.
 					if ($groupLabel = (string) $element['label'])
 					{
-						$label =  constant('L::' . $groupLabel);
+						$label = L($groupLabel);
 					}
 
 					// Initialize the group if necessary.
@@ -748,5 +1044,35 @@ class System
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Convert array of fields to CSV string.
+	 *
+	 * @param   array    $fields      Array with fields.
+	 * @param   string   $delimiter
+	 * @param   string   $enclosure
+	 * @param   boolean  $mysql_null  MySQL nulls mode
+	 *
+	 * @return  string
+	 */
+	public static function strtocsv(array $fields, $delimiter = ',', $enclosure = '"', $mysql_null = false)
+	{
+		$delimiter_esc = preg_quote($delimiter, '/');
+		$enclosure_esc = preg_quote($enclosure, '/');
+
+		$output = array();
+		foreach ($fields as $field) {
+			if ($field === null && $mysql_null) {
+				$output[] = 'NULL';
+				continue;
+			}
+
+			$output[] = preg_match("/(?:${delimiter_esc}|${enclosure_esc}|\s)/", $field) ? (
+					$enclosure . str_replace($enclosure, $enclosure . $enclosure, $field) . $enclosure
+					) : $field;
+		}
+
+		return implode($delimiter, $output);
 	}
 }

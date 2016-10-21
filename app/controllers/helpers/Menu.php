@@ -1,8 +1,12 @@
-<?
-
+<?php
+/**
+ * Class Menu 
+ * 
+ * Store and render menu items
+ */
 class Menu
 {
-	static function render(array $menu, $user_level = 0)
+	public static function render(array $menu, $user_level = 0)
 	{
 		$menu_html = '';
 		foreach($menu as $key => $item)
@@ -14,16 +18,16 @@ class Menu
 				if(isset($item['menu']))
 				{
 					$sub_menu_html = '<ul>'.self::render($item['menu'], $user_level).'</ul>';
-					$menu_html .= '<li><a id="'.$id.'" href="'.$href.'">'.$item['title'].'</a>'.$sub_menu_html.'</li>';
+					$menu_html .= '<li><a id="'.$id.'" href="'.$href.'">'.htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8').'</a>'.$sub_menu_html.'</li>';
 				}
 				else
 				{
-					$item_title = $item['title'];
-					if(isset($item['icon']))
-					{
-						$item_title = '<span class="'.$item['icon'].'"></span><span class="hidden-xs">&nbsp;'.$item['title'].'</span>';
-					}
-					$menu_html .= '<li><a id="'.$id.'" href="'.$href.'">'.$item_title.'</a></li>';
+					$item_title = htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8');
+					$menu_html .= '<li><a id="'.$id.'" href="'.$href.'">'
+							. (isset($item['icon']) ? ('<span class="'.$item['icon'].'"></span>') : '')
+							. '<span class="' . (isset($item['textclass']) ? $item['textclass'] : '') . '">'
+									. (isset($item['icon']) ? '&nbsp;' : '') . $item_title
+							. '</span></a></li>';
 				}
 			}
 
@@ -39,43 +43,49 @@ class Menu
 	 * @return mixed
 	 * 
 	 */
-	static function get()
+	public static function get()
 	{
 		$menu['page/view'] = array(
-			'title' => L::SYSTEM,
+			'title' => L('SYSTEM'),
 			'icon' => 'glyphicon glyphicon-home',
+			'textclass' => 'hidden-sm hidden-xs',
 			'user_level' => 0
 		);
 		/*
 		$this->menu['sensors'] = array(
-			'title' => L::SENSORS,
-			'glyphicon' => '',
+			'title' => L('SENSORS'),
+			'icon' => '',
+			'textclass' => 'hidden-xs',
 			'user_level' => 1
 		);
 		*/
 		$menu['experiment/view'] = array(
-			'title' => L::EXPERIMENTS,
+			'title' => L('EXPERIMENTS'),
 			'icon' => 'glyphicon glyphicon-list',
+			'textclass' => 'hidden-xs',
 			'user_level' => 1
 		);
 
 		/*
 		$menu['page/view/journal'] = array(
-			'title' => L::JOURNAL,
+			'title' => L('JOURNAL'),
 			'icon' => '',
+			'textclass' => 'hidden-xs',
 			'user_level' => 1
 		);
 
 		$menu['page/view/graphs'] = array(
-			'title' => L::GRAPHS,
+			'title' => L('GRAPHS'),
 			'icon' => '',
+			'textclass' => 'hidden-xs',
 			'user_level' => 1
 		);
 		*/
 
 		$menu['page/view/help'] = array(
-			'title' => L::HELP,
+			'title' => L('HELP'),
 			'icon' => 'glyphicon glyphicon-info-sign',
+			'textclass' => 'hidden-xs',
 			'user_level' => 0
 		);
 

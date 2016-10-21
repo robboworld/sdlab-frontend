@@ -1,10 +1,38 @@
-<?
-
+<?php
+/**
+ * Class SessionController
+ * 
+ * Actions with user sessions and profile
+ */
 class SessionController extends Controller
 {
-	public $user_access_level = 0;
-	function create()
+	public function __construct($action = 'index', $config = array())
 	{
+		parent::__construct($action, $config);
+
+		$this->user_access_level = 0;
+
+		// Register the methods as actions.
+		$this->registerAction('create', 'create');
+		$this->registerAction('edit', 'edit');
+		$this->registerAction('destroy', 'destroy');
+		// UnRegister the methods as actions.
+		$this->unregisterAction('index');
+		$this->unregisterAction('__default');
+	}
+
+	public function create()
+	{
+		// Check access
+		// Now can create new sesssion if already logged in
+		/*
+		if($this->session())
+		{
+			// Only for unregistered
+			System::go('session/edit');
+		}
+		*/
+
 		if(isset($_POST['session_key']))
 		{
 			$session = new Session();
@@ -13,15 +41,7 @@ class SessionController extends Controller
 				$this->session($session);
 				$this->session()->setSession();
 
-				if(isset($_GET['destination']) && $_GET['destination'] != $_GET['q'])
-				{
-					System::go(System::clean($_GET['destination'], 'path'));
-				}
-				else
-				{
-					System::go();
-				}
-
+				System::goback(null, 'auto', 'destination', true);
 			}
 		}
 
@@ -37,24 +57,22 @@ class SessionController extends Controller
 					$this->session()->save();
 					$this->session()->setSession();
 
-					if(isset($_GET['destination']) && $_GET['destination'] != $_GET['q'])
-					{
-						System::go(System::clean($_GET['destination'], 'path'));
-					}
-					else
-					{
-						System::go();
-					}
+					System::goback(null, 'auto', 'destination', true);
 				}
 			}
 		}
-		self::setTitle(L::session_NEW_SESSION);
-		self::setContentTitle(L::session_NEW_SESSION);
+		$this->setTitle(L('session_NEW_SESSION'));
+		$this->setContentTitle(L('session_NEW_SESSION'));
 	}
 
-	function edit()
+	public function edit()
 	{
-		if(!$this->session()) System::go();
+		// Check access
+		if(!$this->session())
+		{
+			// Only for registered
+			System::go();
+		}
 
 		// If form is sent
 		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'edit-session-form')
@@ -87,7 +105,7 @@ class SessionController extends Controller
 			Form::redirect();
 		}
 
-		self::setTitle(L::session_TITLE_EDIT);
+		$this->setTitle(L('session_TITLE_EDIT'));
 
 		// Load experiments available in session
 		$experiments_in_session = ExperimentController::loadExperiments($this->session()->getKey());
@@ -96,13 +114,16 @@ class SessionController extends Controller
 			foreach($experiments_in_session as $key => $item)
 			{
 				$experiments_in_session[$key] = (new Experiment())->load($item->id);
+				if ($experiments_in_session[$key])
+				{
+					$experiments_in_session[$key]->_setup = (new Setup())->load($experiments_in_session[$key]->setup_id);
+				}
 			}
-			$this->view->experiments_in_session = $experiments_in_session;
+			$this->view->experiments_in_session = &$experiments_in_session;
 		}
-
 	}
 
-	function destroy()
+	public function destroy()
 	{
 		Session::destroySession();
 		if($this->session())

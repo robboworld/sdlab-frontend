@@ -1,4 +1,4 @@
-<?
+<?php
 
 define('APP', dirname(__FILE__));
 define('CONTROLLERS', APP.'/controllers');

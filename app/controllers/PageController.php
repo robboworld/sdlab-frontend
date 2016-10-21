@@ -6,12 +6,23 @@
  */
 class PageController extends Controller
 {
-
-	public function __construct($action = 'view')
+	public function __construct($action = 'view', $config = array('default_action' => 'index'))
 	{
-		$this->user_access_level = 0;
-		parent::__construct($action);
+		parent::__construct($action, $config);
 
+		$this->user_access_level = 0;
+
+		// Register the methods as actions.
+		$this->registerAction('view', 'view');
+		// UnRegister the methods as actions.
+		//$this->unregisterAction('index');
+		//$this->unregisterAction('__default');
+	}
+
+	public function index()
+	{
+		//System::goerror(404);
+		System::go('page/view');
 	}
 
 	public function view()
@@ -28,10 +39,10 @@ class PageController extends Controller
 			$this->view->ip_address = System::get_ip_address('eth0');
 		}
 
-		self::addJs('functions');
+		$this->addJs('functions');
 
-		self::setTitle(L::SYSTEM);
-		self::setContentTitle(L::SDLAB_TITLE);
-		self::setViewTemplate($page);
+		$this->setTitle(L('SYSTEM'));
+		$this->setContentTitle(L('SDLAB_TITLE'));
+		$this->setViewTemplate($page);
 	}
 }

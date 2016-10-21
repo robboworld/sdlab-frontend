@@ -36,7 +36,7 @@ class Session extends Model
 	public function __construct()
 	{
 		parent::__construct();
-		self::generateKey();
+		$this->generateKey();
 		$this->DateStart = time();
 		$this->expiry = 0;
 	}
@@ -93,10 +93,10 @@ class Session extends Model
 			$this->id = $session->id;
 			$this->session_key = $session->session_key;
 
-			$this->name = !empty($session->name) ? $session->name : L::session_NAME_NOT_PROVIDE;
+			$this->name = !empty($session->name) ? $session->name : L('session_NAME_NOT_PROVIDE');
 			if(!empty($session->DateStart)) $this->DateStart = $session->DateStart;
 			$this->DateEnd = $session->DateEnd;
-			$this->title = !empty($session->title) ? $session->title : L::session_WITHOUT_NAME;
+			$this->title = !empty($session->title) ? $session->title : L('session_WITHOUT_NAME');
 			if(!empty($session->comments)) $this->comments = $session->comments;
 			if(!empty($session->expiry)) $this->expiry = $session->expiry;
 
@@ -143,7 +143,7 @@ class Session extends Model
 	 */
 	public static function keyExists($key)
 	{
-		$dbh = (new DB())->query("select id from sessions where session_key = '$key'");
+		$dbh = (new DB())->query("select id from sessions where session_key = '$key' limit 1");
 		$result = $dbh->fetch(PDO::FETCH_OBJ);
 		if($result)
 		{

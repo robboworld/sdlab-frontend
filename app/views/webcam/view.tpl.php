@@ -66,14 +66,14 @@ $streamed = (!empty($this->view->content->item->stream) && ($this->view->content
 <div class="col-md-12">
 	<div class="row">
 		<div class="col-md-6">
-			<h1><?php echo L::webcam_TITLE; ?></h1>
+			<h1><?php echo L('webcam_TITLE'); ?></h1>
 		</div>
 	</div>
 
 	<div class="row">
 		<div class="col-md-12">
 			<a href="/?q=webcam/view" class="btn btn-sm btn-default">
-				<span class="glyphicon glyphicon-chevron-left">&nbsp;</span><?php echo L::webcam_TITLE_ALL; ?>
+				<span class="glyphicon glyphicon-chevron-left">&nbsp;</span><?php echo L('webcam_TITLE_ALL'); ?>
 			</a>
 		</div>
 	</div>
@@ -84,7 +84,7 @@ $streamed = (!empty($this->view->content->item->stream) && ($this->view->content
 	<form id="sdform" method="post" action="?<?php echo $_SERVER['QUERY_STRING']; ?>" class="form-horizontal">
 		<input type="hidden" name="form-id" value="action-webcam-form"/>
 		<input type="hidden" name="dev_id" value="-1"/>
-		<input type="hidden" name="destination" value="<?php echo 'webcam/view/' . (int)$this->view->content->item->Index; ?>"/>
+		<input type="hidden" name="destination" value="<?php echo urlencode('?q=webcam/view/' . (int)$this->view->content->item->Index); ?>"/>
 
 		<div class="btn-toolbar" role="toolbar">
 			<div class="btn-group btn-group-sm" role="group">
@@ -106,18 +106,18 @@ $streamed = (!empty($this->view->content->item->stream) && ($this->view->content
 		<br/>
 
 		<dl class="webcam-info dl-horizontal">
-			<dt><?php echo L::webcam_INDEX; ?></dt>
+			<dt><?php echo L('webcam_INDEX'); ?></dt>
 			<dd><?php echo (int)$this->view->content->item->Index; ?></dd>
-			<dt><?php echo L::webcam_DEVICE_NAME; ?></dt>
+			<dt><?php echo L('webcam_DEVICE_NAME'); ?></dt>
 			<dd><?php echo htmlspecialchars($this->view->content->item->Device, ENT_QUOTES, 'UTF-8'); ?></dd>
-			<dt><?php echo L::webcam_NAME; ?></dt>
+			<dt><?php echo L('webcam_NAME'); ?></dt>
 			<dd><?php echo htmlspecialchars($this->view->content->item->Name, ENT_QUOTES, 'UTF-8'); ?></dd>
 		</dl>
 
 		<div class="row">
 			<?php if (!$streamed) : ?>
-			<div class="alert alert-warning">
-				<span><?php echo L::webcam_CAMERA_SWITCHED_OFF; ?></span>
+			<div class="alert alert-warning" role="alert">
+				<span><?php echo L('webcam_CAMERA_SWITCHED_OFF'); ?></span>
 			</div>
 			<?php endif; ?>
 
@@ -131,8 +131,8 @@ $streamed = (!empty($this->view->content->item->stream) && ($this->view->content
 	</form>
 	<?php else : ?>
 
-	<div class="alert alert-danger">
-		<span><?php echo L::webcam_CAMERA_NOT_FOUND; ?></span>
+	<div class="alert alert-danger" role="alert">
+		<span><?php echo L('webcam_CAMERA_NOT_FOUND'); ?></span>
 	</div>
 	<?php endif; ?>
 

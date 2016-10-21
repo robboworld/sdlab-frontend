@@ -13,7 +13,7 @@ class System
 	const DATETIME_RFC3339NANO_UTC = 'Y-m-d\TH:i:s.u\Z';
 	const DATETIME_FORMAT1         = 'Y.m.d H:i:s';
 	const DATETIME_FORMAT1NANO     = 'Y.m.d H:i:s.u';
-	const DATETIME_FORMAT1NANOXSL  = 'Y.m.d H:i:s,u';
+	const DATETIME_FORMAT1NANOXLS  = 'Y.m.d H:i:s,u';
 	const DATETIME_FORMAT2         = 'd.m.Y H:i:s';
 	const DATETIME_FORMAT3         = 'Y.m.d H:i:s e';
 
@@ -39,8 +39,10 @@ class System
 	 * @param string $timezone  new timezone, one of the supported timezone names or 'now' for local
 	 * 
 	 * @return string
+	 * 
+	 * @throws Exception
 	 */
-	public static function dateformat($string, $format = 'd.m.Y H:i:s', $timezone = null)
+	public static function dateformat($string, $format = 'Y.m.d H:i:s', $timezone = null)
 	{
 		$dt = new DateTime($string);
 
@@ -63,57 +65,125 @@ class System
 	/**
 	 * Redirect and exit
 	 * 
-	 * @param string $query_string  url
+	 * @param string $query_path    path value for q query param
+	 * @param string $query_string  other query params as query string in format "a=1&b=2", used with query_path
+	 * @param string $fragment      fragment part of url, used with query_path
 	 */
-	public static function go($query_string = null)
+	public static function go($query_path = null, $query_string = null, $fragment = null)
 	{
-		if($query_string == null)
+		if($query_path == null)
 		{
 			header('Location: /');
 		}
 		else
 		{
-			header('Location: ?q='.$query_string);
+			header('Location: ?q=' . $query_path
+					. (($query_string !== null && $query_string !== '') ? ('&' . $query_string) : '')
+					. (($fragment     !== null && $fragment     !== '') ? ('#' . $fragment)     : '')
+			);
 		}
 
 		exit();
 	}
 
 	/**
-	 * Go to the destination url by request var.
-	 * Goes to default query if no destication valiable found.
+	 * Go to the destination url by request query var.
+	 * Goes to default query if no destination valiable found.
 	 * 
-	 * @param string $default_query  Default redirect query
-	 * @param string $method         Method (POST|GET)
+	 * @param mixed  $default_query  Default redirect query path string or array with: q (path), query_string, fragment
+	 * @param string $method         Method (POST|GET|auto)
 	 * @param string $query_var      Request var name
 	 */
-	public static function goback($default_query = null, $method = "get", $query_var = "destination")
+	public static function goback($default_query = null, $method = 'get', $query_var = 'destination', $noBackToCurrentPath = false)
 	{
 		$method = strtolower($method);
+		$value = null;
+		$default_array = array(
+				'q'            => null,
+				'query_string' => null,
+				'fragment'     => null
+		);
+
+		if (!is_array($default_query))
+		{
+			$q = (($default_query !== null) ? (string)$default_query : null);
+			$default_query = $default_array;
+			$default_query['q'] = $q;
+		}
+
 		switch ($method)
 		{
-			case 'post':
-				if(isset($_POST['destination']))
-				{
-					System::go(System::cleanVar($_POST['destination'], 'path'));
-				}
-				else
-				{
-					System::go($default_query);
-				}
+			case 'auto':  // from REQUEST than from GET
+				$value = self::getVarBackurl($query_var);
 				break;
-
+			case 'post':
+				$value = self::getVar($query_var, null, 'post');
+				break;
 			case 'get':
 			default:
-				if(isset($_GET['destination']))
+				$value = self::getVar($query_var, null, 'get');
+				break;
+		}
+
+		if ($value !== null && strlen($value) != 0)
+		{
+			// Parse components of destination url with params parse
+			$url_components = parse_url($value);
+			$url_components['queryparams'] = array();
+			if (isset($url_components['query']))
+			{
+				parse_str($url_components['query'], $url_components['queryparams']);
+			}
+
+			// Get special query params and fragment
+			$q        = null;
+			$fragment = null;
+			if (isset($url_components['fragment']))
+			{
+				$fragment = self::cleanVar($url_components['fragment'], 'cmd');
+			}
+			if (isset($url_components['queryparams']["q"]))
+			{
+				$q = self::cleanVar($url_components['queryparams']['q'], 'path');
+			}
+
+			if ($q !== null)
+			{
+				if ($noBackToCurrentPath && (isset($_GET['q']) && ($q == $_GET['q'])))
 				{
-					System::go(System::cleanVar($_GET['destination'], 'path'));
+					self::go(
+							$default_query['q'],
+							$default_query['query_string'],
+							$default_query['fragment']
+					);
 				}
 				else
 				{
-					System::go($default_query);
+					unset($url_components['queryparams']['q']);  // remove path from query params
+
+					self::go(
+							$q,
+							http_build_query($url_components['queryparams']),
+							$fragment
+					);
 				}
-				break;
+			}
+			else
+			{
+				self::go(
+						$default_query['q'],
+						$default_query['query_string'],
+						$default_query['fragment']
+				);
+			}
+		}
+		else
+		{
+			self::go(
+					$default_query['q'],
+					$default_query['query_string'],
+					$default_query['fragment']
+			);
 		}
 	}
 
@@ -174,7 +244,7 @@ class System
 	public static function secToTime($sec)
 	{
 		$obj = Form::formTimeObject($sec);
-		return $obj->d . ' ' . L::DAYS_SHORT2 . ' ' . $obj->h . ' ' . L::HOURS_SHORT2 . ' ' . $obj->m . ' ' . L::MINUTES_SHORT2 . ' ' . $obj->s . ' '. L::SECONDS_SHORT2;
+		return $obj->d . ' ' . L('DAYS_SHORT2') . ' ' . $obj->h . ' ' . L('HOURS_SHORT2') . ' ' . $obj->m . ' ' . L('MINUTES_SHORT2') . ' ' . $obj->s . ' '. L('SECONDS_SHORT2');
 	}
 
 	/**
@@ -253,6 +323,8 @@ class System
 	 * @param  string  $string
 	 *
 	 * @return string
+	 * 
+	 * @throws Exception
 	 */
 	public static function convertDatetimeToUTC($string)
 	{
@@ -267,13 +339,15 @@ class System
 	 * Convert datetime string with nanoseconds from UTC to local time
 	 * @see formats comments in System::convertDatetimeToUTC
 	 *
-	 * @param  string  $string
-	 * @param  string  $format  Output datetime format
+	 * @param  string  $string    Input date string (empty or null for now time)
+	 * @param  string  $format    Output datetime format
 	 * @param  string  $timezone  Timezone name or 'now' for current TZ or null, if use from time string
 	 *
 	 * @return string
+	 * 
+	 * @throws Exception
 	 */
-	public static function datemsecformat($string, $format = 'd.m.Y H:i:s.u', $timezone = null)
+	public static function datemsecformat($string, $format = 'Y.m.d H:i:s.u', $timezone = null)
 	{
 		$nsec = static::getdatemsec($string);
 		$dt = new DateTime(static::cutdatemsec($string));
@@ -348,6 +422,16 @@ class System
 						'value_name'    => 'voltage',
 						'si_name'       => 'volt',
 						'si_notation'   => 'V'
+				),
+				'distance' => array(
+						'value_name'    => 'distance',
+						'si_name'       => 'meter',
+						'si_notation'   => 'm'
+				),
+				'induction' => array(
+						'value_name'    => 'induction',
+						'si_name'       => 'tesla',
+						'si_notation'   => 'T'
 				),
 		);
 
@@ -671,7 +755,7 @@ class System
 	 *
 	 * @param   string   $name     Variable name
 	 * 
-	 * @return  mixed  Requested variable value.
+	 * @return  mixed  Requested variable value, null if empty
 	 */
 	public static function getVarBackurl($name = 'destination')
 	{
@@ -831,7 +915,7 @@ class System
 					// Get the group label.
 					if ($groupLabel = (string) $element['label'])
 					{
-						$label =  constant('L::' . $groupLabel);
+						$label = L($groupLabel);
 					}
 
 					// Initialize the group if necessary.

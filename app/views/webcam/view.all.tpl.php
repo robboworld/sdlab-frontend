@@ -72,12 +72,12 @@ if(isset($this->view->content->list))
 <div class="col-md-12">
 	<div class="row">
 		<div class="col-md-6">
-			<h1><?php echo L::webcam_TITLE_ALL; ?></h1>
+			<h1><?php echo L('webcam_TITLE_ALL'); ?></h1>
 		</div>
 	</div>
 	<div>
-		<button type="button" class="webcam-stream-onall btn btn-primary"><span class="glyphicon glyphicon-off">&nbsp;</span><?php echo L::webcam_ON_ALL; ?></button>
-		<button type="button" class="webcam-stream-offall btn btn-default"><span class="glyphicon glyphicon-ban-circle">&nbsp;</span><?php echo L::webcam_OFF_ALL; ?></button>
+		<button type="button" class="webcam-stream-onall btn btn-primary"><span class="glyphicon glyphicon-off">&nbsp;</span><?php echo L('webcam_ON_ALL'); ?></button>
+		<button type="button" class="webcam-stream-offall btn btn-default"><span class="glyphicon glyphicon-ban-circle">&nbsp;</span><?php echo L('webcam_OFF_ALL'); ?></button>
 	</div>
 	<form id="sdform" method="post" action="?<?php echo $_SERVER['QUERY_STRING']?>" >
 		<input type="hidden" name="form-id" value="action-webcam-form"/>
@@ -88,19 +88,19 @@ if(isset($this->view->content->list))
 			<thead>
 			<tr>
 				<td>
-					<label><?php echo L::webcam_INDEX; ?></label>
+					<label><?php echo L('webcam_INDEX'); ?></label>
 				</td>
 				<td>
-					<label><?php echo L::webcam_NAME; ?></label>
+					<label><?php echo L('webcam_NAME'); ?></label>
 				</td>
 				<td>
-					<label><?php echo L::webcam_DEVICE_NAME; ?></label>
+					<label><?php echo L('webcam_DEVICE_NAME'); ?></label>
 				</td>
 				<td>
-					<label><?php echo L::webcam_IMAGE; ?></label>
+					<label><?php echo L('webcam_IMAGE'); ?></label>
 				</td>
 				<td class="text-right">
-					<label><?php echo L::ACTION; ?></label>
+					<label><?php echo L('ACTION'); ?></label>
 				</td>
 			</tr>
 			</thead>
@@ -148,8 +148,8 @@ if(isset($this->view->content->list))
 			<tfoot>
 			<tr>
 				<td colspan="5">
-					<div class="alert alert-danger">
-						<span><?php echo L::webcam_CAMERAS_NOT_FOUND; ?></span>
+					<div class="alert alert-danger" role="alert">
+						<span><?php echo L('webcam_CAMERAS_NOT_FOUND'); ?></span>
 					</div>
 				</td>
 			</tr>
@@ -158,8 +158,8 @@ if(isset($this->view->content->list))
 
 		</table>
 		<?php else : ?>
-		<div class="alert alert-danger">
-			<span><?php echo L::webcam_FATAL_ERROR_LIST; ?></span>
+		<div class="alert alert-danger" role="alert">
+			<span><?php echo L('webcam_FATAL_ERROR_LIST'); ?></span>
 		</div>
 		<?php endif; ?>
 

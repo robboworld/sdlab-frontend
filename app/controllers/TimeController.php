@@ -4,9 +4,14 @@
  */
 class TimeController extends Controller
 {
-	public function __construct($action = 'index')
+	public function __construct($action = 'edit', $config = array('default_action' => 'index'))
 	{
-		parent::__construct($action);
+		parent::__construct($action, $config);
+
+		// Register the methods as actions.
+		$this->registerAction('edit', 'edit');
+
+		// Get Application config
 		$this->config = App::config();
 	}
 
@@ -14,7 +19,6 @@ class TimeController extends Controller
 	{
 		System::go('time/edit');
 	}
-
 
 	/**
 	 * Action: Edit
@@ -24,12 +28,12 @@ class TimeController extends Controller
 	{
 		if ($this->session()->getUserLevel() == 3)
 		{
-			self::setViewTemplate('edit');
-			self::setTitle(L::time_TITLE_EDIT);
-			self::setContentTitle(L::time_TITLE_EDIT);
+			$this->setViewTemplate('edit');
+			$this->setTitle(L('time_TITLE_EDIT'));
+			$this->setContentTitle(L('time_TITLE_EDIT'));
 
-			self::addJs('functions');
-			//self::addJs('class/Time');
+			$this->addJs('functions');
+			//$this->addJs('class/Time');
 			// Add language translates for scripts
 			//Language::script(array(
 			//		'time_WAIT_FOR_REBOOT'  // class/Time
@@ -37,7 +41,7 @@ class TimeController extends Controller
 
 			// Form object
 			$this->view->form = new Form('edit-time-form');
-			$this->view->form->submit->value = L::SAVE;
+			$this->view->form->submit->value = L('SAVE');
 
 			// Get current time and timezone
 			$now = new DateTime();
@@ -57,7 +61,7 @@ class TimeController extends Controller
 					array(
 							'type'     => 'option',
 							'value'    => '',
-							'text'     => L::time_SELECT_TIMEZONE,
+							'text'     => L('time_SELECT_TIMEZONE'),
 							'disabled' => false,
 							'class'    => '',
 							'onclick'  => ''
@@ -89,7 +93,7 @@ class TimeController extends Controller
 						//'children' => array()
 				);
 			}
-			$this->view->form->timezones_html = self::getTimezoneInput('time_timezone_id', 'time_timezone', $this->view->form->timezone, false, $elements, array('class' => 'form-control'));
+			$this->view->form->timezones_html = $this->getTimezoneInput('time_timezone_id', 'time_timezone', $this->view->form->timezone, false, $elements, array('class' => 'form-control'));
 
 			// Form save
 			if (isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'edit-time-form')
@@ -119,7 +123,7 @@ class TimeController extends Controller
 				}
 
 				// Check datetime
-				$dt = DateTime::createFromFormat('Y-m-d?H:i+', $datetime, $dtz);
+				$dt = DateTime::createFromFormat('Y.m.d?H:i+', $datetime, $dtz);
 				$err = DateTime::getLastErrors();
 				if ($dt === false || $err['error_count'] > 0)
 				{
@@ -141,7 +145,7 @@ class TimeController extends Controller
 				}
 
 				// Prepare array of parameters for API method
-				$query_params = array(
+				$request_params = array(
 						'Datetime' => $dt->format(System::DATETIME_RFC3339_UTC),
 						'TZ'       => $timezone,  // null if not changed
 						'Reboot'   => $reboot  // true - reboot, false - no reboot
@@ -156,7 +160,7 @@ class TimeController extends Controller
 				}
 
 				// Get results
-				$result = $socket->call('Lab.SetDatetime', (object) $query_params);
+				$result = $socket->call('Lab.SetDatetime', (object) $request_params);
 				if ($result && $result['result'])
 				{
 					if ($reboot)
@@ -180,7 +184,6 @@ class TimeController extends Controller
 		}
 	}
 
-
 	/**
 	 * Method to get the field input markup for a grouped list.
 	 * 
@@ -193,8 +196,8 @@ class TimeController extends Controller
 	 *
 	 * @return string  The field input markup.
 	 */
-	protected function getTimezoneInput($id = 'timezone_id', $name = 'timezone', $value = '', $readonly = false, 
-			$elements = array(), 
+	protected function getTimezoneInput($id = 'timezone_id', $name = 'timezone', $value = '', $readonly = false,
+			$elements = array(),
 			$attrib = array('class' => '', 'disabled' => false, 'size' => null, 'required' => false, 'autofocus' => false, 'onchange' => ''))
 	{
 		$html = array();

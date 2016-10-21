@@ -1,23 +1,19 @@
 $(document).ready(function(){
-    console.log('Edit setup.');
-
     if($('input[name="setup-type"]:checked').length > 0){
         $('.setup-type, #setup-type-alert').hide();
-        $('input[type="submit"]').removeAttr('disabled');
+        $('input[type="submit"]').prop('disabled',false);
         $('#'+$('input[name="setup-type"]:checked').attr('data-id')).show();
     }
 
-
     $(document).on('change', 'input[name="setup-type"]', function(e){
         $('.setup-type, #setup-type-alert').hide();
-        $('#'+$('input[name="setup-type"]:checked').attr('data-id')).show();
-        $('input[name="setup-type"]:checked').parent().parent().find('label').removeClass('active');
-        $('input[name="setup-type"]:checked').parent().addClass('active');
+        var schk = $('input[name="setup-type"]:checked');
+        $('#'+schk.attr('data-id')).show();
+        schk.parent().parent().find('label').removeClass('active');
+        schk.parent().addClass('active');
 
-        $('input[type="submit"]').removeAttr('disabled');
+        $('input[type="submit"]').prop('disabled',false);
     })
-
-
 
     // Update list of available sensors
     $(document).on('click', '#sensors-list-update', function(){

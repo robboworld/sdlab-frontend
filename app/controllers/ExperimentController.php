@@ -4,13 +4,31 @@
  */
 class ExperimentController extends Controller
 {
-
-	public function __construct($action = 'create')
+	public function __construct($action = 'create', $config = array('default_action' => 'index'))
 	{
-		parent::__construct($action);
+		parent::__construct($action, $config);
 
-		// Get id from request query string experiment/edit/%id
+		// Register the methods as actions.
+		$this->registerAction('create', 'create');
+		$this->registerAction('view', 'view');
+		$this->registerAction('edit', 'edit');
+		$this->registerAction('delete', 'delete');
+		$this->registerAction('journal', 'journal');
+		$this->registerAction('graph', 'graph');
+		$this->registerAction('scatter', 'scatter');
+		$this->registerAction('clean', 'clean');
+		$this->registerAction('download', 'download');
+
+		// Register the methods as API methods.
+		$this->registerMAPI('isActive', 'isActive');
+		$this->registerMAPI('getGraphData', 'getGraphData');
+		$this->registerMAPI('getScatterData', 'getScatterData');
+		$this->registerMAPI('delete', 'delete');
+		$this->registerMAPI('deletebytime', 'deletebytime');
+
+		// Get id from request query string experiment/{action}/%id
 		$this->id = App::router(2);
+		// Get Application config
 		$this->config = App::config();
 	}
 
@@ -25,14 +43,20 @@ class ExperimentController extends Controller
 	 */
 	public function create()
 	{
-		self::setTitle(L::experiment_TITLE_CREATION);
-		self::setContentTitle(L::experiment_TITLE_CREATION);
+		$this->setTitle(L('experiment_TITLE_CREATION'));
+		$this->setContentTitle(L('experiment_TITLE_CREATION'));
 
 		$this->view->form = new Form('create-experiment-form');
-		$this->view->form->submit->value = L::experiment_CREATE_EXPERIMENT;
+		$this->view->form->submit->value = L('experiment_CREATE_EXPERIMENT');
 
 		// Get Setups list for the form
-		$this->view->form->setups = SetupController::loadSetups();
+		// For admin load all setups, else not singletone Setups
+		$access_modes = null;
+		if($this->session()->getUserLevel() != 3)
+		{
+			$access_modes = array(Setup::$ACCESS_SHARED => 0, Setup::$ACCESS_PRIVATE => $this->session()->getKey());
+		}
+		$this->view->form->setups = SetupController::loadSetups($access_modes);
 
 		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'create-experiment-form')
 		{
@@ -54,8 +78,12 @@ class ExperimentController extends Controller
 
 			// Get dates
 			// Get local date and use UNIX timestamp (UTC)
-			//$experiment->set('DateStart_exp', (new DateTime($_POST['experiment_date_start']))->format('U'));
+			//try
+			//	$experiment->set('DateStart_exp', (new DateTime($_POST['experiment_date_start']))->format('U'));
+			//} catch (Exception $e) {}
+			//try
 			//$experiment->set('DateEnd_exp', (new DateTime($_POST['experiment_date_end']))->format('U'));
+			//} catch (Exception $e) {}
 
 			// Check Setup available
 			if($setup_id)
@@ -103,7 +131,7 @@ class ExperimentController extends Controller
 				}
 			}
 
-			// Access Experiment in view
+			// Pass Experiment to view
 			$this->view->form->experiment = $experiment;
 		}
 		else
@@ -132,14 +160,15 @@ class ExperimentController extends Controller
 		{
 			// Single experiment page
 
-			self::addJs('functions');
-			self::addJs('class/Sensor');
-			self::addJs('experiment/view');
+			$this->addJs('functions');
+			$this->addJs('class/Sensor');
+			$this->addJs('experiment/view');
 			// Add language translates for scripts
 			Language::script(array(
 					'ERROR',
+					'ERRORS',
 					'GRAPH', 'INFO',  // class/Sensor
-					'RUNNING_', 'STROBE', 'ERROR_NOT_COMPLETED', 'experiment_ERROR_CONFIGURATION_ORPHANED'  // experiment/view
+					'RUNNING_', 'STROBE', 'ERROR_NOT_COMPLETED', 'experiment_ERROR_CONFIGURATION_ORPHANED_REFRESH', 'experiment_ERROR_STATUS_REFRESH'  // experiment/view
 			));
 
 
@@ -158,66 +187,125 @@ class ExperimentController extends Controller
 
 			$this->view->content->experiment = $experiment;
 
+			// Get current setup template
 			if($experiment->setup_id)
 			{
 				$this->view->content->setup = (new Setup())->load($experiment->setup_id);
+				$this->view->content->setup_monitors = array();
 				$this->view->content->sensors = SetupController::getSensors($experiment->setup_id, true);
-				$monitors = (new Monitor())->loadItems(
-						array(
-								'exp_id' => (int)$experiment->id,
-								'setup_id' => (int)$experiment->setup_id,
-								'deleted' => 0
-						),
-						'id', 'DESC', 1
-				);
-				$this->view->content->monitor = (!empty($monitors)) ? $monitors[0] : null;
+			}
 
-				// Get last monitoring info from api
-				if (!empty($this->view->content->monitor))
+			// Get monitors
+			$monitors = (new Monitor())->loadItems(
+					array(
+							'exp_id' => (int)$experiment->id,
+					),
+					'created',
+					'DESC'
+			);
+			if ($monitors === false)
+			{
+				$monitors = array();
+			}
+			$this->view->content->monitors = &$monitors;
+
+			// Get monitoring info from api
+			$nd = System::nulldate();
+			foreach ($this->view->content->monitors as $i => $mon)
+			{
+				// TODO: get monitors info from database (Last, Counters.Done&Err, Archives.Step&Len, Values.Name&Sensor&ValueIdx&Len), not slow socket
+
+
+				// Collect monitors for current setup
+				if(isset($this->view->content->setup_monitors))
 				{
-					// Prepare parameters for api method
-					$query_params = array($this->view->content->monitor->uuid);
-
-					// Send request for get monitor info
-					$socket = new JSONSocket($this->config['socket']['path']);
-					if (!$socket->error())
+					if($mon->setup_id == $experiment->setup_id)
 					{
-						$res = $socket->call('Lab.GetMonInfo', $query_params);
+						$this->view->content->setup_monitors[$i] = $this->view->content->monitors[$i];
+					}
+				}
 
-						// Get results
-						if($res)
+				// Prepare parameters for api method
+				$request_params = array($mon->uuid);
+
+				// Send request for get monitor info
+				$socket = new JSONSocket($this->config['socket']['path']);
+				if (!$socket->error())
+				{
+					$res = $socket->call('Lab.GetMonInfo', $request_params);
+
+					// Get results
+					if($res)
+					{
+						$result = $res['result'];
+
+						//Prepare results
+						if(isset($result->Created) && ($result->Created === $nd))
 						{
-							$result = $res['result'];
-
-							//Prepare results
-							$nd = System::nulldate();
-
-							if(isset($result->Created) && ($result->Created === $nd))
-							{
-								$result->Created = null;
-							}
-
-							if(isset($result->StopAt) && ($result->StopAt === $nd))
-							{
-								$result->StopAt = null;
-							}
-
-							if(isset($result->Last) && ($result->Last === $nd))
-							{
-								$result->Last = null;
-							}
-
-							$this->view->content->monitor->info = $result;
+							$result->Created = null;
 						}
-						else
+
+						if(isset($result->StopAt) && ($result->StopAt === $nd))
 						{
-							// TODO: error get monitor data from backend api, may be need show error
+							$result->StopAt = null;
 						}
+
+						if(isset($result->Last) && ($result->Last === $nd))
+						{
+							$result->Last = null;
+						}
+
+						$this->view->content->monitors[$i]->info = $result;
 					}
 					else
 					{
 						// TODO: error get monitor data from backend api, may be need show error
 					}
+				}
+				else
+				{
+					// TODO: error get monitor data from backend api, may be need show error
+				}
+				unset($socket);
+
+				// Inject setup configuration with sensors data
+				$this->view->content->monitors[$i]->setup = new Setup();
+				if (!$this->view->content->monitors[$i]->setup->load((int)$mon->setup_id))
+				{
+					$this->view->content->monitors[$i]->setup->set('id', null);
+					$this->view->content->monitors[$i]->setup->set('master_exp_id', null);
+					$this->view->content->monitors[$i]->setup->set('session_key', null);
+					$this->view->content->monitors[$i]->setup->set('access', Setup::$ACCESS_SHARED);
+					$this->view->content->monitors[$i]->setup->set('title', L('UNKNOWN'));
+				}
+				// Inject configuration from monitor
+				if (isset($this->view->content->monitors[$i]->info))
+				{
+					$this->view->content->monitors[$i]->setup->set('interval', $this->view->content->monitors[$i]->info->Archives[0]->Step);
+					$this->view->content->monitors[$i]->setup->set('amount', $this->view->content->monitors[$i]->info->Amount);
+					$this->view->content->monitors[$i]->setup->set('time_det', $this->view->content->monitors[$i]->info->Duration);
+
+					//$this->view->content->monitors[$i]->setup->set('period', $this->view->content->monitors[$i]->info->period);
+					//$this->view->content->monitors[$i]->setup->set('number_error', $this->view->content->monitors[$i]->info->number_error);
+					//$this->view->content->monitors[$i]->setup->set('period_repeated_det', $this->view->content->monitors[$i]->info->period_repeated_det);
+
+					$this->view->content->monitors[$i]->setup->sensors = $this->view->content->monitors[$i]->info->Values;  // [Name,Sensor,ValueIdx,Len]
+				}
+			}
+
+			// Move current setup monitor up
+			if(isset($this->view->content->setup_monitors))
+			{
+				// temporary remove setup monitors
+				foreach ($this->view->content->setup_monitors as $i => $smon)
+				{
+					unset($this->view->content->monitors[$i]);
+				}
+				// insert setup monitors back, but prepend other with the same ordering
+				$rkeys = array_reverse(array_keys($this->view->content->setup_monitors));
+				foreach ($rkeys as $key)
+				{
+					array_unshift($this->view->content->monitors, $this->view->content->setup_monitors[$key]);
 				}
 			}
 
@@ -230,18 +318,18 @@ class ExperimentController extends Controller
 			{
 				$this->view->content->session = $this->session();
 			}
-			self::setTitle($experiment->title);
 
+			$this->setTitle($experiment->title);
 		}
 		else
 		{
 			// All experiments
 
-			self::setViewTemplate('view.all');
-			self::setTitle(L::experiment_TITLE_ALL);
+			$this->setViewTemplate('view.all');
+			$this->setTitle(L('experiment_TITLE_ALL'));
 
-			self::addJs('functions');
-			self::addJs('experiment/view.all');
+			$this->addJs('functions');
+			$this->addJs('experiment/view.all');
 			// Add language translates for scripts
 			Language::script(array(
 					'journal_QUESTION_REMOVE_EXPERIMENT_WITH_1', 'journal_QUESTION_REMOVE_EXPERIMENT_WITH_JS_N', 'ERROR'  // experiment/view.all
@@ -277,17 +365,23 @@ class ExperimentController extends Controller
 			System::go('experiment/view');
 		}
 
-		self::setViewTemplate('create');
-		self::setTitle(L::TITLE_EDIT_OF($experiment->title));
-		self::setContentTitle(L::TITLE_EDIT_OF_2($experiment->title));
+		$this->setViewTemplate('create');
+		$this->setTitle(L('TITLE_EDIT_OF',array($experiment->title)));
+		$this->setContentTitle(L('TITLE_EDIT_OF_2',array($experiment->title)));
 
 		// Form object
 		$this->view->form = new Form('edit-experiment-form');
-		$this->view->form->submit->value = L::SAVE;
+		$this->view->form->submit->value = L('SAVE');
 		$this->view->form->experiment = $experiment;
 
 		// Get Setups list for the form
-		$this->view->form->setups = SetupController::loadSetups();
+		// For admin load all setups, else not singletone Setups
+		$access_modes = null;
+		if($this->session()->getUserLevel() != 3)
+		{
+			$access_modes = array(Setup::$ACCESS_SHARED => 0, Setup::$ACCESS_PRIVATE => $this->session()->getKey(), Setup::$ACCESS_SINGLE => $experiment->id);
+		}
+		$this->view->form->setups = SetupController::loadSetups($access_modes);
 
 		// Get current Setup
 		$this->view->form->cur_setup = null;
@@ -295,6 +389,10 @@ class ExperimentController extends Controller
 		if ($experiment->setup_id)
 		{
 			$this->view->form->cur_setup = (new Setup())->load($experiment->setup_id);
+			if ($this->view->form->cur_setup)
+			{
+				$this->view->form->cur_setup->active = Setup::isActive($this->view->form->cur_setup->id, $experiment->id);
+			}
 		}
 
 		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'edit-experiment-form')
@@ -341,20 +439,15 @@ class ExperimentController extends Controller
 
 					if ($this->view->form->cur_setup)
 					{
-						if ($this->view->form->cur_setup->flag)
+						// Requested new setup but not found
+						if ((int)$new_setup_id && !$new_setup)
 						{
 							$canChangeSetup = false;
-						}
-						else
-						{
-							if ((int)$new_setup_id && !$new_setup)
-							{
-								$canChangeSetup = false;
-							}
 						}
 					}
 					else
 					{
+						// Requested new setup but not found
 						if ((int)$new_setup_id && !$new_setup)
 						{
 							$canChangeSetup = false;
@@ -392,6 +485,7 @@ class ExperimentController extends Controller
 					System::go('experiment/view/'.$experiment->id);
 				}
 			}
+			// stay on edit form on errors
 		}
 	}
 
@@ -421,60 +515,112 @@ class ExperimentController extends Controller
 			System::go('experiment/view');
 		}
 
-
-		$db = new DB();
-
 		// Check active experiment
-		$query = $db->prepare('select id from setups where master_exp_id = :master_exp_id and flag > 0');
-		$query->execute(array(
-				':master_exp_id' => $this->id
-		));
-		$setups = (array) $query->fetchAll(PDO::FETCH_COLUMN, 0);
-		$cnt_active = count($setups);
+		// (Experiment with active monitorings)
+		$isActive = Experiment::isActive($experiment->id);
 
 		// Force delete experiment if has active Setups
 		$force = (isset($_POST) && isset($_POST['force']) && is_numeric($_POST['force'])) ? (int) $_POST['force'] : 0;
-		if ($cnt_active && !$force)
+		if ($isActive && !$force)
 		{
-			// Error: experiment with active Setups
+			// Error: experiment with active Setups monitoring
 			System::go('experiment/view');
 		}
 
-		// Speed db operations within transaction
-		$db->beginTransaction();
+		$db = new DB();
 
+		// Step 1. Remove experiment data of frontend
+
+		// Speed up db operations within transaction
+		$db->beginTransaction();
 		try
 		{
-			// Unactivate Setup and unset master experiment
-			$sql_setups_update_query = 'update setups set flag = NULL, master_exp_id = NULL where master_exp_id = :master_exp_id';
-			$update = $db->prepare($sql_setups_update_query);
-			$result = $update->execute(array(':master_exp_id' => $this->id));
+			// Unset Setup master experiment
+			$query = $db->prepare('update setups set master_exp_id = NULL where master_exp_id = :master_exp_id');
+			$result = $query->execute(array(':master_exp_id' => $experiment->id));
 			if (!$result)
 			{
-				error_log('PDOError: '.var_export($update->errorInfo(),true));  //DEBUG
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
 			}
 
 			// Remove rows from tables
 			// Be careful of delete order, because used foreign keys between tables (if enabled)
 
-			// Need stop monitors before
-			// Get all monitors of experiment
-			$query = $db->prepare('select uuid from monitors where exp_id = :exp_id');
-			$query->execute(array(
-					':exp_id' => $this->id
-			));
-			$monitors = (array) $query->fetchAll(PDO::FETCH_COLUMN, 0);
+			// Remove monitors data from DB
+			// XXX: Must be removed by backend API on Lab.RemoveMonitor later
+
+			// Remove consumers
+			// XXX: consumers table not used now
+			$query = $db->prepare('delete from consumers where exp_id=:exp_id');
+			$result = $query->execute(array(':exp_id' => $experiment->id));
+			if (!$result)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+
+			// Remove ordinate
+			$query = $db->prepare('delete from ordinate where id_plot IN (select id from plots where exp_id=:exp_id)');
+			$result = $query->execute(array(':exp_id' => $experiment->id));
+			if (!$result)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+
+			// Remove plots
+			$query = $db->prepare('delete from plots where exp_id=:exp_id');
+			$result = $query->execute(array(':exp_id' => $experiment->id));
+			if (!$result)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+
+			// Remove detections
+			// (will be deleted also strobe and unknown mons data)
+			$query = $db->prepare('delete from detections where exp_id=:exp_id');
+			$result = $query->execute(array(':exp_id' => $experiment->id));
+			if (!$result)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+
+			// Remove experiment
+			$query = $db->prepare('delete from experiments where id=:id');
+			$result = $query->execute(array(':id' => $experiment->id));
+			if (!$result)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+		}
+		catch (PDOException $e)
+		{
+			error_log('PDOException Experiment::delete(): '.var_export($e->getMessage(),true));  //DEBUG
+			//var_dump($e->getMessage());
+		}
+
+		$db->commit();
+
+		// Step 2. Remove monitors from backend
+
+		// Get list monitors of experiment
+		$query = $db->prepare('select uuid from monitors where exp_id = :exp_id');
+		$query->execute(array(':exp_id' => $experiment->id));
+		$monitors = $query->fetchAll(PDO::FETCH_COLUMN, 0);
+		if ($monitors !== false)
+		{
 			// Remove monitors call for backend sensors API (auto stop)
 			$delmons = array();
 			$errmons = array();
 			foreach($monitors as $uuid)
 			{
 				// Send request for removing monitor
-				$query_params = array((string) $uuid);
+				$request_params = (object) array(
+						'UUID'     => (string) $uuid,
+						'WithData' => true
+				);
 				$socket = new JSONSocket($this->config['socket']['path']);
 				if (!$socket->error())
 				{
-					$result = $socket->call('Lab.RemoveMonitor', $query_params);
+					$result = $socket->call('Lab.RemoveMonitor', $request_params);
 					if ($result && $result['result'])
 					{
 						$delmons[] = $uuid;
@@ -490,67 +636,16 @@ class ExperimentController extends Controller
 				}
 				unset($socket);
 			}
+
 			if (!empty($errmons))
 			{
 				error_log('Error remove monitors: {'. implode('},{', $errmons) . '}');  //DEBUG
 			}
-
-			// Remove monitors from DB
-			$delete = $db->prepare('delete from monitors where exp_id=:exp_id');
-			$result = $delete->execute(array(':exp_id' => $this->id));
-			if (!$result)
-			{
-				error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
-			}
-
-			// Remove consumers
-			// XXX: consumers table not used now
-			$delete = $db->prepare('delete from consumers where exp_id=:exp_id');
-			$result = $delete->execute(array(':exp_id' => $this->id));
-			if (!$result)
-			{
-				error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
-			}
-
-			// Remove ordinate
-			$delete = $db->prepare('delete from ordinate where id_plot IN (select id from plots where exp_id=:exp_id)');
-			$result = $delete->execute(array(':exp_id' => $this->id));
-			if (!$result)
-			{
-				error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
-			}
-
-			// Remove plots
-			$delete = $db->prepare('delete from plots where exp_id=:exp_id');
-			$result = $delete->execute(array(':exp_id' => $this->id));
-			if (!$result)
-			{
-				error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
-			}
-
-			// Remove detections
-			$delete = $db->prepare('delete from detections where exp_id=:exp_id');
-			$result = $delete->execute(array(':exp_id' => $this->id));
-			if (!$result)
-			{
-				error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
-			}
-
-			// Remove experiments
-			$delete = $db->prepare('delete from experiments where id=:id');
-			$result = $delete->execute(array(':id' => $this->id));
-			if (!$result)
-			{
-				error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
-			}
 		}
-		catch (PDOException $e)
+		else
 		{
-			error_log('PDOException Experiment::delete(): '.var_export($e->getMessage(),true));  //DEBUG
-			//var_dump($e->getMessage());
+			error_log('Error remove monitors for experiment: '. (int)$experiment->id);  //DEBUG
 		}
-
-		$db->commit();
 
 		// TODO: Show info about errors while delete or about success (need session saved msgs)
 
@@ -583,12 +678,12 @@ class ExperimentController extends Controller
 		}
 
 
-		self::setTitle(L::journal_TITLE_JOURNAL_OF($experiment->title));
-		self::setContentTitle(L::journal_TITLE_JOURNAL_OF_2($experiment->title));
-		self::addJs('functions');
-		self::addJs('experiment/journal');
-		//self::addJs('lib/jquery.fileDownload');
-		self::addJs('lib/jquery.fileDownload.min');
+		$this->setTitle(L('journal_TITLE_JOURNAL_OF',array($experiment->title)));
+		$this->setContentTitle(L('journal_TITLE_JOURNAL_OF_2',array($experiment->title)));
+		$this->addJs('functions');
+		$this->addJs('experiment/journal');
+		//$this->addJs('lib/jquery.fileDownload');
+		$this->addJs('lib/jquery.fileDownload.min');
 
 		// Add language translates for scripts
 		Language::script(array(
@@ -597,11 +692,21 @@ class ExperimentController extends Controller
 
 		// Form object
 		$this->view->form = new Form('experiment-journal-form');
-		$this->view->form->submit->value = L::REFRESH;
+		$this->view->form->submit->value = L('REFRESH');
 		$this->view->form->experiment = $experiment;
 
+		// Request type
+		/*
+		$_req = array();
+		switch(strtoupper($_SERVER['REQUEST_METHOD']))
+		{
+			case 'GET':  $_req = &$_GET; break;
+			case 'POST': $_req = &$_POST; break;
+			default:;
+		}
+		*/
 
-		// Check if filter request
+		// Check if filter request (POST only?)
 		if(isset($_POST) && isset($_POST['form-id']) && $_POST['form-id'] === 'experiment-journal-form')
 		{
 			if(isset($_POST['show-sensor']) && !empty($_POST['show-sensor']) && is_array($_POST['show-sensor']))
@@ -613,48 +718,301 @@ class ExperimentController extends Controller
 			}
 		}
 
+		// Check pagination filter (GET only?)
+		$limit = 0; // 0, 10, 20, 50, 100 (0 - no limit?)
+		$limitstart = null;
+		if(isset($_GET) && isset($_GET['limit']) && in_array((int)$_GET['limit'], array(0,10,20,50,100)))
+		{
+			$limit = (int)$_GET['limit'];
+		}
+		if(isset($_GET['limitstart']) && (int)$_GET['limitstart'] >= 0)
+		{
+			$limitstart = (int)$_GET['limitstart'];
+		}
+
 		// TODO: may be move all journal operations to separate controller/model
+
+		// Init arrays of sensors
+		$det_sensors   = array();
+		$setup_sensors = array();
+		$mon_sensors   = array();
+		$reg_sensors   = array();
+
 		$db = new DB();
 
-		$query = 'select id, exp_id, strftime(\'%Y-%m-%dT%H:%M:%fZ\', time) as time, sensor_id, sensor_val_id, detection, error from detections where exp_id = '.(int)$experiment->id . ' order by strftime(\'%s\', time),strftime(\'%f\', time)';
-		$detections = $db->query($query, PDO::FETCH_OBJ);
-
-		// Prepare output depends on sensors in Setup
-		$sensors = SetupController::getSensors($experiment->setup_id, true);
-		$available_sensors = $displayed_sensors = array();
-
-		// Fill list of available sensors
-		foreach($sensors as $sensor)
+		// Speed up db operations within transaction
+		$db->beginTransaction();
+		try
 		{
-			$key = '' . $sensor->id . '#' . (int)$sensor->sensor_val_id;
-			if(!array_key_exists($key, $available_sensors))
+			// Get list of sensors available in detections
+			// (already used sensors)
+
+			// Get unique sensors list from detections data of experiment
+			$sql = 'select DISTINCT sensor_id, sensor_val_id '
+					. 'from detections '
+					. 'where exp_id = :exp_id '
+					. 'order by sensor_id, sensor_val_id';
+			$query = $db->prepare($sql);
+			if ($query === false)
 			{
-				$available_sensors[$key] = $sensor;
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute(array(
+					':exp_id' => $experiment->id
+			));
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $det_sensors))
+				{
+					$det_sensors[$key] = clone $row;
+				}
+			}
+
+			// Get list of sensors in current setup
+
+			// Get current setup
+			if ($experiment->setup_id)
+			{
+				$temp_sensors = SetupController::getSensors($experiment->setup_id, true, $db);  // +setup conf fields: name, setup_id
+				if ($temp_sensors === false)
+				{
+					$temp_sensors = array();
+				}
+				foreach ($temp_sensors as $row)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if (!array_key_exists($key, $setup_sensors))
+					{
+						$setup_sensors[$key] = clone $row;
+					}
+				}
+			}
+
+			// Get monitors sensors
+
+			// Get unique sensors list from monitors values in experiment
+			$sql = 'select DISTINCT mv.sensor as sensor_id, mv.valueidx as sensor_val_id '
+					. 'from monitors as m '
+					. 'left join monitors_values as mv on mv.uuid = m.uuid '
+					. 'where m.exp_id = :exp_id '
+					. 'order by mv.sensor, mv.valueidx';
+			$query = $db->prepare($sql);
+			if ($query === false)
+			{
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute(array(
+					':exp_id' => $experiment->id
+			));
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $mon_sensors))
+				{
+					$mon_sensors[$key] = clone $row;
+				}
+			}
+
+			// Get sensors from register with additional info
+
+			// TODO: add method Sensor::getSensors()
+			$query = $db->prepare(
+					'select sensor_id, sensor_val_id, '
+						. 'value_name, si_notation, si_name, max_range, min_range, resolution '
+					. 'from sensors'
+			);
+			if ($query === false)
+			{
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute();
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $reg_sensors))
+				{
+					$reg_sensors[$key] = clone $row;
+				}
 			}
 		}
-		$this->view->content->available_sensors = $available_sensors;
+		catch (PDOException $e)
+		{
+			error_log('PDOException Experiment::journal(): '.var_export($e->getMessage(),true));  //DEBUG
+			//var_dump($e->getMessage());
+		}
+		$db->commit();
+
+		// Merge sensors
+
+		// Merge detections sensors (older) with monitor sensors (newest)
+		$sensors = array_merge($det_sensors, $mon_sensors);
+
+		// Merge detections-monitors sensors (older) with setup sensors (fullest-newest)
+		$sensors = array_merge($sensors, $setup_sensors);
+
+
+		// Fill sensors with additional info from register
+		foreach ($sensors as $key => $sensor)
+		{
+			// Need info from register for sensor
+			if(!property_exists($sensor, 'value_name'))
+			{
+				if (array_key_exists($key, $reg_sensors))
+				{
+					// Replace with sensor data from registry
+					$sensors[$key]       = clone $reg_sensors[$key];
+
+					// add name field
+					$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $reg_sensors[$key]->value_name);
+					$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
+							L('sensor_VALUE_NAME_' . strtoupper($value_name)) :
+							L('sensor_UNKNOWN');
+				}
+				else
+				{
+					$sensors[$key]->value_name  = null;
+					$sensors[$key]->si_notation = null;
+					$sensors[$key]->si_name     = null;
+					$sensors[$key]->max_range   = null;
+					$sensors[$key]->min_range   = null;
+					$sensors[$key]->resolution  = null;
+
+					// add name field
+					$sensors[$key]->name        = L('sensor_UNKNOWN');
+				}
+				// add setup id field
+				$sensors[$key]->setup_id = 0;
+			}
+		}
+
+		$this->view->content->available_sensors = &$sensors;
 
 		// Fill list of displayed sensors from sensors filter
 		if(!empty($sensors_show))
 		{
-			$this->view->content->displayed_sensors = array_intersect_key($available_sensors, $sensors_show);
+			$this->view->content->displayed_sensors = array_intersect_key($sensors, $sensors_show);
 		}
 		else
 		{
-			$this->view->content->displayed_sensors = $available_sensors;
+			$this->view->content->displayed_sensors = $sensors;
 		}
 
-		// Array of values grouped by full timestamps (UTC datetime!)
+		// Detections selection
+
 		$journal = array();
-		foreach($detections as $row)
+
+		// Speed up db operations within transaction
+		$db->beginTransaction();
+		try
 		{
-			// if sensor+value is available thn add to journal output
-			$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
-			if(array_key_exists($key, $this->view->content->displayed_sensors))
+			//error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+
+			// Total grouped detection rows
+			$query = $db->prepare('select count(*) from (select time from detections where exp_id = :exp_id group by time)');
+			$query->execute(array(':exp_id' => (int)$experiment->id));
+			$total = 0;
+			if (($row = $query->fetch(PDO::FETCH_COLUMN)) !== false)
 			{
-				$journal[$row->time][$key] = $row;
+				$total = (int)$row[0];
+			}
+
+			/*
+			$min_time = $max_time = null;
+			$query = $db->prepare('select min(time), max(time) from detections where exp_id = :exp_id');
+			$query->execute(array(':exp_id' => (int)$experiment->id));
+			if (($row = $query->fetch(PDO::FETCH_NUM)) !== false)
+			{
+				$min_time = $row[0];
+				$max_time = $row[1];
+			}
+			*/
+
+			// Get time range if limit
+			$starttime = null;
+			$endtime = null;
+			if ($limit > 0)
+			{
+				$query = $db->prepare('select min(time), max(time) from (select time from detections where exp_id = :exp_id group by time order by time limit :limit OFFSET :offset)');
+				$query->execute(array(
+						':exp_id' => (int)$experiment->id,
+						':limit'  => (int)$limit,
+						':offset' => ($limitstart >= 0) ? (int)$limitstart : 0
+				));
+				if (($row = $query->fetch(PDO::FETCH_NUM)) !== false)
+				{
+					$starttime = ($limitstart >= 0) ? $row[0] : null;
+					$endtime   = $row[1];
+				}
+			}
+			else
+			{
+				if ($limitstart >= 0)
+				{
+					$query = $db->prepare('select time from detections where exp_id = :exp_id group by time order by time limit :limit OFFSET :offset');
+					$query->execute(array(
+							':exp_id' => (int)$experiment->id,
+							':limit'  => 1,
+							':offset' => (int)$limitstart
+					));
+					if (($row = $query->fetch(PDO::FETCH_NUM)) !== false)
+					{
+						$starttime = $row[0];
+					}
+				}
+			}
+
+			// Get array of values grouped by full timestamps (UTC datetime!)
+			// with pagination
+			$where            = array('exp_id = :exp_id');
+			$query_params = array(':exp_id' => (int)$experiment->id);
+			if($starttime !== null)
+			{
+				$query_params[':starttime'] = $starttime;
+				$where[] = 'time >= :starttime';
+			}
+			if($endtime !== null)
+			{
+				$query_params[':endtime'] = $endtime;
+				$where[] = 'time <= :endtime';
+			}
+			// TODO: remove not used mstime field?
+			$sql = 'select id, exp_id, mon_id, time, strftime(\'%Y-%m-%dT%H:%M:%fZ\', time) as mstime, sensor_id, sensor_val_id, detection, error '
+					. 'from detections '
+					. 'where ' . implode(' and ', $where) . ' '
+					//. 'order by strftime(\'%s\', time),strftime(\'%f\', time) ';
+					. 'order by strftime(\'%Y-%m-%dT%H:%M:%f\', time), id ';
+			$query = $db->prepare($sql);
+			$query->execute($query_params);
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				// if sensor+value is available than add to journal output
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(array_key_exists($key, $this->view->content->displayed_sensors))
+				{
+					$journal[$row->time][$key] = $row;
+				}
 			}
 		}
+		catch (PDOException $e)
+		{
+			error_log('PDOException Experiment::journal(): '.var_export($e->getMessage(),true));  //DEBUG
+			//var_dump($e->getMessage());
+		}
+		$db->commit();
+
 		$this->view->content->detections = &$journal;
 	}
 
@@ -683,13 +1041,13 @@ class ExperimentController extends Controller
 		{
 			// View/Edit graph
 
-			self::setViewTemplate('graphsingle');
-			self::setTitle(L::graph_TITLE_GRAPH_FOR($experiment->title));
-			self::addJs('lib/jquery.flot');
-			self::addJs('lib/jquery.flot.time.min');
-			self::addJs('lib/jquery.flot.navigate');
-			self::addJs('functions');
-			self::addJs('chart');
+			$this->setViewTemplate('graphsingle');
+			$this->setTitle(L('graph_TITLE_GRAPH_FOR',array($experiment->title)));
+			$this->addJs('lib/jquery.flot');
+			$this->addJs('lib/jquery.flot.time.min');
+			$this->addJs('lib/jquery.flot.navigate');
+			$this->addJs('functions');
+			$this->addJs('chart');
 			// Add language translates for scripts
 			Language::script(array(
 					'ERROR',
@@ -716,12 +1074,12 @@ class ExperimentController extends Controller
 				// Edit graph
 
 				$this->view->form = new Form('plot-edit-form');
-				$this->view->form->submit->value = L::graph_SAVE;
+				$this->view->form->submit->value = L('graph_SAVE');
 
 				if(isset($_POST['form-id']) && $_POST['form-id'] === 'plot-edit-form')
 				{
 					// Save graph form
-				
+
 					// ...
 				}
 
@@ -740,72 +1098,535 @@ class ExperimentController extends Controller
 		{
 			// Add new graph
 
-			self::setViewTemplate('graphsingle');
-			self::setTitle(L::graph_TITLE_ADD_GRAPH_FOR($experiment->title));
-			self::setContentTitle(L::graph_TITLE_ADD_GRAPH_FOR_2($experiment->title));
+			$this->setViewTemplate('graphsingle');
+			$this->setTitle(L('graph_TITLE_ADD_GRAPH_FOR',array($experiment->title)));
+			$this->setContentTitle(L('graph_TITLE_ADD_GRAPH_FOR_2',array($experiment->title)));
 		}
 		else
 		{
 			// List graphs
 
-			self::setTitle(L::graph_TITLE_GRAPHS_FOR($experiment->title));
-			//self::setContentTitle(L::graph_TITLE_GRAPHS_FOR_2($experiment->title));
-			self::addJs('lib/jquery.flot');
-			self::addJs('lib/jquery.flot.time.min');
-			self::addJs('lib/jquery.flot.navigate');
-			self::addJs('functions');
-			self::addJs('chart');
+			$this->setTitle(L('graph_TITLE_GRAPHS_FOR',array($experiment->title)));
+			//$this->setContentTitle(L('graph_TITLE_GRAPHS_FOR_2',array($experiment->title)));
+			// Flot lib
+			$this->addJs('lib/jquery.flot');
+			$this->addJs('lib/jquery.flot.time.min');
+			$this->addJs('lib/jquery.flot.navigate');
+			// PDF export libs
+			$this->addJs('lib/jspdf.min');
+			$this->addJs('lib/html2canvas');
+			//
+			$this->addJs('functions');
+			$this->addJs('chart');
+
 			// Add language translates for scripts
 			Language::script(array(
 					'ERROR',
-					'sensor_VALUE_NAME_TEMPERATURE'  // chart
+					'graph_PLEASE_SELECT_2_SENSORS_SCATTER'
 			));
 
 			$db = new DB();
-			$query = 'select * from plots where exp_id = '.(int)$experiment->id;
-			$plots = $db->query($query, PDO::FETCH_OBJ);
 
-			$this->view->content->list = $plots;
-
-
-			// Get available in detections sensors list
-
-			// Get unique sensors list from detections data of experiment
-			$query = 'select a.sensor_id, a.sensor_val_id, '
-						. 's.value_name, s.si_notation, s.si_name, s.max_range, s.min_range, s.resolution '
-					. 'from detections as a '
-					. 'left join sensors as s on a.sensor_id = s.sensor_id and a.sensor_val_id = s.sensor_val_id '
-					. 'where a.exp_id = :exp_id '
-					. 'group by a.sensor_id, a.sensor_val_id order by a.sensor_id';
-			$load = $db->prepare($query);
-			$load->execute(array(
-					':exp_id' => $experiment->id
-			));
-			$sensors = $load->fetchAll(PDO::FETCH_OBJ);
-			if(empty($sensors))
+			// Get plots list
+			$sql = 'select * from plots where exp_id = '.(int)$experiment->id;
+			$stmt = $db->prepare($sql);
+			$stmt->execute();
+			$plots = $stmt->fetchAll(PDO::FETCH_OBJ);
+			if ($plots === false)
 			{
-				$sensors = array();
+				$plots = array();
 			}
+			$this->view->content->list = &$plots;
 
-			$available_sensors = array();
 
-			// Prepare available_sensors list
-			foreach($sensors as $sensor)
+			// Init arrays of sensors
+			$det_sensors   = array();
+			$setup_sensors = array();
+			$mon_sensors   = array();
+			$reg_sensors   = array();
+
+			// Speed up db operations within transaction
+			$db->beginTransaction();
+			try
 			{
-				$key = '' . $sensor->sensor_id . '#' . (int)$sensor->sensor_val_id;
-				if(!array_key_exists($key, $available_sensors))
+				// Get list of sensors available in detections
+				// (already used sensors)
+
+				// Get unique sensors list from detections data of experiment
+				$sql = 'select DISTINCT sensor_id, sensor_val_id '
+						. 'from detections '
+						. 'where exp_id = :exp_id '
+						. 'order by sensor_id, sensor_val_id';
+				$query = $db->prepare($sql);
+				if ($query === false)
 				{
-					$available_sensors[$key] = $sensor;
+					error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+				}
+				$result = $query->execute(array(
+						':exp_id' => $experiment->id
+				));
+				if ($result === false)
+				{
+					error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+				}
+				while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if(!array_key_exists($key, $det_sensors))
+					{
+						$det_sensors[$key] = clone $row;
+					}
+				}
+
+				// Get list of sensors in current setup
+
+				// Get current setup
+				if ($experiment->setup_id)
+				{
+					$temp_sensors = SetupController::getSensors($experiment->setup_id, true, $db);  // +setup conf fields: name, setup_id
+					if ($temp_sensors === false)
+					{
+						$temp_sensors = array();
+					}
+					foreach ($temp_sensors as $row)
+					{
+						$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+						if (!array_key_exists($key, $setup_sensors))
+						{
+							$setup_sensors[$key] = clone $row;
+						}
+					}
+				}
+
+				// Get monitors sensors
+
+				// Get unique sensors list from monitors values in experiment
+				$sql = 'select DISTINCT mv.sensor as sensor_id, mv.valueidx as sensor_val_id '
+						. 'from monitors as m '
+						. 'left join monitors_values as mv on mv.uuid = m.uuid '
+						. 'where m.exp_id = :exp_id '
+						. 'order by mv.sensor, mv.valueidx';
+				$query = $db->prepare($sql);
+				if ($query === false)
+				{
+					error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+				}
+				$result = $query->execute(array(
+						':exp_id' => $experiment->id
+				));
+				if ($result === false)
+				{
+					error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+				}
+				while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if(!array_key_exists($key, $mon_sensors))
+					{
+						$mon_sensors[$key] = clone $row;
+					}
+				}
+
+				// Get sensors from register with additional info
+
+				// TODO: add method Sensor::getSensors()
+				$query = $db->prepare(
+						'select sensor_id, sensor_val_id, '
+							. 'value_name, si_notation, si_name, max_range, min_range, resolution '
+						. 'from sensors'
+						);
+				if ($query === false)
+				{
+					error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+				}
+				$result = $query->execute();
+				if ($result === false)
+				{
+					error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+				}
+				while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if(!array_key_exists($key, $reg_sensors))
+					{
+						$reg_sensors[$key] = clone $row;
+					}
+				}
+			}
+			catch (PDOException $e)
+			{
+				error_log('PDOException Experiment::graph(): '.var_export($e->getMessage(),true));  //DEBUG
+				//var_dump($e->getMessage());
+			}
+			$db->commit();
+
+			// Merge sensors
+
+			// Merge detections sensors (older) with monitor sensors (newest)
+			$sensors = array_merge($det_sensors, $mon_sensors);
+
+			// Merge detections-monitors sensors (older) with setup sensors (fullest-newest)
+			$sensors = array_merge($sensors, $setup_sensors);
+
+
+			// Fill sensors with additional info from register
+			foreach ($sensors as $key => $sensor)
+			{
+				// Need info from register for sensor
+				if(!property_exists($sensor, 'value_name'))
+				{
+					if (array_key_exists($key, $reg_sensors))
+					{
+						// Replace with sensor data from registry
+						$sensors[$key]       = clone $reg_sensors[$key];
+
+						// add name field
+						$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $reg_sensors[$key]->value_name);
+						$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
+								L('sensor_VALUE_NAME_' . strtoupper($value_name)) :
+								L('sensor_UNKNOWN');
+					}
+					else
+					{
+						$sensors[$key]->value_name  = null;
+						$sensors[$key]->si_notation = null;
+						$sensors[$key]->si_name     = null;
+						$sensors[$key]->max_range   = null;
+						$sensors[$key]->min_range   = null;
+						$sensors[$key]->resolution  = null;
+
+						// add name field
+						$sensors[$key]->name        = L('sensor_UNKNOWN');
+					}
+					// add setup id field
+					$sensors[$key]->setup_id = 0;
 				}
 			}
 
-			$this->view->content->available_sensors = &$available_sensors;
+			// Prepare available sensors list
+			$this->view->content->available_sensors = &$sensors;
 
 			// Plot with all sensors data loads on ajax request
 			$this->view->content->detections = array();
 		}
 	}
 
+	public function scatter()
+	{
+		if (empty($this->id))
+		{
+			System::go('experiment/view');
+		}
+
+		// Load experiment
+		$this->view->content->experiment = $experiment = (new Experiment())->load($this->id);
+		if(!$experiment)
+		{
+			System::go('experiment/view');
+		}
+
+		// Check access to experiment
+		if(!$experiment->userCanView($this->session()))
+		{
+			System::go('experiment/view');
+		}
+
+		// Error messages
+		$this->view->content->error = array();
+
+		// Request type
+		/*
+		$_req = array();
+		switch(strtoupper($_SERVER['REQUEST_METHOD']))
+		{
+			case 'GET':  $_req = &$_GET; break;
+			case 'POST': $_req = &$_POST; break;
+			default:;
+		}
+		*/
+
+		// Check two sensors filter (GET only?)
+		// Format: {sensor_id}#{sensor_val_id}
+		$sx = null;
+		$sy = null;
+		if (isset($_GET) && isset($_GET['sx']) && isset($_GET['sy']) && (strlen($_GET['sx']) > 0) && (strlen($_GET['sy']) > 0))
+		{
+			if (strcmp($_GET['sx'], $_GET['sy']) != 0)
+			{
+				$sx = $_GET['sx'];
+				$sy = $_GET['sy'];
+			}
+			else
+			{
+				// error on equal sensors
+				//System::go('experiment/view/' . (int)$experiment->id);
+				$this->view->content->error['ERROR_INVALID_PARAMETERS'] = L('ERROR_INVALID_PARAMETERS');
+			}
+		}
+		else
+		{
+			// error on empty sensors
+			//System::go('experiment/view/' . (int)$experiment->id);
+			$this->view->content->error['ERROR_INVALID_PARAMETERS'] = L('ERROR_INVALID_PARAMETERS');
+		}
+
+		// Filter datetimes
+		$from = null;
+		if (isset($_GET) && isset($_GET['from']) && strlen($_GET['from']) != 0)
+		{
+			// UTC time with seconds parts
+			try
+			{
+				$from = new DateTime(System::cutdatemsec($_GET['from']));
+				//$from->setTimezone(new DateTimeZone('UTC'));
+				$from->setTimezone((new DateTime())->getTimezone());
+			}
+			catch (Exception $e)
+			{
+				// error on invalid format
+				$this->view->content->error['ERROR_INVALID_PARAMETERS'] = L('ERROR_INVALID_PARAMETERS');
+				$from = null;
+			}
+		}
+
+		$to = null;
+		if (isset($_GET['to']) && isset($_GET['to']) && strlen($_GET['to']) != 0)
+		{
+			// UTC time with seconds parts
+			try
+			{
+				$to = new DateTime(System::cutdatemsec($_GET['to']));
+				//$to->setTimezone(new DateTimeZone('UTC'));
+				$to->setTimezone((new DateTime())->getTimezone());
+			}
+			catch (Exception $e)
+			{
+				// error on invalid format
+				$this->view->content->error['ERROR_INVALID_PARAMETERS'] = L('ERROR_INVALID_PARAMETERS');
+				$to = null;
+			}
+		}
+
+		// Init arrays of sensors
+		$det_sensors   = array();
+		$setup_sensors = array();
+		$mon_sensors   = array();
+		$reg_sensors   = array();
+
+		$db = new DB();
+
+		// Speed up db operations within transaction
+		$db->beginTransaction();
+		try
+		{
+			// Get list of sensors available in detections
+			// (already used sensors)
+
+			// Get unique sensors list from detections data of experiment
+			$sql = 'select DISTINCT sensor_id, sensor_val_id '
+					. 'from detections '
+					. 'where exp_id = :exp_id '
+					. 'order by sensor_id, sensor_val_id';
+			$query = $db->prepare($sql);
+			if ($query === false)
+			{
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute(array(
+					':exp_id' => $experiment->id
+			));
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $det_sensors))
+				{
+					$det_sensors[$key] = clone $row;
+				}
+			}
+
+			// Get list of sensors in current setup
+
+			// Get current setup
+			if ($experiment->setup_id)
+			{
+				$temp_sensors = SetupController::getSensors($experiment->setup_id, true, $db);  // +setup conf fields: name, setup_id
+				if ($temp_sensors === false)
+				{
+					$temp_sensors = array();
+				}
+				foreach ($temp_sensors as $row)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if (!array_key_exists($key, $setup_sensors))
+					{
+						$setup_sensors[$key] = clone $row;
+					}
+				}
+			}
+
+			// Get monitors sensors
+
+			// Get unique sensors list from monitors values in experiment
+			$sql = 'select DISTINCT mv.sensor as sensor_id, mv.valueidx as sensor_val_id '
+					. 'from monitors as m '
+					. 'left join monitors_values as mv on mv.uuid = m.uuid '
+					. 'where m.exp_id = :exp_id '
+					. 'order by mv.sensor, mv.valueidx';
+			$query = $db->prepare($sql);
+			if ($query === false)
+			{
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute(array(
+					':exp_id' => $experiment->id
+			));
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $mon_sensors))
+				{
+					$mon_sensors[$key] = clone $row;
+				}
+			}
+
+			// Get sensors from register with additional info
+
+			// TODO: add method Sensor::getSensors()
+			$query = $db->prepare(
+					'select sensor_id, sensor_val_id, '
+						. 'value_name, si_notation, si_name, max_range, min_range, resolution '
+					. 'from sensors'
+			);
+			if ($query === false)
+			{
+				error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+			}
+			$result = $query->execute();
+			if ($result === false)
+			{
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+			}
+			while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+			{
+				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+				if(!array_key_exists($key, $reg_sensors))
+				{
+					$reg_sensors[$key] = clone $row;
+				}
+			}
+		}
+		catch (PDOException $e)
+		{
+			error_log('PDOException Experiment::scatter(): '.var_export($e->getMessage(),true));  //DEBUG
+			//var_dump($e->getMessage());
+		}
+		$db->commit();
+
+		// Merge sensors
+
+		// Merge detections sensors (older) with monitor sensors (newest)
+		$sensors = array_merge($det_sensors, $mon_sensors);
+
+		// Merge detections-monitors sensors (older) with setup sensors (fullest-newest)
+		$sensors = array_merge($sensors, $setup_sensors);
+
+		// Fill sensors with additional info from register
+		foreach ($sensors as $key => $sensor)
+		{
+			// Need info from register for sensor
+			if(!property_exists($sensor, 'value_name'))
+			{
+				if (array_key_exists($key, $reg_sensors))
+				{
+					// Replace with sensor data from registry
+					$sensors[$key]       = clone $reg_sensors[$key];
+
+					// add name field
+					$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $reg_sensors[$key]->value_name);
+					$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
+							L('sensor_VALUE_NAME_' . strtoupper($value_name)) :
+							L('sensor_UNKNOWN');
+				}
+				else
+				{
+					$sensors[$key]->value_name  = null;
+					$sensors[$key]->si_notation = null;
+					$sensors[$key]->si_name     = null;
+					$sensors[$key]->max_range   = null;
+					$sensors[$key]->min_range   = null;
+					$sensors[$key]->resolution  = null;
+
+					// add name field
+					$sensors[$key]->name        = L('sensor_UNKNOWN');
+				}
+				// add setup id field
+				$sensors[$key]->setup_id = 0;
+			}
+		}
+
+		// Prepare available sensors list
+		$this->view->content->available_sensors = &$sensors;
+
+		// Search selected sensors
+		$this->view->content->sensor_x = null;
+		$this->view->content->sensor_y = null;
+		foreach ($sensors as $key => $sensor)
+		{
+			if(strcmp($sx, $key) == 0)
+			{
+				$this->view->content->sensor_x = $sensors[$key];
+			}
+			if(strcmp($sy, $key) == 0)
+			{
+				$this->view->content->sensor_y = $sensors[$key];
+			}
+		}
+
+		// Pass filter datetimes
+		$this->view->content->from = $from;
+		$this->view->content->to = $to;
+
+		$this->setTitle(L('graph_TITLE_SCATTER_FOR',array($experiment->title)));
+		//$this->setContentTitle(L('graph_TITLE_SCATTER_FOR_2',array($experiment->title)));
+		// Flot lib
+		$this->addJs('lib/jquery.flot');
+		$this->addJs('lib/jquery.flot.navigate');
+		// Flot plugins JUMFlot
+		$this->addJs('lib/jquery.flot.JUMlib');
+		$this->addJs('lib/jquery.flot.heatmap');
+		$this->addJs('lib/jquery.flot.bubbles');
+		// or all JUMFlot
+		//$this->addJs('lib/JUMFlot');
+		//$this->addJs('lib/JUMFlot.min');
+		// PDF export libs
+		$this->addJs('lib/jspdf.min');
+		$this->addJs('lib/html2canvas');
+		// Datetime picker
+		//$this->addJs('lib/jquery.datetimepicker.full');
+		$this->addJs('lib/jquery.datetimepicker.full.min');
+		$this->addCss('jquery.datetimepicker.min');
+		//
+		$this->addJs('functions');
+		$this->addJs('chart');
+
+		// Add language translates for scripts
+		Language::script(array(
+				'ERROR',
+				'FROM_', 'TO_',
+				'graph_PLEASE_SELECT_SENSORS', 'graph_PLEASE_SELECT_DIFFERENT_SENSORS', 'graph_AVAILABLE_RANGE'
+		));
+
+		// Plot with all sensors data loads on ajax request
+		$this->view->content->points = array();
+	}
 
 	/**
 	 * Action: Clean
@@ -840,24 +1661,16 @@ class ExperimentController extends Controller
 			$db = new DB();
 
 			// Remove detections
-			$delete = $db->prepare('delete from detections where exp_id=:exp_id');
-			$result = $delete->execute(array(':exp_id' => $this->id));
+			$query = $db->prepare('delete from detections where exp_id = :exp_id');
+			$result = $query->execute(array(':exp_id' => $this->id));
 			if (!$result)
 			{
-				error_log('PDOError: '.var_export($delete->errorInfo(),true));  //DEBUG
+				error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
 			}
 
-			$destination = System::getVarBackurl();
-			if($destination !== null && $destination != $_GET['q'])
-			{
-				System::go(System::cleanVar($destination, 'path'));
-			}
-			else
-			{
-				System::go('experiment/journal/'.$this->id);
-			}
+			System::goback('experiment/journal/'.$this->id, 'auto', 'destination', true);
 		}
-		else 
+		else
 		{
 			// No view page fo clean
 			System::go('experiment/journal/'.$this->id);
@@ -898,8 +1711,6 @@ class ExperimentController extends Controller
 		}
 
 		$method = strtoupper($_SERVER['REQUEST_METHOD']);
-
-		// Check access to experiment
 		if($method == 'POST')
 		{
 			if (isset($_POST))
@@ -919,31 +1730,176 @@ class ExperimentController extends Controller
 			System::goerror(500);
 		}
 
+		// Check form id
 		if(isset($request) && isset($request['form-id']) && $request['form-id'] === 'experiment-journal-form')
 		{
 			// Prepare data for download
 
 			$db = new DB();
 
-			// Get detections
-			//TODO: add filter support with 'dtfrom' and 'dtto' parameters for date range
-			$query = 'select id, strftime(\'%Y-%m-%dT%H:%M:%fZ\', time) as time, sensor_id, sensor_val_id, detection, error'
-					. ' from detections'
-					. ' where exp_id = ' . (int)$experiment->id
-					. ' order by strftime(\'%s\', time),strftime(\'%f\', time)';
-			$detections = $db->query($query, PDO::FETCH_OBJ);
+			// Init arrays of sensors
+			$det_sensors   = array();
+			$setup_sensors = array();
+			$mon_sensors   = array();
+			$reg_sensors   = array();
 
-			// Prepare output depends on sensors in Setup
-			$sensors = SetupController::getSensors($experiment->setup_id, true);
-			$available_sensors = $displayed_sensors = array();
-
-			// Fill list of available sensors
-			foreach($sensors as $sensor)
+			// Speed up db operations within transaction
+			$db->beginTransaction();
+			try
 			{
-				$key = '' . $sensor->id . '#' . (int)$sensor->sensor_val_id;
-				if(!array_key_exists($key, $available_sensors))
+				// Get list of sensors available in detections
+				// (already used sensors)
+
+				// Get unique sensors list from detections data of experiment
+				$sql = 'select DISTINCT sensor_id, sensor_val_id '
+						. 'from detections '
+						. 'where exp_id = :exp_id '
+						. 'order by sensor_id, sensor_val_id';
+				$query = $db->prepare($sql);
+				if ($query === false)
 				{
-					$available_sensors[$key] = $sensor;
+					error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+				}
+				$result = $query->execute(array(
+						':exp_id' => $experiment->id
+				));
+				if ($result === false)
+				{
+					error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+				}
+				while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if(!array_key_exists($key, $det_sensors))
+					{
+						$det_sensors[$key] = clone $row;
+					}
+				}
+
+				// Get list of sensors in current setup
+
+				// xxx: comment out this block if not use setups data for sensors at all
+				// Get current setup
+				if ($experiment->setup_id)
+				{
+					$temp_sensors = SetupController::getSensors($experiment->setup_id, true, $db);  // +setup conf fields: name, setup_id
+					if ($temp_sensors === false)
+					{
+						$temp_sensors = array();
+					}
+					foreach ($temp_sensors as $row)
+					{
+						$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+						if (!array_key_exists($key, $setup_sensors))
+						{
+							$setup_sensors[$key] = clone $row;
+						}
+					}
+				}
+
+				// Get monitors sensors
+
+				// Get unique sensors list from monitors values in experiment
+				$sql = 'select DISTINCT mv.sensor as sensor_id, mv.valueidx as sensor_val_id '
+						. 'from monitors as m '
+						. 'left join monitors_values as mv on mv.uuid = m.uuid '
+						. 'where m.exp_id = :exp_id '
+						. 'order by mv.sensor, mv.valueidx';
+				$query = $db->prepare($sql);
+				if ($query === false)
+				{
+					error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+				}
+				$result = $query->execute(array(
+						':exp_id' => $experiment->id
+				));
+				if ($result === false)
+				{
+					error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+				}
+				while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if(!array_key_exists($key, $mon_sensors))
+					{
+						$mon_sensors[$key] = clone $row;
+					}
+				}
+
+				// Get sensors from register with additional info
+
+				// TODO: add method Sensor::getSensors()
+				$query = $db->prepare(
+						'select sensor_id, sensor_val_id, '
+							. 'value_name, si_notation, si_name, max_range, min_range, resolution '
+						. 'from sensors'
+				);
+				if ($query === false)
+				{
+					error_log('PDOError: '.var_export($db->errorInfo(),true));  //DEBUG
+				}
+				$result = $query->execute();
+				if ($result === false)
+				{
+					error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
+				}
+				while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+				{
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if(!array_key_exists($key, $reg_sensors))
+					{
+						$reg_sensors[$key] = clone $row;
+					}
+				}
+			}
+			catch (PDOException $e)
+			{
+				error_log('PDOException Experiment::download(): '.var_export($e->getMessage(),true));  //DEBUG
+				//var_dump($e->getMessage());
+			}
+			$db->commit();
+
+
+			// Merge sensors
+
+			// Merge detections sensors (older) with monitor sensors (newest)
+			$sensors = array_merge($det_sensors, $mon_sensors);
+
+			// Merge detections-monitors sensors (older) with setup sensors (fullest-newest)
+			$sensors = array_merge($sensors, $setup_sensors);
+
+
+			// Fill sensors with additional info from register
+			foreach ($sensors as $key => $sensor)
+			{
+				// Need info from register for sensor
+				if(!property_exists($sensor, 'value_name'))
+				{
+					if (array_key_exists($key, $reg_sensors))
+					{
+						// Replace with sensor data from registry
+						$sensors[$key]       = clone $reg_sensors[$key];
+
+						// add name field
+						$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $reg_sensors[$key]->value_name);
+						$sensors[$key]->name = (mb_strlen($reg_sensors[$key]->value_name,'utf-8') > 0) ?
+								L('sensor_VALUE_NAME_' . strtoupper($value_name)) :
+								L('sensor_UNKNOWN');
+					}
+					else
+					{
+						$sensors[$key]->value_name  = null;
+						$sensors[$key]->si_notation = null;
+						$sensors[$key]->si_name     = null;
+						$sensors[$key]->max_range   = null;
+						$sensors[$key]->min_range   = null;
+						$sensors[$key]->resolution  = null;
+
+						// add name field
+						$sensors[$key]->name        = L('sensor_UNKNOWN');
+					}
+					// add setup id field
+					$sensors[$key]->setup_id = 0;
 				}
 			}
 
@@ -958,24 +1914,47 @@ class ExperimentController extends Controller
 			}
 			if(!empty($sensors_show))
 			{
-				$displayed_sensors = array_intersect_key($available_sensors, $sensors_show);
+				$displayed_sensors = array_intersect_key($sensors, $sensors_show);
 			}
 			else
 			{
-				$displayed_sensors = $available_sensors;
+				$displayed_sensors = $sensors;
 			}
 
-			// Array of values grouped by full timestamps (UTC datetime!)
+			// Detections selection
+
 			$journal = array();
-			foreach($detections as $row)
+
+			// Speed up db operations within transaction
+			$db->beginTransaction();
+			try
 			{
-				// if sensor+value is available than add to journal output
-				$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
-				if(array_key_exists($key, $displayed_sensors))
+				// Get detections
+				//TODO: add filter support with 'dtfrom' and 'dtto' parameters for date range
+				$sql = 'select id, time, strftime(\'%Y-%m-%dT%H:%M:%fZ\', time) as mstime, sensor_id, sensor_val_id, detection, error'
+						. ' from detections'
+						. ' where exp_id = ' . (int)$experiment->id
+						//. ' order by strftime(\'%s\', time),strftime(\'%f\', time)';
+						. ' order by strftime(\'%Y-%m-%dT%H:%M:%f\', time), id';
+				$query = $db->prepare($sql);
+				$query->execute();
+				// Array of values grouped by full timestamps (UTC datetime!)
+				while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
 				{
-					$journal[$row->time][$key] = $row;
+					// if sensor+value is available than add to journal output
+					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+					if(array_key_exists($key, $displayed_sensors))
+					{
+						$journal[$row->time][$key] = $row;
+					}
 				}
 			}
+			catch (PDOException $e)
+			{
+				error_log('PDOException Experiment::download(): '.var_export($e->getMessage(),true));  //DEBUG
+				//var_dump($e->getMessage());
+			}
+			$db->commit();
 
 			// Prepare data as array of array (rows and columns)
 			$result = array();
@@ -983,17 +1962,24 @@ class ExperimentController extends Controller
 			// Header
 			$data_header = array();
 			$data_header[] = 'N';
-			$data_header[] = L::TIME;
+			$data_header[] = L('TIME');
 			foreach ($displayed_sensors as $skey => $sensor)
 			{
+				$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->value_name);
+				$si_notation = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->si_notation);
 				$data_header[] = $sensor->name
-					. ' ' .  constant('L::sensor_VALUE_NAME_' . strtoupper($sensor->value_name))
-						. ', ' . constant('L::sensor_VALUE_SI_NOTATION_' . strtoupper($sensor->value_name) . '_' . strtoupper($sensor->si_notation))
-					. ' ' . '(id: ' . $skey . ')';
+						. ' ' . ((mb_strlen($sensor->value_name, 'utf-8') > 0 ) ?
+								L('sensor_VALUE_NAME_' . strtoupper($value_name)) :
+								'-')
+						. ', ' . ((mb_strlen($sensor->value_name, 'utf-8') > 0 && mb_strlen($sensor->si_notation, 'utf-8') > 0) ?
+								L('sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($si_notation)) :
+								'-')
+						. ' ' . '(id: ' . $skey . ')';
 			}
 			$result[] = $data_header;
 
 			// Locale number format settings
+			// (123.456 OR 123,456)
 			// xxx: hack to convert decimal point of floats for some locales
 			$decimal_point = '.';
 			if (is_object($this->app->lang))
@@ -1016,11 +2002,14 @@ class ExperimentController extends Controller
 				$i++;
 				$data_row = array();
 				$data_row[] = (int)$i;
-				$data_row[] = System::datemsecformat($time, System::DATETIME_FORMAT1NANOXSL, 'now');
+				//try {
+				$data_row[] = System::datemsecformat($time, System::DATETIME_FORMAT1NANOXLS, 'now');
+				//} catch (Exception $e) {}
 				foreach ($displayed_sensors as $skey => $sensor)
 				{
 					if (isset($row[$skey]) && ($row[$skey]->error !== 'NaN'))
 					{
+						// Locale number format fix
 						if (isset($decimal_point_new))
 						{
 							$data_row[] = str_replace($decimal_point, $decimal_point_new, (float)$row[$skey]->detection);
@@ -1039,7 +2028,7 @@ class ExperimentController extends Controller
 
 			// Get requested document type
 			$doc_type = (isset($request['type']) && in_array($request['type'], array('csv'))) ? $request['type'] : 'csv';
-			$filename = 'detections-exp' . (int)$experiment->id . '-' . System::datemsecformat(null, 'YmdHisu' /*U*/, 'now') . '.' . $doc_type;
+			$filename = 'detections-exp' . (int)$experiment->id . '-' . System::datemsecformat(null, 'YmdHisu', 'now') . '.' . $doc_type;
 
 			switch ($doc_type)
 			{
@@ -1048,6 +2037,7 @@ class ExperimentController extends Controller
 					{
 						/*
 						Examples of CSV:
+						@see RFC 4180 (https://www.ietf.org/rfc/rfc4180.txt) with delimeter ";" (Microsoft Excel format)
 
 						field_name;field_name;field_name CRLF
 						aaa;bbb;ccc CRLF
@@ -1074,7 +2064,7 @@ class ExperimentController extends Controller
 						// Send response headers to the browser
 						header('Content-Type: text/csv');
 						header("Content-Length: " . strlen($output));
-						header("Content-Disposition: attachment; filename=\"" . $filename . "\";");
+						header("Content-Disposition: attachment; filename=\"" . $filename . "\"");
 						//header("Content-Transfer-Encoding: Binary");  // only for MIME in email protocols
 						//header('Connection: Keep-Alive');
 						//header('Expires: 0');
@@ -1108,23 +2098,23 @@ class ExperimentController extends Controller
 		return;
 	}
 
+
 	/**
-	 * Check if some Setup is active in experiment.
-	 * Return boolean value and ids of active Setups.
+	 * Check if active experiment.
 	 * 
 	 * API method: Experiment.isActive
 	 * API params: experiment
 	 *
 	 * @param  array $params  Array of parameters
 	 *
-	 * @return array  Result in form array('result' => bool, 'items' => array()) or False on error
+	 * @return array  Result in form array('result' => True) on success or False on error
 	 */
 	public function isActive($params)
 	{
-		// Check id 
+		// Check id
 		if(!isset($params['experiment']) && empty($params['experiment']))
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 			return false;
 		}
 
@@ -1132,40 +2122,21 @@ class ExperimentController extends Controller
 		$experiment = (new Experiment())->load((int)$params['experiment']);
 		if(!$experiment)
 		{
-			$this->error = L::ERROR_EXPERIMENT_NOT_FOUND;
+			$this->error = L('ERROR_EXPERIMENT_NOT_FOUND');
 			return false;
 		}
 
 		// Check access to experiment
 		if(!$experiment->userCanView($this->session()))
 		{
-			$this->error = L::ACCESS_DENIED;
+			$this->error = L('ACCESS_DENIED');
 			return false;
 		}
 
-		$db = new DB();
-
-		// Check active Setups in experiment
-		// TODO: use sql Count for query or return array of active
-		$query = $db->prepare('select id from setups where master_exp_id = :master_exp_id and flag > 0');
-		$res = $query->execute(array(
-				':master_exp_id' => $experiment->id
-		));
-		if (!$res)
-		{
-			error_log('PDOError: '.var_export($query->errorInfo(),true));  //DEBUG
-
-			$this->error = L::ERROR;
-			return false;
-		}
-
-		$setups = (array) $query->fetchAll(PDO::FETCH_COLUMN, 0);
-
-		return array(
-				'result' => ((count($setups) > 0) ? true : false),
-				'items'  => $setups
-		);
+		// Check and return active
+		return array('result' => Experiment::isActive($experiment->id) ? true : false);
 	}
+
 
 	/**
 	 * Get list of experiments.
@@ -1192,9 +2163,10 @@ class ExperimentController extends Controller
 	}
 
 	/**
-	 * Load experiments by session or all
+	 * Load experiments ids by session or all
 	 * 
 	 * @param  string  $session_key  $session_key
+	 * 
 	 * @return array  Array of objects with experiment ids or empty
 	 */
 	public static function loadExperiments($session_key = null)
@@ -1219,5 +2191,11 @@ class ExperimentController extends Controller
 		}
 
 		return $search->fetchAll(PDO::FETCH_OBJ);
+	}
+
+	private function sensorList()
+	{
+		// TODO: prepare full sensors list from exp + mons + setup for experiment
+		return array();
 	}
 }

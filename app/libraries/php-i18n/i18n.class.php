@@ -136,18 +136,18 @@ class i18n {
         }
 
         // search for cache file
-        // xxx: added prefix related cache filename for ability of operation with multiple language simultaneously
-        //      (use many lang classes at ones: L::greeting, UL::greeting, etc.)
         $this->cacheFilePath = $this->cachePath . '/php_i18n_' . md5_file(__FILE__) . '_' . $this->prefix . '_' . $this->appliedLang . '.cache.php';
 
         // if no cache file exists or if it is older than the language file create a new one
         if (!file_exists($this->cacheFilePath) || filemtime($this->cacheFilePath) < filemtime($this->langFilePath)) {
             switch ($this->get_file_extension()) {
+                case 'properties':
                 case 'ini':
                     $config = parse_ini_file($this->langFilePath, true);
                     break;
                 case 'yml':
-                    require_once 'vendor/spyc.php';
+                    if( ! class_exists('Spyc') )
+                        require_once 'vendor/spyc.php';
                     $config = spyc_load_file($this->langFilePath);
                     break;
                 case 'json':
@@ -157,11 +157,22 @@ class i18n {
                     throw new InvalidArgumentException($this->get_file_extension() . " is not a valid extension!");
             }
 
-            $compiled = "<?php class " . $this->prefix . " {\n";
-            $compiled .= $this->compile($config);
-            $compiled .= 'public static function __callStatic($string, $args) {' . "\n";
-            $compiled .= '    return vsprintf(constant("self::" . $string), $args);' . "\n";
-            $compiled .= "}\n}";
+            $compiled = "<?php class " . $this->prefix . " {\n"
+                . $this->compile($config)
+                . 'public static function __callStatic($string, $args) {' . "\n"
+                . '    return defined("self::".$string) ? vsprintf(constant("self::" . $string), $args) : $string;'
+                . "\n}\n}\n"
+                . "function ".$this->prefix .'($string, $args=NULL) {'."\n"
+                . '    if (!defined("'.$this->prefix.'::".$string)) {'."\n"
+                . '        return $string;'."\n"
+                . '    }'."\n"
+                . '    $return = constant("'.$this->prefix.'::".$string);'."\n"
+                . '    return $args ? vsprintf($return,$args) : $return;'
+                . "\n}";
+
+            if (!is_dir($this->cachePath)) {
+                mkdir($this->cachePath,0777,true);
+            }
 
             if (file_put_contents($this->cacheFilePath, $compiled) === FALSE) {
                 throw new Exception("Could not write cache file to path '" . $this->cacheFilePath . "'. Is it writable?");

@@ -4,8 +4,49 @@
  */
 class ApiController extends Controller
 {
-	public function __construct()
+	/**
+	 * Current performed API method.
+	 *
+	 * @var    array
+	 */
+	protected $method;
+
+	/**
+	 * Array of arguments for performed API method
+	 *
+	 * @var    array
+	 */
+	protected $params = array();
+
+	/**
+	 * Subcontroller with called API methods
+	 *
+	 * @var    Controller
+	 */
+	protected $controller;
+
+	/**
+	 * JSON encoded result
+	 *
+	 * @var    string
+	 */
+	protected $json_result;
+
+	/**
+	 * JSON encoded error message
+	 *
+	 * @var    string
+	 */
+	protected $json_error;
+
+	public function __construct($action = 'api', $config = array('default_action' => 'api'))
 	{
+		parent::__construct($action, $config);
+
+		// Register the methods as actions.
+		$this->registerAction('api', 'api');
+		$this->unregisterAction('index');
+
 		$method_query = explode('.', isset($_GET['method']) ? $_GET['method'] : '');
 
 		// Check values
@@ -14,11 +55,19 @@ class ApiController extends Controller
 
 		$api_method_class = $method_query[0].'Controller';
 
-		$this->controller = new $api_method_class;
-		$this->method = $method_query[1];
-		$this->params = isset($_GET['params']) ? $_GET['params'] : array();
+		try
+		{
+			if (class_exists($api_method_class))
+			{
+				$this->controller = new $api_method_class;
+				$this->method = strlen((string)$method_query[1]) != 0 ? (string)$method_query[1] : null;
+				$this->params = isset($_GET['params']) ? $_GET['params'] : array();
+			}
+		}
+		catch (Exception $e)
+		{
+		}
 	}
-
 
 	/**
 	 * Execute controllers API methods
@@ -34,15 +83,16 @@ class ApiController extends Controller
 	 */
 	public function api()
 	{
-		if(method_exists($this->controller, $this->method))
+		if (!is_null($this->controller) && !is_null($this->method)
+				&& in_array(strtolower($this->method), $this->controller->getMAPIs())
+		)
 		{
 			// Inject App in called controller
 			// xxx: cannot do that in constructor of new sub controller, because it creates when no binded $this->app in the current api controller!
 			$this->controller->app = $this->app;
 
-
 			// Call method
-			$result = $this->controller->{$this->method}($this->params);
+			$result = $this->controller->executeAPI($this->method, $this->params);
 
 			if($result && isset($result['result']))
 			{
@@ -60,7 +110,7 @@ class ApiController extends Controller
 		else
 		{
 			$api_error = array(
-				'error' => L::ERROR_METHOD_NOT_EXIST
+				'error' => L('ERROR_METHOD_NOT_EXIST')
 			);
 			$this->json_error = json_encode($api_error);
 		}

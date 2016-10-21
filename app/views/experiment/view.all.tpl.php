@@ -5,13 +5,17 @@ $show_action = true;
 <div class="col-md-12">
 	<div class="row">
 		<div class="col-md-6">
-			<h1><?php echo L::experiment_TITLE_ALL; ?></h1>
+			<h1><?php echo L('experiment_TITLE_ALL'); ?></h1>
 		</div>
 	</div>
 	<div>
-		<a href="?q=experiment" class="btn btn-primary"><span class="glyphicon glyphicon-plus">&nbsp;</span><?php echo L::experiment_NEW_EXPERIMENT; ?></a>
+		<a href="?q=experiment" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span>&nbsp;<?php echo L('experiment_NEW_EXPERIMENT'); ?></a>
+		<?php if($this->session()->getUserLevel() == 3) :?>
+		<a href="?q=sensors/view" class="btn btn-primary"><span class="fa fa-wrench"></span>&nbsp;<?php echo L('SENSORS'); ?></a>
+		<?php endif; ?>
+
 	</div>
-	<form id="sdform" method="post" action="?<?php echo $_SERVER['QUERY_STRING']?>" >
+	<form id="sdform" method="post" action="?<?php echo $_SERVER['QUERY_STRING']?>">
 		<input type="hidden" name="force" value="0"/>
 	<?php if(isset($this->view->content->list )) : ?>
 		<table class="table">
@@ -19,21 +23,21 @@ $show_action = true;
 			<tr>
 				<?php if($this->session()->getUserLevel() == 3) :?>
 				<td>
-					<label><?php echo L::session_NAME; ?></label>
+					<label><?php echo L('session_NAME'); ?></label>
 				</td>
 				<?php endif; ?>
 				<td>
-					<label><?php echo L::experiment_NAME; ?></label>
+					<label><?php echo L('experiment_NAME'); ?></label>
 				</td>
 				<td>
-					<?php echo L::experiment_DATE_START; ?>
+					<?php echo L('experiment_DATE_START'); ?>
 				</td>
 				<td>
-					<?php echo L::experiment_DATE_END; ?>
+					<?php echo L('experiment_DATE_END'); ?>
 				</td>
 				<?php /*if($this->session()->getUserLevel() == 3) :*/?>
 				<td class="text-right">
-					<?php echo L::ACTION; ?>
+					<?php echo L('ACTION'); ?>
 				</td>
 				<?php /*endif;*/ ?>
 			</tr>
@@ -64,10 +68,10 @@ $show_action = true;
 						</a>
 					</td>
 					<td>
-						<?php if(!empty($item->DateStart_exp)) echo System::dateformat('@'.$item->DateStart_exp, System::DATETIME_FORMAT2, 'now'); ?>
+						<?php if(!empty($item->DateStart_exp)) echo System::dateformat('@'.$item->DateStart_exp, System::DATETIME_FORMAT1, 'now'); ?>
 					</td>
 					<td>
-						<?php if(!empty($item->DateEnd_exp)) echo System::dateformat('@'.$item->DateEnd_exp, System::DATETIME_FORMAT2, 'now'); ?>
+						<?php if(!empty($item->DateEnd_exp)) echo System::dateformat('@'.$item->DateEnd_exp, System::DATETIME_FORMAT1, 'now'); ?>
 					</td>
 
 					<td class="text-right">
@@ -81,14 +85,6 @@ $show_action = true;
 			</tbody>
 		</table>
 	<?php endif; ?>
-		<div class="sensors-list">
-		</div>
-		<div class="row">
-			<?php if($this->session()->getUserLevel() == 3) :?>
-			<div class="col-md-4 text-left">
-				<a href="javascript:void(0)" id="sensors-rescan" class="btn btn-primary"><?php echo L::sensor_REFRESH_LIST; ?></a>
-			</div>
-			<?php endif; ?>
-		</div>
+
 	</form>
 </div>

@@ -116,7 +116,7 @@ class JSONSocket
 				);
 			}
 		}
-		else 
+		else
 		{
 			error_log('Error output socketReceive():'.var_export($result,true)); //DEBUG
 			return false;

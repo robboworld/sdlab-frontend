@@ -7,12 +7,17 @@
 class UsersController extends Controller
 {
 
-	public function __construct($action)
+	public function __construct($action = 'index', $config = array('default_action' => 'index'))
 	{
-		parent::__construct($action);
+		parent::__construct($action, $config);
+
+		// Register the methods as actions.
+		$this->registerAction('view', 'view');
 
 		// Get id from request query string users/edit/%id
 		$this->id = App::router(2);
+
+		// Get Application config
 		$this->config = App::config();
 	}
 
@@ -61,11 +66,11 @@ class UsersController extends Controller
 				$filter_user_level = array(1);
 			}
 
-			self::setViewTemplate('view.all');
-			self::setTitle(L::users_TITLE_ALL);
+			$this->setViewTemplate('view.all');
+			$this->setTitle(L('users_TITLE_ALL'));
 
-			self::addJs('functions');
-			//self::addJs('users/view.all');
+			$this->addJs('functions');
+			//$this->addJs('users/view.all');
 			// Add language translates for scripts
 			//Language::script(array(
 			//		'ERROR'  // users/view.all

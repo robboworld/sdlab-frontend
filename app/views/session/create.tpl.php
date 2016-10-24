@@ -9,7 +9,7 @@
 				<?php echo L('TITLE'); ?>
 			</label>
 			<div class="col-sm-8 ">
-				<input type="text" name="session_title" class="form-control" value="<?php echo (isset($_POST['session_title']) ? htmlspecialchars($_POST['session_title'], ENT_QUOTES, 'UTF-8') : '');?>">
+				<input type="text" id="session_title" name="session_title" class="form-control" value="<?php echo (isset($_POST['session_title']) ? htmlspecialchars($_POST['session_title'], ENT_QUOTES, 'UTF-8') : '');?>">
 			</div>
 		</div>
 		<div class="form-group">
@@ -17,7 +17,7 @@
 				<?php echo L('FULL_NAME'); ?>
 			</label>
 			<div class="col-sm-8 ">
-				<input type="text" name="session_name" class="form-control" value="<?php echo (isset($_POST['session_name']) ? htmlspecialchars($_POST['session_name'], ENT_QUOTES, 'UTF-8') : '');?>">
+				<input type="text" id="session_username" name="session_name" class="form-control" value="<?php echo (isset($_POST['session_name']) ? htmlspecialchars($_POST['session_name'], ENT_QUOTES, 'UTF-8') : '');?>">
 			</div>
 		</div>
 		<div class="form-group">

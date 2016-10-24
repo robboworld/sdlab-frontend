@@ -226,7 +226,7 @@ if($setup_exists)
 			</div>
 		</h4>
 		<!-- Monitors -->
-		<div class="panel-group panel-group-monitors" id="accordion-monitors" role="tablist" aria-multiselectable="true">
+		<div class="panel-group panel-group-monitors" id="accordion_monitors" role="tablist" aria-multiselectable="true">
 			<?php foreach ($this->view->content->monitors as $i => $mon) :
 
 			// Get StopAt from Created + Setup.time(sec)
@@ -371,7 +371,7 @@ if($setup_exists)
 							echo L('ERRORS') . ': ' . (int)$mon_err_cnt; ?>" <?php
 							if ((int)$mon_err_cnt == 0) : ?>style="display:none;"<?php endif; ?>></span>&nbsp;
 						<a role="button" title="<?php echo L('MONITORING') . ': ' . $mon->uuid; ?>" data-toggle="collapse" <?php
-							//echo 'data-parent="#accordion-monitors"';  // uncomment for single panel incollapsed
+							//echo 'data-parent="#accordion_monitors"';  // uncomment for single panel incollapsed
 							?> href="#collapseMon<?php echo $i; ?>" aria-expanded="<?php echo $mon->active ? 'true' : 'false'; ?>" aria-controls="#collapseMon<?php echo $i; ?>"><?php
 							echo L('MONITORING'); ?>: <b><?php echo L('FROM_') . '&nbsp;' . $created_text; ?></b>
 						</a>
@@ -546,7 +546,7 @@ if($setup_exists)
 <?php endif; ?>
 <div class="row">
 	<div class="col-sm-10 col-md-10">
-		<div class="row" id="widget-workspace">
+		<div class="row" id="widget_workspace">
 		<?php if (isset($this->view->content->sensors)) :?>
 			<?php foreach($this->view->content->sensors as $sensor):
 				$skey = '' . $sensor->sensor_id . '#' . (int)$sensor->sensor_val_id; ?>

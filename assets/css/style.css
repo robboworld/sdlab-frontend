@@ -6,7 +6,7 @@ body {
 	padding: 0;
 	width: 100%;
 }
-#data-container {
+#data_container {
 	/*
 	padding-left: 165px;
 	padding-right: 15px;
@@ -18,7 +18,7 @@ body {
 	overflow: hidden;
 	*/
 }
-#menu-container {
+#menu_container {
 	width: 150px;
 	position: fixed;
 	left: 0;
@@ -259,8 +259,8 @@ td.exp-header { position: relative; }
 
 
 /* Menu */
-#nav-buttons { padding: 0; }
-#nav-buttons input { min-width: 130px; }
+#nav_buttons { padding: 0; }
+#nav_buttons input { min-width: 130px; }
 
 
 /* Journal page */

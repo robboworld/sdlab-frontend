@@ -1,12 +1,12 @@
 $(document).ready(function(){
     if($('input[name="setup-type"]:checked').length > 0){
-        $('.setup-type, #setup-type-alert').hide();
+        $('.setup-type, #setup_type_alert').hide();
         $('input[type="submit"]').prop('disabled',false);
         $('#'+$('input[name="setup-type"]:checked').attr('data-id')).show();
     }
 
     $(document).on('change', 'input[name="setup-type"]', function(e){
-        $('.setup-type, #setup-type-alert').hide();
+        $('.setup-type, #setup_type_alert').hide();
         var schk = $('input[name="setup-type"]:checked');
         $('#'+schk.attr('data-id')).show();
         schk.parent().parent().find('label').removeClass('active');
@@ -16,27 +16,27 @@ $(document).ready(function(){
     })
 
     // Update list of available sensors
-    $(document).on('click', '#sensors-list-update', function(){
+    $(document).on('click', '#sensors_list_update', function(){
         coreAPICall('Sensors.getSensors', {getinfo: true}, updateSensorsList);
     });
-    toggleSensorsListAlert('#sensors-in-setup');
+    toggleSensorsListAlert('#sensors_in_setup');
     // Get list of available sensors
-    $('#sensors-list-update').trigger('click');
+    $('#sensors_list_update').trigger('click');
 
     // Adding sensors to setup-form
-    $(document).on('click', '#add-sensors', function(){
+    $(document).on('click', '#add_sensors', function(){
         addSensorsToSetup();
-        toggleSensorsListAlert('#sensors-in-setup, #sensor-list-table');
+        toggleSensorsListAlert('#sensors_in_setup, #sensor_list_table');
     });
 
     // Removing sensors from setup-form
     $(document).on('click', '.remove-sensor', function(){
         removeSensorFromSetup(this);
-        toggleSensorsListAlert('#sensors-in-setup, #sensor-list-table');
+        toggleSensorsListAlert('#sensors_in_setup, #sensor_list_table');
     });
 
     // Input triggering when touching row
-    $(document).on('click', '#sensor-list-table tbody tr', function(e){
+    $(document).on('click', '#sensor_list_table tbody tr', function(e){
         $(this).toggleClass('success');
         if(!$(e.target).is('input')){
             $(this).find('input[type=checkbox]').prop('checked', !$(this).find('input[type=checkbox]').prop('checked'));
@@ -47,14 +47,14 @@ $(document).ready(function(){
 function updateSensorsList(data){
 
     if(typeof data.error === 'undefined'){
-        $('#sensor-list-table tbody').empty();
+        $('#sensor_list_table tbody').empty();
         for (id in data.result){
             var sensor = data.result[id];
             sensor.id = id;
             var info = (typeof sensor.sensor_name !== 'undefined') ? true : false;
             for (var i=0;i<sensor.Values.length;i++){
                 var sid = '' + sensor.id + '#' + i;
-                var exists = $('#sensors-in-setup tbody').find('input[name="sensors['+sensor.id+']['+i+'][id]"]'), newrow;
+                var exists = $('#sensors_in_setup tbody').find('input[name="sensors['+sensor.id+']['+i+'][id]"]'), newrow;
                 if(exists.size() == 0){
                     newrow = $('\
                         <tr data-sensor-id="'+ sid +'" class="success">\
@@ -72,10 +72,10 @@ function updateSensorsList(data){
                         newrow.find('tr').data('sensorname',sensor.Values[i].value_name);
                     }
 
-                    $('#sensor-list-table tbody').append(newrow);
+                    $('#sensor_list_table tbody').append(newrow);
                 }
                 else{
-                    var jsensorname = $('#sensors-in-setup tbody').find('input[name="sensors['+sensor.id+']['+i+'][name]"]'), sensorname;
+                    var jsensorname = $('#sensors_in_setup tbody').find('input[name="sensors['+sensor.id+']['+i+'][name]"]'), sensorname;
                     if (jsensorname.length>0){
                         sensorname = jsensorname.first().val();
                     }
@@ -95,20 +95,20 @@ function updateSensorsList(data){
                         newrow.find('tr').data('sensorname',sensorname);
                     }
 
-                    $('#sensor-list-table tbody').append(newrow);
+                    $('#sensor_list_table tbody').append(newrow);
                 }
             }
         }
-        toggleSensorsListAlert('#sensor-list-table');
+        toggleSensorsListAlert('#sensor_list_table');
     } else {
-        toggleSensorsListAlert('#sensor-list-table');
+        toggleSensorsListAlert('#sensor_list_table');
         //error
         alert(SDLab.Language._('ERROR'));
     }
 }
 
 function addSensorsToSetup(){
-    $('#sensor-list-table').find(':checked').parent().parent().each(function(id){
+    $('#sensor_list_table').find(':checked').parent().parent().each(function(id){
         var sensorId = $(this).data('sensor-id');
         var pos = sensorId.lastIndexOf("#"), idx = 0, sid = sensorId;
         if(pos > 0){
@@ -131,7 +131,7 @@ function addSensorsToSetup(){
             </tr>'
         );
         row.find('input[type=text][name$="[name]"]').val(sensorname);
-        $('#sensors-in-setup tbody').append(row);
+        $('#sensors_in_setup tbody').append(row);
         $(this).find(':checked').removeAttr('checked');
         $(this).hide().removeClass('success');
         console.log('Adding sensor #'+sensorId + ' to setup configuration.');

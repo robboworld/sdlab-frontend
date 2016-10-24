@@ -76,13 +76,13 @@ class SetupController extends Controller
 
 			// Set Setup mode
 			$setup_type = isset($_POST['setup-type']) ? $_POST['setup-type'] : '';
-			if($setup_type === 'setup-type-amount')
+			if($setup_type === 'setup_type_amount')
 			{
 				$amount = isset($_POST['amount']) ? (int)$_POST['amount'] : 0;
 				$amount = $amount > 0 ? $amount : null;
 				$setup->set('amount', $amount);
 			}
-			else if($setup_type === 'setup-type-length')
+			else if($setup_type === 'setup_type_length')
 			{
 				$setup->set('time_det', Form::DHMStoSec(array((int)$_POST['time_det_day'],(int)$_POST['time_det_hour'],(int)$_POST['time_det_min'],(int)$_POST['time_det_sec'])));
 			}
@@ -194,14 +194,14 @@ class SetupController extends Controller
 
 			// Set Setup mode
 			$setup_type = isset($_POST['setup-type']) ? $_POST['setup-type'] : '';
-			if($setup_type === 'setup-type-amount')
+			if($setup_type === 'setup_type_amount')
 			{
 				$amount = isset($_POST['amount']) ? (int)$_POST['amount'] : 0;
 				$amount = $amount > 0 ? $amount : 0;
 				$setup->set('amount', $amount);
 				$setup->set('time_det', null);
 			}
-			else if ($setup_type === 'setup-type-length')
+			else if ($setup_type === 'setup_type_length')
 			{
 				$setup->set('amount', null);
 				$setup->set('time_det', Form::DHMStoSec(array((int)$_POST['time_det_day'],(int)$_POST['time_det_hour'],(int)$_POST['time_det_min'],(int)$_POST['time_det_sec'])));

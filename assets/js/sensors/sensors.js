@@ -1,5 +1,5 @@
 $(document).ready(function(){
-	$('#sensor-list-table').on('click', '.sensor-icon-btn', function(){
+	$('#sensor_list_table').on('click', '.sensor-icon-btn', function(){
 		var sensorId = $(this).parents('tr').data('sensor-id');
 		$(this).removeClass('glyphicon-eye-open').addClass('glyphicon-refresh').addClass('spin');
 		var el = $(this);
@@ -11,15 +11,15 @@ $(document).ready(function(){
 		$('#sensors_rescan .btn-icon').addClass('fa-spin');
 		coreAPICall('Sensors.getSensors', {rescan: true, getinfo: true}, updateSensorsList, updateSensorsListErr);
 	});
-	toggleSensorsListAlert('#sensor-list-table');
+	toggleSensorsListAlert('#sensor_list_table');
 });
 function updateSensorsList(resp){
 	var data = parseJSON(resp);
-	$('#sensor-list-table tbody').empty();
+	$('#sensor_list_table tbody').empty();
 	$('#sensors_rescan .btn-icon').removeClass('fa-spin');
 	if(data && typeof data.error === 'undefined'){
 		var cnt=0, sensor, info, sid, newrow;
-		$('#sensor-list-table tbody').empty();
+		$('#sensor_list_table tbody').empty();
 		for (id in data.result){
 			sensor = data.result[id];
 			info = (typeof sensor.sensor_name !== 'undefined') ? true : false;
@@ -41,7 +41,7 @@ function updateSensorsList(resp){
 				if(info){
 					newrow.find('tr').data('sensorname',sensor.Values[i].value_name);
 				}
-				$('#sensor-list-table tbody').append(newrow);
+				$('#sensor_list_table tbody').append(newrow);
 				cnt++;
 			}
 		}
@@ -51,10 +51,10 @@ function updateSensorsList(resp){
 	} else {
 		setInterfaceError($('#sensors_msgs'),'<span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;'+SDLab.Language._('ERROR'), "danger", true);
 	}
-	toggleSensorsListAlert('#sensor-list-table');
+	toggleSensorsListAlert('#sensor_list_table');
 }
 function updateSensorsListErr(){
-	$('#sensor-list-table tbody').empty();
+	$('#sensor_list_table tbody').empty();
 	$('#sensors_rescan .btn-icon').removeClass('fa-spin');
 	setInterfaceError($('#sensors_msgs'),'<span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;'+SDLab.Language._('ERROR'), "danger", true);
 }
@@ -77,11 +77,11 @@ function updateSensorValue(id, onalways){
 	}, function(resp){
 		var data = parseJSON(resp);
 		if(data && typeof data.result !== 'undefined' && typeof data.result.Reading !== 'undefined'){
-			$('#sensor-list-table tr[data-sensor-id="'+id+'"]').find('.sensor-value').html(data.result.Reading);
-			$('#sensor-list-table tr[data-sensor-id="'+id+'"]').removeClass('bg-danger');
+			$('#sensor_list_table tr[data-sensor-id="'+id+'"]').find('.sensor-value').html(data.result.Reading);
+			$('#sensor_list_table tr[data-sensor-id="'+id+'"]').removeClass('bg-danger');
 		}else{
-			$('#sensor-list-table tr[data-sensor-id="'+id+'"]').find('.sensor-value').html('--');
-			$('#sensor-list-table tr[data-sensor-id="'+id+'"]').addClass('bg-danger');
+			$('#sensor_list_table tr[data-sensor-id="'+id+'"]').find('.sensor-value').html('--');
+			$('#sensor_list_table tr[data-sensor-id="'+id+'"]').addClass('bg-danger');
 		}
 	});
 	if(typeof onalways === "function"){

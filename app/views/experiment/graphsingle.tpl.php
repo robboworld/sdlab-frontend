@@ -71,15 +71,15 @@
 		<form class="form-inline">
 			<input type="hidden" name="form-id" value="<?php echo htmlspecialchars($this->view->form->id, ENT_QUOTES, 'UTF-8'); ?>"/>
 			<div class="form-group col-md-6">
-				<label for="x-axis" class="col-md-12">
+				<label for="x_axis" class="col-md-12">
 					<?php echo L('graph_ABSCISSA'); ?>:
 				</label>
 				<div class="col-md-12">
-					<?php echo L('graph_EXPRESSION'); ?>: <input id="x-axis" class="form-control" type="text" value="t" disabled="disabled"/>
+					<?php echo L('graph_EXPRESSION'); ?>: <input id="x_axis" class="form-control" type="text" value="t" disabled="disabled"/>
 				</div>
 			</div>
 			<div class="form-group col-md-6">
-				<label for="y-axis" class="col-md-12">
+				<label for="y_axis" class="col-md-12">
 					<?php echo L('graph_ORDINATE'); ?>:
 				</label>
 				<div class="col-md-12">
@@ -87,7 +87,7 @@
 						<select name="ordinate-sensor-id[]" class="form-control">
 							<option><?php echo L('sensor_SELECT_OPTION'); ?></option>
 						</select>
-						<?php echo L('graph_EXPRESSION'); ?>: <input id="ordinate-scale" class="form-control" type="text" value="" placeholder="<?php echo L('graph_EXPRESSION'); ?>"/>
+						<?php echo L('graph_EXPRESSION'); ?>: <input id="ordinate_scale" class="form-control" type="text" value="" placeholder="<?php echo L('graph_EXPRESSION'); ?>"/>
 					</div>
 				</div>
 				<div class="col-md-12">

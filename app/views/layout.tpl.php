@@ -48,7 +48,7 @@
 
 				<div class="pull-right text-right col-md-5">
 					<div class="btn-group ">
-						<a href="?q=session/edit" id="session-name" class="btn btn-sm btn-info navbar-btn" title="<?php echo L('session_EDIT'); ?>">
+						<a href="?q=session/edit" id="session_name" class="btn btn-sm btn-info navbar-btn" title="<?php echo L('session_EDIT'); ?>">
 							<?php echo htmlspecialchars($session->name, ENT_QUOTES, 'UTF-8'); ?>
 						</a>
 						<a href="?q=session/destroy" class="btn btn-sm btn-default navbar-btn" title="<?php echo L('LOGOFF'); ?>"><span class="glyphicon glyphicon-log-out"></span>&nbsp;<span class="hidden-sm hidden-xs"><?php echo L('LOGOFF'); ?></span></a>
@@ -63,7 +63,7 @@
 					//TODO: pass current anchor-fragment to destination url with javascript (window.location.hash)
 				?>
 
-					<form id="nav-buttons" class="navbar-form" action="?q=session/create<?php if(isset($_GET['q'])) : ?>&destination=<?php echo urlencode('?' . $_SERVER['QUERY_STRING']); endif; ?>" method="post">
+					<form id="nav_buttons" class="navbar-form" action="?q=session/create<?php if(isset($_GET['q'])) : ?>&destination=<?php echo urlencode('?' . $_SERVER['QUERY_STRING']); endif; ?>" method="post">
 						<div class="input-group input-group-sm">
 							<input type="password" name="session_key" placeholder="<?php echo L('session_KEY_EXAMPLE'); ?>" title="<?php echo L('session_KEY_EXAMPLE2'); ?>" class="form-control">
 							<span class="input-group-btn">
@@ -77,7 +77,7 @@
 
 		</div>
 	</div>
-	<div class="container-fluid" id="data-container">
+	<div class="container-fluid" id="data_container">
 		<?php echo $this->render(); ?>
 	</div>
 

@@ -16,7 +16,7 @@
 	<?php if(isset($this->view->content->list )) : ?>
 
 	<br/>
-	<table class="table table-responsive table-condensed" id="sensor-list-table">
+	<table class="table table-responsive table-condensed" id="sensor_list_table">
 		<thead>
 			<tr>
 				<th>ID</th>

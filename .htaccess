@@ -1,5 +1,7 @@
 ## No directory listings
-IndexIgnore *
+<IfModule mod_autoindex.c>
+    IndexIgnore *
+</IfModule>
 
 ## Can be commented out if causes errors, see notes above.
 Options +FollowSymlinks

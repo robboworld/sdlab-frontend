@@ -338,15 +338,15 @@ if($setup_exists)
 			?>">
 				<div class="panel-heading <?php echo $heading_class; ?>" role="tab" id="panelMonHeading<?php echo $i; ?>">
 					<div class="pull-right panel-collapse-control">
-						<a href="#collapseMon<?php echo $i; ?>" role="button" class="btn-none" data-toggle="collapse" aria-expanded="<?php echo $mon->active ? 'true' : 'false'; ?>" aria-controls="#collapseMon<?php echo $i; ?>">
+						<a href="#collapseMon<?php echo $i; ?>" role="button" class="btn-none" data-toggle="collapse" aria-expanded="<?php echo $mon->active ? 'true' : 'false'; ?>" aria-controls="collapseMon<?php echo $i; ?>">
 							<span class="glyphicon <?php echo $mon->active ? 'glyphicon-chevron-down' : 'glyphicon-chevron-up'; ?>"></span>
 						</a>
 					</div>
 					<div class="btn-group dropdown-monitor pull-right hidden">
-						<a href="#" class="btn-none dropdown-toggle" data-target="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+						<a href="#" class="btn-none dropdown-toggle" data-target="#dropdownMenuMon<?php echo $i; ?>" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
 							<span class="glyphicon glyphicon-cog"></span>
 						</a>
-						<ul class="dropdown-menu dropdown-menu-right">
+						<ul id="#dropdownMenuMon<?php echo $i; ?>" class="dropdown-menu dropdown-menu-right">
 							<li class="monitor-active-hidden" style="<?php if ($mon->active) : ?>display:none;<?php endif; ?>">
 								<a href="#" onclick="alert('TODO: Remove monitor info');" ><?php echo L('REMOVE'); ?></a>
 							</li>
@@ -372,7 +372,7 @@ if($setup_exists)
 							if ((int)$mon_err_cnt == 0) : ?>style="display:none;"<?php endif; ?>></span>&nbsp;
 						<a role="button" title="<?php echo L('MONITORING') . ': ' . $mon->uuid; ?>" data-toggle="collapse" <?php
 							//echo 'data-parent="#accordion_monitors"';  // uncomment for single panel incollapsed
-							?> href="#collapseMon<?php echo $i; ?>" aria-expanded="<?php echo $mon->active ? 'true' : 'false'; ?>" aria-controls="#collapseMon<?php echo $i; ?>"><?php
+							?> href="#collapseMon<?php echo $i; ?>" aria-expanded="<?php echo $mon->active ? 'true' : 'false'; ?>" aria-controls="collapseMon<?php echo $i; ?>"><?php
 							echo L('MONITORING'); ?>: <b><?php echo L('FROM_') . '&nbsp;' . $created_text; ?></b>
 						</a>
 					</h5>

@@ -13,17 +13,17 @@ class Menu
 		{
 			if($item['user_level'] == 0 || $item['user_level'] <= $user_level)
 			{
-				strpos($key, '#') === 0 ? $href = $key : $href = '?q='.$key;
-				isset($item['id']) ? $id = $item['id'] : $id = '';
+				$href = (strpos($key, '#') === 0) ? $key : ('?q='.$key);
+				$id = isset($item['id']) ? ('id="' . $item['id'] . '"') : '';
 				if(isset($item['menu']))
 				{
 					$sub_menu_html = '<ul>'.self::render($item['menu'], $user_level).'</ul>';
-					$menu_html .= '<li><a id="'.$id.'" href="'.$href.'">'.htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8').'</a>'.$sub_menu_html.'</li>';
+					$menu_html .= '<li><a '.$id.' href="'.$href.'">'.htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8').'</a>'.$sub_menu_html.'</li>';
 				}
 				else
 				{
 					$item_title = htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8');
-					$menu_html .= '<li><a id="'.$id.'" href="'.$href.'">'
+					$menu_html .= '<li><a '.$id.' href="'.$href.'">'
 							. (isset($item['icon']) ? ('<span class="'.$item['icon'].'"></span>') : '')
 							. '<span class="' . (isset($item['textclass']) ? $item['textclass'] : '') . '">'
 									. (isset($item['icon']) ? '&nbsp;' : '') . $item_title

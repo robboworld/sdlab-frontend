@@ -161,13 +161,11 @@ class ExperimentController extends Controller
 			// Single experiment page
 
 			$this->addJs('functions');
-			$this->addJs('class/Sensor');
 			$this->addJs('experiment/view');
 			// Add language translates for scripts
 			Language::script(array(
 					'ERROR',
 					'ERRORS',
-					'GRAPH', 'INFO',  // class/Sensor
 					'RUNNING_', 'STROBE', 'ERROR_NOT_COMPLETED', 'experiment_ERROR_CONFIGURATION_ORPHANED_REFRESH', 'experiment_ERROR_STATUS_REFRESH'  // experiment/view
 			));
 

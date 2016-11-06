@@ -1921,167 +1921,220 @@ class ExperimentController extends Controller
 				$displayed_sensors = $sensors;
 			}
 
-			// Detections selection
-
-			$journal = array();
-
-			// Speed up db operations within transaction
-			$db->beginTransaction();
-			try
-			{
-				// Get detections
-				//TODO: add filter support with 'dtfrom' and 'dtto' parameters for date range
-				$sql = 'select id, time, strftime(\'%Y-%m-%dT%H:%M:%fZ\', time) as mstime, sensor_id, sensor_val_id, detection, error'
-						. ' from detections'
-						. ' where exp_id = ' . (int)$experiment->id
-						//. ' order by strftime(\'%s\', time),strftime(\'%f\', time)';
-						. ' order by strftime(\'%Y-%m-%dT%H:%M:%f\', time), id';
-				$query = $db->prepare($sql);
-				$query->execute();
-				// Array of values grouped by full timestamps (UTC datetime!)
-				while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
-				{
-					// if sensor+value is available than add to journal output
-					$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
-					if(array_key_exists($key, $displayed_sensors))
-					{
-						$journal[$row->time][$key] = $row;
-					}
-				}
-			}
-			catch (PDOException $e)
-			{
-				error_log('PDOException Experiment::download(): '.var_export($e->getMessage(),true));  //DEBUG
-				//var_dump($e->getMessage());
-			}
-			$db->commit();
-
-			// Prepare data as array of array (rows and columns)
-			$result = array();
-
-			// Header
-			$data_header = array();
-			$data_header[] = 'N';
-			$data_header[] = L('TIME');
-			foreach ($displayed_sensors as $skey => $sensor)
-			{
-				$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->value_name);
-				$si_notation = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->si_notation);
-				$data_header[] = $sensor->name
-						. ' ' . ((mb_strlen($sensor->value_name, 'utf-8') > 0 ) ?
-								L('sensor_VALUE_NAME_' . strtoupper($value_name)) :
-								'-')
-						. ', ' . ((mb_strlen($sensor->value_name, 'utf-8') > 0 && mb_strlen($sensor->si_notation, 'utf-8') > 0) ?
-								L('sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($si_notation)) :
-								'-')
-						. ' ' . '(id: ' . $skey . ')';
-			}
-			$result[] = $data_header;
-
-			// Locale number format settings
-			// (123.456 OR 123,456)
-			// xxx: hack to convert decimal point of floats for some locales
-			$decimal_point = '.';
-			if (is_object($this->app->lang))
-			{
-				$activeLang = $this->app->lang->getAppliedLang();
-				if (strtolower(substr($activeLang,0,2)) === 'ru')
-				{
-					$decimal_point_new = ',';
-				}
-			}
-			//if (false !== setlocale(LC_NUMERIC, 'ru_RU.UTF-8')) {
-			//	$locale_info = localeconv();
-			//	$decimal_point = $locale_info['decimal_point'];
-			//}
-
-			// Data rows
-			$i = 0;
-			foreach($journal as $time => $row)
-			{
-				$i++;
-				$data_row = array();
-				$data_row[] = (int)$i;
-				//try {
-				$data_row[] = System::datemsecformat($time, System::DATETIME_FORMAT1NANOXLS, 'now');
-				//} catch (Exception $e) {}
-				foreach ($displayed_sensors as $skey => $sensor)
-				{
-					if (isset($row[$skey]) && ($row[$skey]->error !== 'NaN'))
-					{
-						// Locale number format fix
-						if (isset($decimal_point_new))
-						{
-							$data_row[] = str_replace($decimal_point, $decimal_point_new, (float)$row[$skey]->detection);
-						}
-						else
-						{
-							$data_row[] = (float)$row[$skey]->detection;
-						}
-					}
-					else {
-						$data_row[] = '';
-					}
-				}
-				$result[] = $data_row;
-			}
-
 			// Get requested document type
 			$doc_type = (isset($request['type']) && in_array($request['type'], array('csv'))) ? $request['type'] : 'csv';
 			$filename = 'detections-exp' . (int)$experiment->id . '-' . System::datemsecformat(null, 'YmdHisu', 'now') . '.' . $doc_type;
+
+			// Force to show browser Save File dialog by disable buffering and flush to output
+			// (after about 255b/1k of headers+data in main browsers showed dialog)
+			// Clean output buffer
+			while (@ob_end_clean())
+			{
+				// do nothing
+			}
 
 			switch ($doc_type)
 			{
 				case 'csv':
 				default:
+				{
+					/*
+					Examples of CSV:
+					@see RFC 4180 (https://www.ietf.org/rfc/rfc4180.txt) with delimeter ";" (Microsoft Excel format)
+
+					field_name;field_name;field_name CRLF
+					aaa;bbb;ccc CRLF
+					zzz;yyy;xxx CRLF
+
+					a;b;c
+					1;2;3
+					4;";";5
+					77;""";""";88
+					6;,;7
+					8;.;9
+					*/
+
+					// Header
+					$data_header = array();
+					$data_header[] = 'N';
+					$data_header[] = L('TIME');
+					foreach ($displayed_sensors as $skey => $sensor)
 					{
-						/*
-						Examples of CSV:
-						@see RFC 4180 (https://www.ietf.org/rfc/rfc4180.txt) with delimeter ";" (Microsoft Excel format)
+						$value_name = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->value_name);
+						$si_notation = (string) preg_replace('/[^A-Z0-9_]/i', '_', $sensor->si_notation);
+						$data_header[] = $sensor->name
+								. ' ' . ((mb_strlen($sensor->value_name, 'utf-8') > 0 ) ?
+										L('sensor_VALUE_NAME_' . strtoupper($value_name)) :
+										'-')
+								. ', ' . ((mb_strlen($sensor->value_name, 'utf-8') > 0 && mb_strlen($sensor->si_notation, 'utf-8') > 0) ?
+										L('sensor_VALUE_SI_NOTATION_' . strtoupper($value_name) . '_' . strtoupper($si_notation)) :
+										'-')
+								. ' ' . '(id: ' . $skey . ')';
+					}
 
-						field_name;field_name;field_name CRLF
-						aaa;bbb;ccc CRLF
-						zzz;yyy;xxx CRLF
-
-						a;b;c
-						1;2;3
-						4;";";5
-						77;""";""";88
-						6;,;7
-						8;.;9
-						*/
-
-						$output = array();
-						foreach ($result as $r)
+					// Locale number format settings
+					// (123.456 OR 123,456)
+					// xxx: hack to convert decimal point of floats for some locales
+					$decimal_point = '.';
+					if (is_object($this->app->lang))
+					{
+						$activeLang = $this->app->lang->getAppliedLang();
+						if (strtolower(substr($activeLang,0,2)) === 'ru')
 						{
-							$output[] = System::strtocsv($r, ';');
+							$decimal_point_new = ',';
+						}
+					}
+					//if (false !== setlocale(LC_NUMERIC, 'ru_RU.UTF-8')) {
+					//	$locale_info = localeconv();
+					//	$decimal_point = $locale_info['decimal_point'];
+					//}
+
+					// Send response headers to the browser
+					header('Content-Type: text/csv');
+					//header("Content-Length: " . strlen($output));  // XXX: unknown length, because prepare and output in db fetch loop
+					header("Content-Disposition: attachment; filename=\"" . $filename . "\"");
+					//header("Content-Transfer-Encoding: Binary");  // only for MIME in email protocols
+					//header('Connection: Keep-Alive');
+					//header('Expires: 0');
+					header('Cache-Control: no-cache');
+					//header('Cache-Control: max-age=60, must-revalidate');
+					//header('Pragma: public');
+					header('Set-Cookie: fileDownload=true; path=/');
+
+					flush(); // Get the headers out immediately to show the download dialog in Firefox
+
+					// Write data to output
+					$fp = fopen('php://output', 'w');
+
+					// Header output
+					// XXX: convert from utf-8 to ansi for ms office
+					fwrite($fp, iconv("UTF-8", "Windows-1251", System::strtocsv($data_header, ';')) . "\n");
+
+					// No sensors - no data
+					if (empty($displayed_sensors))
+					{
+						fclose($fp);
+						exit();
+					}
+
+					//// Speed up db operations within transaction
+					//$db->beginTransaction();
+					// Catch for correct file close also
+					try
+					{
+						// Get detections
+						//TODO: add filter support with 'dtfrom' and 'dtto' parameters for date range
+						// XXX: Carefully use WHERE filter by sensor_id and sensor_val_id, watch to sensors count, may be too long list for db
+						$is_where_sensors = true;
+						$where_sensors = ' and (ifnull(sensor_id,\'\')||\'#\'||ifnull(sensor_val_id,\'\')) in (' . implode(',', array_fill(0, count($displayed_sensors), '?')) . ')';
+
+						//$sql = 'select id, time, strftime(\'%Y-%m-%dT%H:%M:%fZ\', time) as mstime, sensor_id, sensor_val_id, detection, error'
+						$sql = 'select time, sensor_id, sensor_val_id, detection, error'
+								. ' from detections'
+								. ' where exp_id = ' . (int)$experiment->id
+								. ($is_where_sensors ? $where_sensors : '')
+								//. ' order by strftime(\'%s\', time),strftime(\'%f\', time)';
+								. ' order by strftime(\'%Y-%m-%dT%H:%M:%f\', time), id';
+						$query = $db->prepare($sql);
+						$query->execute($is_where_sensors ? array_keys($displayed_sensors) : null);
+
+						// Prepare empty data row which has order the same as header
+						$empty_data_row = array('0' => '', '1' => '');
+						foreach ($displayed_sensors as $key => $value)
+						{
+							$empty_data_row[$key] = '';
 						}
 
-						$output = implode("\n", $output);
-						// XXX: convert from utf-8 to ansi for ms office
-						$output = iconv("UTF-8", "Windows-1251", $output);
+						$last_time = null;
+						$data_row  = null;
+						$i         = 0;     // detections counter
+						$j         = 0;     // data rows counter
+						$flush_num = 100;   // Flush output to the browser every N lines. Tweak flush number based upon the size of CSV rows?!
 
-						// Send response headers to the browser
-						header('Content-Type: text/csv');
-						header("Content-Length: " . strlen($output));
-						header("Content-Disposition: attachment; filename=\"" . $filename . "\"");
-						//header("Content-Transfer-Encoding: Binary");  // only for MIME in email protocols
-						//header('Connection: Keep-Alive');
-						//header('Expires: 0');
-						header('Cache-Control: no-cache');
-						//header('Cache-Control: max-age=60, must-revalidate');
-						//header('Pragma: public');
-						header('Set-Cookie: fileDownload=true; path=/');
+						// Raw values grouped by full timestamps (UTC datetime!)
+						while (($row = $query->fetch(PDO::FETCH_OBJ)) !== false)
+						{
+							// Manual filter by sensor+value. If available than add to output
+							$key = '' . $row->sensor_id . '#' . (int)$row->sensor_val_id;
+							if($is_where_sensors || array_key_exists($key, $displayed_sensors))
+							{
+								$i++;
 
-						// Write data to output
-						$fp = fopen('php://output', 'w');
-						//foreach ($result as $r){
-						//	fputcsv($fp, $r);
-						//}
-						fwrite($fp, $output);
-						fclose($fp);
+								// Check new row start
+								if ($last_time === null || $last_time !== $row->time)
+								{
+									$j++;
+
+									// Output prepared row
+									if ($last_time !== null)
+									{
+										// XXX: convert from utf-8 to ansi for ms office, BUT only numbers here
+										//fwrite($fp, iconv("UTF-8", "Windows-1251", System::strtocsv($data_row, ';')) . "\n");
+										fwrite($fp, System::strtocsv($data_row, ';') . "\n");
+
+										if ($j % $flush_num == 0)
+										{
+											// Attempt to flush output to the browser every flush_num lines.
+											// Tweak div number based upon the size of CSV rows.
+											flush();
+										}
+									}
+
+									unset($data_row);
+
+									$data_row = $empty_data_row;
+									$data_row['0'] = (int)$j;
+									//try {
+									$data_row['1'] = System::datemsecformat($row->time, System::DATETIME_FORMAT1NANOXLS, 'now');
+									//} catch (Exception $e) {}
+									$last_time = $row->time;
+								}
+
+								// Add value
+								if ($row->error !== 'NaN')
+								{
+									// Locale number format fix
+									if (isset($decimal_point_new))
+									{
+										$data_row[$key] = str_replace($decimal_point, $decimal_point_new, (float)$row->detection);
+									}
+									else
+									{
+										$data_row[$key] = (float)$row->detection;
+									}
+								}
+								else
+								{
+									$data_row[$key] = '';
+								}
+							}
+						}
+						// Output last row
+						//if (isset($data_row) && !empty($data_row))
+						if ($j > 0)
+						{
+							$j++;
+
+							// Output prepared row
+							// XXX: convert from utf-8 to ansi for ms office, BUT only numbers here
+							//fwrite($fp, iconv("UTF-8", "Windows-1251", System::strtocsv($data_row, ';')));
+							fwrite($fp, System::strtocsv($data_row, ';'));
+						}
 					}
-					break;
+					catch (PDOException $e)
+					{
+						error_log('PDOException Experiment::download(): '.var_export($e->getMessage(),true));  //DEBUG
+						//var_dump($e->getMessage());
+					}
+					catch (Exception $e)
+					{
+						error_log('PDOException Experiment::download(): '.var_export($e->getMessage(),true));  //DEBUG
+						//var_dump($e->getMessage());
+					}
+					//$db->commit();
+					fclose($fp);
+				}
+				break;
 
 				// TODO: add other export formats (xlsx, pdf, ...)
 

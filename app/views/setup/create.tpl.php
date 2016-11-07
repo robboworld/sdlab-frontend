@@ -35,25 +35,25 @@ if (empty($this->view->form->setup->amount))
 			<div class="col-md-12 form-group form-horizontal">
 				<div class="btn-group btn-group-justified">
 					<label class="btn btn-default <?php if($setup_type == 'length') echo 'active';?>">
-						<input type="radio" name="setup-type" data-id="setup-type-length" value="setup-type-length" <?php if($setup_type == 'length') echo 'checked="checked"';?>>
+						<input type="radio" name="setup-type" data-id="setup_type_length" value="setup_type_length" <?php if($setup_type == 'length') echo 'checked="checked"';?>>
 						<?php echo L('setup_DURATION'); ?>
 					</label>
 					<label class="btn btn-default <?php if($setup_type == 'amount') echo 'active';?>">
-						<input type="radio" name="setup-type" data-id="setup-type-amount" value="setup-type-amount" <?php if($setup_type == 'amount') echo 'checked="checked"';?>>
+						<input type="radio" name="setup-type" data-id="setup_type_amount" value="setup_type_amount" <?php if($setup_type == 'amount') echo 'checked="checked"';?>>
 						<?php echo L('setup_DETECTIONS_COUNT'); ?>
 					</label>
 					<!--
 					<label class="btn btn-default">
-						<input type="radio" name="setup-type" data-id="setup-type-date" value="setup-type-date">
+						<input type="radio" name="setup-type" data-id="setup_type_date" value="setup_type_date">
 						<?php echo L('FINISHING'); ?>
 					</label>
 
 					-->
 				</div>
-				<div id="setup-type-alert" class="alert alert-warning" role="alert">
+				<div id="setup_type_alert" class="alert alert-warning" role="alert">
 					<?php echo L('setup_MSG_SELECT_DETECTION_MODE'); ?>
 				</div>
-				<div id="setup-type-length" class="setup-type well" style="<?php if($setup_type != 'length') echo 'display:none;';?>">
+				<div id="setup_type_length" class="setup-type well" style="<?php if($setup_type != 'length') echo 'display:none;';?>">
 					<div class="row form-group">
 						<div class="col-xs-12 col-md-6 col-sm-5 setup-label-long">
 							<?php echo L('setup_DURATION_DETECTIONS'); ?>
@@ -67,7 +67,7 @@ if (empty($this->view->form->setup->amount))
 						</div>
 					</div>
 				</div>
-				<div id="setup-type-amount" class="setup-type well" style="<?php if($setup_type != 'amount') echo 'display:none;';?>">
+				<div id="setup_type_amount" class="setup-type well" style="<?php if($setup_type != 'amount') echo 'display:none;';?>">
 					<div class="row form-group">
 						<div class="col-xs-6 col-md-6 col-sm-6 setup-label">
 							<?php echo L('setup_DETECTIONS_COUNT'); ?>
@@ -79,7 +79,7 @@ if (empty($this->view->form->setup->amount))
 
 				</div>
 				<!--
-				<div id="setup-type-date" class="setup-type well">
+				<div id="setup_type_date" class="setup-type well">
 					<div class="row">
 						<div class="col-md-4">
 							<?php echo L('FINISHING'); ?>
@@ -154,7 +154,7 @@ if (empty($this->view->form->setup->amount))
 		<div class="row">
 			<div class="col-md-12">
 				<h4><?php echo L('setup_SENSORS_IN_SETUP'); ?>:</h4>
-				<table class="table table-responsive" id="sensors-in-setup">
+				<table class="table table-responsive" id="sensors_in_setup">
 					<thead>
 						<tr>
 							<th>ID</th>
@@ -216,7 +216,7 @@ if (empty($this->view->form->setup->amount))
 				<hr />
 
 				<h4><?php echo L('setup_AVAILABLE_SENSORS'); ?>:</h4>
-				<table class="table table-responsive" id="sensor-list-table">
+				<table class="table table-responsive" id="sensor_list_table">
 					<thead>
 						<tr>
 							<th></th>
@@ -246,10 +246,10 @@ if (empty($this->view->form->setup->amount))
 
 				<div class="row sensor-block">
 					<div class="mrg-bot-5px col-xs-12 col-sm-6 col-md-6">
-						<a class="btn btn-default form-control" id="add-sensors"><span class="glyphicon glyphicon-arrow-up"></span><?php echo L('setup_ADD_SELECTED_SENSORS'); ?></a>
+						<a class="btn btn-default form-control" id="add_sensors"><span class="glyphicon glyphicon-arrow-up"></span>&nbsp;<?php echo L('setup_ADD_SELECTED_SENSORS'); ?></a>
 					</div>
 					<div class="mrg-bot-5px col-xs-12 col-sm-6 col-md-6">
-						<a class="btn btn-default form-control" id="sensors-list-update"><span class="glyphicon glyphicon-refresh"></span><?php echo L('setup_REFRESH_AVAILABLE_SENSORS_LIST'); ?></a>
+						<a class="btn btn-default form-control" id="sensors_list_update"><span class="glyphicon glyphicon-refresh"></span>&nbsp;<?php echo L('setup_REFRESH_AVAILABLE_SENSORS_LIST'); ?></a>
 					</div>
 				</div>
 			</div>

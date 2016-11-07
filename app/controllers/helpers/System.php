@@ -349,8 +349,19 @@ class System
 	 */
 	public static function datemsecformat($string, $format = 'Y.m.d H:i:s.u', $timezone = null)
 	{
-		$nsec = static::getdatemsec($string);
-		$dt = new DateTime(static::cutdatemsec($string));
+		if ($string === null)
+		{
+			// XXX: For now time DateTime() didn't return parts of second
+			$utimestamp = microtime(true);
+			$timestamp = floor($utimestamp);
+			$nsec = round(($utimestamp - $timestamp) * 1000000);  // microseconds only
+			$dt = DateTime::createFromFormat('U', $timestamp);
+		}
+		else
+		{
+			$nsec = static::getdatemsec($string);
+			$dt = new DateTime(static::cutdatemsec($string));
+		}
 
 		if ($timezone !== null)
 		{

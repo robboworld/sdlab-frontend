@@ -226,7 +226,7 @@ if($setup_exists)
 			</div>
 		</h4>
 		<!-- Monitors -->
-		<div class="panel-group panel-group-monitors" id="accordion-monitors" role="tablist" aria-multiselectable="true">
+		<div class="panel-group panel-group-monitors" id="accordion_monitors" role="tablist" aria-multiselectable="true">
 			<?php foreach ($this->view->content->monitors as $i => $mon) :
 
 			// Get StopAt from Created + Setup.time(sec)
@@ -338,15 +338,15 @@ if($setup_exists)
 			?>">
 				<div class="panel-heading <?php echo $heading_class; ?>" role="tab" id="panelMonHeading<?php echo $i; ?>">
 					<div class="pull-right panel-collapse-control">
-						<a href="#collapseMon<?php echo $i; ?>" role="button" class="btn-none" data-toggle="collapse" aria-expanded="<?php echo $mon->active ? 'true' : 'false'; ?>" aria-controls="#collapseMon<?php echo $i; ?>">
+						<a href="#collapseMon<?php echo $i; ?>" role="button" class="btn-none" data-toggle="collapse" aria-expanded="<?php echo $mon->active ? 'true' : 'false'; ?>" aria-controls="collapseMon<?php echo $i; ?>">
 							<span class="glyphicon <?php echo $mon->active ? 'glyphicon-chevron-down' : 'glyphicon-chevron-up'; ?>"></span>
 						</a>
 					</div>
 					<div class="btn-group dropdown-monitor pull-right hidden">
-						<a href="#" class="btn-none dropdown-toggle" data-target="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+						<a href="#" class="btn-none dropdown-toggle" data-target="#dropdownMenuMon<?php echo $i; ?>" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
 							<span class="glyphicon glyphicon-cog"></span>
 						</a>
-						<ul class="dropdown-menu dropdown-menu-right">
+						<ul id="#dropdownMenuMon<?php echo $i; ?>" class="dropdown-menu dropdown-menu-right">
 							<li class="monitor-active-hidden" style="<?php if ($mon->active) : ?>display:none;<?php endif; ?>">
 								<a href="#" onclick="alert('TODO: Remove monitor info');" ><?php echo L('REMOVE'); ?></a>
 							</li>
@@ -371,8 +371,8 @@ if($setup_exists)
 							echo L('ERRORS') . ': ' . (int)$mon_err_cnt; ?>" <?php
 							if ((int)$mon_err_cnt == 0) : ?>style="display:none;"<?php endif; ?>></span>&nbsp;
 						<a role="button" title="<?php echo L('MONITORING') . ': ' . $mon->uuid; ?>" data-toggle="collapse" <?php
-							//echo 'data-parent="#accordion-monitors"';  // uncomment for single panel incollapsed
-							?> href="#collapseMon<?php echo $i; ?>" aria-expanded="<?php echo $mon->active ? 'true' : 'false'; ?>" aria-controls="#collapseMon<?php echo $i; ?>"><?php
+							//echo 'data-parent="#accordion_monitors"';  // uncomment for single panel incollapsed
+							?> href="#collapseMon<?php echo $i; ?>" aria-expanded="<?php echo $mon->active ? 'true' : 'false'; ?>" aria-controls="collapseMon<?php echo $i; ?>"><?php
 							echo L('MONITORING'); ?>: <b><?php echo L('FROM_') . '&nbsp;' . $created_text; ?></b>
 						</a>
 					</h5>
@@ -546,7 +546,7 @@ if($setup_exists)
 <?php endif; ?>
 <div class="row">
 	<div class="col-sm-10 col-md-10">
-		<div class="row" id="widget-workspace">
+		<div class="row" id="widget_workspace">
 		<?php if (isset($this->view->content->sensors)) :?>
 			<?php foreach($this->view->content->sensors as $sensor):
 				$skey = '' . $sensor->sensor_id . '#' . (int)$sensor->sensor_val_id; ?>

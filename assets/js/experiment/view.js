@@ -89,30 +89,30 @@ $(document).ready(function(){
     });
 
     $('#collapseMonAll').click(function() {
-        $('#accordion-monitors .panel-collapse.in').collapse('hide');
+        $('#accordion_monitors .panel-collapse.in').collapse('hide');
     });
     $('#expandMonAll').click(function() {
-        $('#accordion-monitors .panel-collapse:not(.in)').collapse('show');
+        $('#accordion_monitors .panel-collapse:not(.in)').collapse('show');
     });
 
     $(window).resize(function(){
-        if($('#accordion-monitors').length > 0){
+        if($('#accordion_monitors').length > 0){
             if($(window).width() < 768){
-                if ($('#accordion-monitors .monitor-control').hasClass('btn-group-vertical')){
-                    $('#accordion-monitors .monitor-control').removeClass('btn-group-vertical').addClass('btn-group btn-group-justified')
+                if ($('#accordion_monitors .monitor-control').hasClass('btn-group-vertical')){
+                    $('#accordion_monitors .monitor-control').removeClass('btn-group-vertical').addClass('btn-group btn-group-justified')
                         .find('button').wrap('<div class="btn-group btn-group-wrap" role="group"></div>');
                 }
             }else{
-                if ($('#accordion-monitors .monitor-control').hasClass('btn-group')){
-                    $('#accordion-monitors .monitor-control').removeClass('btn-group btn-group-justified').addClass('btn-group-vertical')
+                if ($('#accordion_monitors .monitor-control').hasClass('btn-group')){
+                    $('#accordion_monitors .monitor-control').removeClass('btn-group btn-group-justified').addClass('btn-group-vertical')
                         .find('button').unwrap('.btn-group-wrap');
                 }
             }
         }
     });
-    if($('#accordion-monitors').length > 0){
+    if($('#accordion_monitors').length > 0){
         $(window).trigger('resize');
-        $('#accordion-monitors .panel-collapse')
+        $('#accordion_monitors .panel-collapse')
             .on('show.bs.collapse', function(){
                 $(this).siblings('.panel-heading').find('.panel-collapse-control a span').removeClass('glyphicon-chevron-up glyphicon-chevron-down').addClass('glyphicon-chevron-down');
             })

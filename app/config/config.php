@@ -14,7 +14,7 @@ return array(
 		'lab'    => array(
 				'name'        => 'DLab001',
 				'lang'        => 'ru',
-				'page_suffix' => 'ScratchDuino',
+				'page_suffix' => 'STEM Lab',
 				'admin_key'   => '123456',
 		),
 );
